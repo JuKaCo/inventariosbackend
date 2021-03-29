@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 use App\Application\Actions\User\ListUsersAction;
@@ -9,9 +10,16 @@ use Slim\App;
 use Slim\Interfaces\RouteCollectorProxyInterface as Group;
 
 return function (App $app) {
-    $app->get('/', function (Request $request, Response $response) {
-        $response->getBody()->write('Hola desde Ceass backend');
+
+    $app->options('{routes:.+}', function ($request, $response, $args) {
         return $response;
+    });
+
+    $app->get('/', function (Request $request, Response $response) {
+        $resban = array('mensaje' => 'Hola desde backend');
+        $payload = json_encode($resban);
+        $response->getBody()->write($payload);
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
     });
 
     $app->group('/users', function (Group $group) {
