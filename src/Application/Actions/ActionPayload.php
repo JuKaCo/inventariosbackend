@@ -1,16 +1,27 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Application\Actions;
 
 use JsonSerializable;
 
-class ActionPayload implements JsonSerializable
-{
+class ActionPayload implements JsonSerializable {
+
     /**
      * @var int
      */
     private $statusCode;
+
+    /**
+     * @var bool
+     */
+    private $success;
+
+    /**
+     * @var bool
+     */
+    private $message;
 
     /**
      * @var array|object|null
@@ -28,11 +39,15 @@ class ActionPayload implements JsonSerializable
      * @param ActionError|null      $error
      */
     public function __construct(
-        int $statusCode = 200,
-        $data = null,
-        ?ActionError $error = null
+            $data = null,
+            string $message = "Exitoso",
+            int $statusCode = 200,
+            bool $success = true,
+            ?ActionError $error = null
     ) {
         $this->statusCode = $statusCode;
+        $this->success = $success;
+        $this->message = $message;
         $this->data = $data;
         $this->error = $error;
     }
@@ -40,34 +55,32 @@ class ActionPayload implements JsonSerializable
     /**
      * @return int
      */
-    public function getStatusCode(): int
-    {
+    public function getStatusCode(): int {
         return $this->statusCode;
     }
 
     /**
      * @return array|null|object
      */
-    public function getData()
-    {
+    public function getData() {
         return $this->data;
     }
 
     /**
      * @return ActionError|null
      */
-    public function getError(): ?ActionError
-    {
+    public function getError(): ?ActionError {
         return $this->error;
     }
 
     /**
      * @return array
      */
-    public function jsonSerialize()
-    {
+    public function jsonSerialize() {
         $payload = [
             'statusCode' => $this->statusCode,
+            'success' => $this->success,
+            'message' => $this->message,
         ];
 
         if ($this->data !== null) {
@@ -78,4 +91,5 @@ class ActionPayload implements JsonSerializable
 
         return $payload;
     }
+
 }

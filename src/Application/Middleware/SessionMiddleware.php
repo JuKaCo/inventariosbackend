@@ -18,7 +18,7 @@ class SessionMiddleware implements Middleware {
      * {@inheritdoc}
      */
     public function process(Request $request, RequestHandler $handler): Response {
-        $serviceOpenIdKeycloak = new ServiceOpenIdKeycloak();
+        /*$serviceOpenIdKeycloak = new ServiceOpenIdKeycloak();
 
 
         $Autorization = $request->getHeaders();
@@ -52,8 +52,9 @@ class SessionMiddleware implements Middleware {
                 $jwt = new \Firebase\JWT\JWT;
                 $jwt::$leeway = 60;
                 $decoded = JWT::decode($Autorization, $publicKey, array('RS256'));
-                $payload = json_encode((array) $decoded);
-                putenv("TOKEN_DATOS=" . $payload);
+                //*Setea datos del token en formato String JSON
+                //@setenv TOKEN_DATOS
+                putenv("TOKEN_DATOS=" . json_encode((array) $decoded));
             } catch (Exception $e) {
                 $existingContent = (string) $response->getBody();
 
@@ -66,7 +67,8 @@ class SessionMiddleware implements Middleware {
                 $response->getBody()->write($payload);
                 return $response->withHeader('Content-Type', 'application/json')->withStatus(403);
             }
-        }
+        }*/
+        
         return $handler->handle($request);
 
         /* $response = $handler->handle($request);

@@ -51,7 +51,7 @@ $middleware = require __DIR__ . '/../app/middleware.php';
 $middleware($app);
 
 // Register routes
-$routes = require __DIR__ . '/../app/routesAuth.php';
+$routes = require __DIR__ . '/../app/general.php';
 $routes($app);
 
 /** @var bool $displayErrorDetails */
