@@ -66,21 +66,22 @@ class DataMenuRepository implements MenuRepository {
             } else {
                 $value['routerLink'] = array($value['routerLink']);
             }
-
             $resSM = ($this->db)->prepare($sql);
             $id_menu_padre = $value['id_menu'];
             $resSM->bindParam(':id_menu_padre', $id_menu_padre, PDO::PARAM_INT);
             $resSM->execute();
             $resSM = $resSM->fetchAll(PDO::FETCH_ASSOC);
             if (count($resSM) != 0) {
+                $menuSub = array();
                 foreach ($resSM as $valueSM) {
                     if ($valueSM['routerLink'] == null) {
                         unset($valueSM['routerLink']);
                     } else {
                         $valueSM['routerLink'] = array($valueSM['routerLink']);
+                        array_push($menuSub, $valueSM);
                     }
-                    $value += ["items" => $resSM];
                 }
+                $value += ["items" => $menuSub];
             }
             array_push($menu, $value);
         }
