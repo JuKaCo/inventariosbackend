@@ -17,8 +17,60 @@ class SessionMiddleware implements Middleware {
     /**
      * {@inheritdoc}
      */
+    /*
+     * ----header----------------------------------------------------------
+      {
+      "alg": "RS256",
+      "typ": "JWT",
+      "kid": "4F4bwcM1OE_xwa8Rb5Oc9W5m8TdJTlGI-7Ztpcj0Y1I"
+      }
+     * ----data-------------------------------------------------------------
+      {
+        "exp": 1617981575,
+        "iat": 1617981275,
+        "jti": "7b354291-cc22-41c9-b03c-043db1ec34a9",
+        "iss": "http://192.168.1.232:8080/auth/realms/web",
+        "aud": "account",
+     * ----ID_USUARIO-------------------------------------------------------
+        "sub": "5e80d6ca-0455-4e2a-a1bf-eaaa543e901b",
+        "typ": "Bearer",
+        "azp": "angular-web",
+        "session_state": "7e580021-d580-44b0-9c5a-8b120f413c9c",
+        "acr": "1",
+        "allowed-origins": [
+            "*"
+        ],
+        "realm_access": {
+     * ----ROLES_ACCESO-----------------------------------------------------
+            "roles": [
+                "offline_access",
+                "rol_uaf_ingreso",
+                "uma_authorization",
+                "rol_almacen"
+            ]
+        },
+        "resource_access": {
+            "account": {
+            "roles": [
+                "manage-account",
+                "manage-account-links",
+                "view-profile"
+            ]
+            }
+        },
+        "scope": "openid offline_access email profile",
+        "email_verified": false,
+     * ----DATOS_GENERALES-------------------------------------------------
+        "name": "Roger Nav",
+        "cargo_usuario": "Encargado de almacen",
+        "preferred_username": "rnavia",
+        "given_name": "Roger",
+        "family_name": "Nav",
+        "email": "ranvia@123.com"
+      }
+     */
     public function process(Request $request, RequestHandler $handler): Response {
-        /*$serviceOpenIdKeycloak = new ServiceOpenIdKeycloak();
+        $serviceOpenIdKeycloak = new ServiceOpenIdKeycloak();
 
 
         $Autorization = $request->getHeaders();
@@ -67,7 +119,7 @@ class SessionMiddleware implements Middleware {
                 $response->getBody()->write($payload);
                 return $response->withHeader('Content-Type', 'application/json')->withStatus(403);
             }
-        }*/
+        }
         return $handler->handle($request);
 
         /* $response = $handler->handle($request);
