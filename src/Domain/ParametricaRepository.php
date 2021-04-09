@@ -6,4 +6,5 @@ namespace App\Domain;
 interface ParametricaRepository
 {
     public function getParametrica($cod_grupo,$id_padre): array;
+    public function getTerminalBiometrico(): array ;
 }

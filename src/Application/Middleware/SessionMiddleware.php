@@ -105,7 +105,7 @@ class SessionMiddleware implements Middleware {
                 $jwt::$leeway = 60;
                 $decoded = JWT::decode($Autorization, $publicKey, array('RS256'));
                 //*Setea datos del token en formato String JSON
-                //@setenv TOKEN_DATOS
+                //@putenv TOKEN_DATOS
                 putenv("TOKEN_DATOS=" . json_encode((array) $decoded));
             } catch (Exception $e) {
                 $existingContent = (string) $response->getBody();
