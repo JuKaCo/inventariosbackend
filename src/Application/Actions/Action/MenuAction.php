@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Actions\Action;
 
 use App\Application\Actions\Action;
-use App\Domain\Menu\MenuRepository;
-use App\Domain\User\UserRepository;
+use App\Domain\MenuRepository;
 use Psr\Log\LoggerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;

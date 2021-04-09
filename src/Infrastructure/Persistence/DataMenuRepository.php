@@ -2,13 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Infrastructure\Persistence\Menu;
+namespace App\Infrastructure\Persistence;
 
-use App\Domain\User\User;
-use App\Domain\User\UserNotFoundException;
-use App\Domain\User\UserRepository;
 use App\Application\Actions\RepositoryConection\Conect;
-use App\Domain\Menu\MenuRepository;
+use App\Domain\MenuRepository;
 use \PDO;
 
 class DataMenuRepository implements MenuRepository {

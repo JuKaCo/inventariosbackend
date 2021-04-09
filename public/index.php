@@ -51,8 +51,12 @@ $middleware = require __DIR__ . '/../app/middleware.php';
 $middleware($app);
 
 // Register routes
-$routes = require __DIR__ . '/../app/general.php';
+$routes = require __DIR__ . '/../app/generalRoutes.php';
 $routes($app);
+
+$routes = require __DIR__ . '/../app/parametricaRoutes.php';
+$routes($app);
+
 
 /** @var bool $displayErrorDetails */
 $displayErrorDetails = $container->get('settings')['displayErrorDetails'];

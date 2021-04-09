@@ -18,7 +18,7 @@ class SessionMiddleware implements Middleware {
      * {@inheritdoc}
      */
     public function process(Request $request, RequestHandler $handler): Response {
-        $serviceOpenIdKeycloak = new ServiceOpenIdKeycloak();
+        /*$serviceOpenIdKeycloak = new ServiceOpenIdKeycloak();
 
 
         $Autorization = $request->getHeaders();
@@ -67,7 +67,7 @@ class SessionMiddleware implements Middleware {
                 $response->getBody()->write($payload);
                 return $response->withHeader('Content-Type', 'application/json')->withStatus(403);
             }
-        }
+        }*/
         return $handler->handle($request);
 
         /* $response = $handler->handle($request);

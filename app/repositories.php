@@ -2,9 +2,11 @@
 declare(strict_types=1);
 
 use App\Domain\User\UserRepository;
-use App\Domain\Menu\MenuRepository;
+use App\Domain\MenuRepository;
+use App\Domain\ParametricaRepository;
 use App\Infrastructure\Persistence\User\InMemoryUserRepository;
-use App\Infrastructure\Persistence\Menu\DataMenuRepository;
+use App\Infrastructure\Persistence\DataMenuRepository;
+use App\Infrastructure\Persistence\DataParametricaRepository;
 use DI\ContainerBuilder;
 
 return function (ContainerBuilder $containerBuilder) {
@@ -12,5 +14,6 @@ return function (ContainerBuilder $containerBuilder) {
     $containerBuilder->addDefinitions([
         UserRepository::class => \DI\autowire(InMemoryUserRepository::class),
         MenuRepository::class => \DI\autowire(DataMenuRepository::class),
+        ParametricaRepository::class => \DI\autowire(DataParametricaRepository::class),
     ]);
 };
