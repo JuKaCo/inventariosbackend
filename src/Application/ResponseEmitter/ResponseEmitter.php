@@ -14,11 +14,12 @@ class ResponseEmitter extends SlimResponseEmitter
     public function emit(ResponseInterface $response): void
     {
         // This variable should be set to the allowed host from which your API can be accessed with
-        $origin = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '';
+        //$origin = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '';
 
         $response = $response
             ->withHeader('Access-Control-Allow-Credentials', 'true')
             //->withHeader('Access-Control-Allow-Origin', $origin)
+                
             ->withHeader('Access-Control-Allow-Origin', '*')
             ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization, X-Auth-Token')
             ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS')

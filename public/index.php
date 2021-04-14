@@ -56,6 +56,8 @@ $routes($app);
 
 $routes = require __DIR__ . '/../app/parametricaRoutes.php';
 $routes($app);
+$routes = require __DIR__ . '/../app/rrhhRoutes.php';
+$routes($app);
 
 
 /** @var bool $displayErrorDetails */
@@ -72,6 +74,9 @@ $errorHandler = new HttpErrorHandler($callableResolver, $responseFactory);
 // Create Shutdown Handler
 $shutdownHandler = new ShutdownHandler($request, $errorHandler, $displayErrorDetails);
 register_shutdown_function($shutdownHandler);
+
+//Add BodyParsingMiddleware JSON request 
+$app->addBodyParsingMiddleware();
 
 // Add Routing Middleware
 $app->addRoutingMiddleware();

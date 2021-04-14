@@ -12,7 +12,7 @@ use App\Application\Actions\Action\MenuAction;
 use App\Application\Actions\Action\ParametricaAction;
 
 return function (App $app) {
-    $app->group('/param', function (Group $group) {
+    $app->group('/api/v1/param', function (Group $group) {
         $group->get('/gen/{cod_grupo}', ParametricaAction::class.':genParam');
         $group->get('/gen/{cod_grupo}/{id_padre}', ParametricaAction::class.':genParamPadre');
         $group->get('/biometrico/terminal', ParametricaAction::class.':genParamBiometrico');

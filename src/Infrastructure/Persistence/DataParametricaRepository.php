@@ -12,11 +12,6 @@ use \PDO;
 class DataParametricaRepository implements ParametricaRepository {
 
     /**
-     * @var data[]
-     */
-    private $data;
-
-    /**
      * @var $db conection db
      */
     private $db;

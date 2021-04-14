@@ -24,12 +24,8 @@ return function (App $app) {
         return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
     });
 
-    $app->group('/general', function (Group $group) {
+    $app->group('/api/v1/general', function (Group $group) {
         $group->get('/menu', MenuAction::class.':menu');
     });
-    
-    $app->group('/users', function (Group $group) {
-        $group->get('', ListUsersAction::class);
-        $group->get('/{id}', ViewUserAction::class);
-    });
+
 };

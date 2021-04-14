@@ -10,9 +10,9 @@ use Psr\Log\LoggerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
-class ParametricaAction extends Action {
-
-    protected $parametricaRepository;
+class ParametricaAction  extends Action {
+    
+     protected $parametricaRepository;
 
     public function __construct(LoggerInterface $logger, ParametricaRepository $parametricaRepository) {
         parent::__construct($logger);
