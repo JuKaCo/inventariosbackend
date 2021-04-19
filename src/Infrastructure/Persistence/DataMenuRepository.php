@@ -44,7 +44,7 @@ class DataMenuRepository implements MenuRepository {
                                 SELECT m.id_menu_padre
                                 FROM auth_rol_menu rm, auth_menu m
                                 WHERE rm.activo = true
-                                        and fid_rol in ('rol_su')
+                                        and fid_rol in (" . $role . ")
                                         and m.id_menu = rm.fid_menu
                                 )
                 union
@@ -62,7 +62,7 @@ class DataMenuRepository implements MenuRepository {
                                 SELECT m.id_menu
                                 FROM auth_rol_menu rm, auth_menu m
                                 WHERE rm.activo = true
-                                        and fid_rol in ('rol_su')
+                                        and fid_rol in (" . $role . ")
                                         and m.id_menu = rm.fid_menu
                                 )";
         $res = ($this->db)->prepare($sql);
