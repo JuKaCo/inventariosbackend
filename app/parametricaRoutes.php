@@ -25,4 +25,12 @@ return function (App $app) {
         $group->delete('/delete/{id_proveedor}',ProveedorAction::class.':elimina_Proveedor');
         $group->get('/lista/{filtro}/{items_pagina}/{pagina}',ProveedorAction::class.':lista_Proveedor');
     });
+    $app->group('/api/v1/liname', function (Group $group) {
+        $group->get('/lista', ParametricaAction::class.':genParamBiometrico');
+        $group->post('/carga', ParametricaAction::class.':genParamBiometrico');
+        $group->post('/consolida', ParametricaAction::class.':genParamBiometrico');
+        $group->post('/habilitar', ParametricaAction::class.':genParamBiometrico');
+        $group->delete('/dasavilitar/{id}', ParametricaAction::class.':genParamBiometrico');
+        
+    });
 };
