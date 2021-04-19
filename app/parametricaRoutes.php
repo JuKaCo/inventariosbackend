@@ -17,4 +17,14 @@ return function (App $app) {
         $group->get('/gen/{cod_grupo}/{id_padre}', ParametricaAction::class.':genParamPadre');
         $group->get('/biometrico/terminal', ParametricaAction::class.':genParamBiometrico');
     });
+    
+    
+    $app->group('/api/v1/liname', function (Group $group) {
+        $group->get('/lista', ParametricaAction::class.':genParamBiometrico');
+        $group->post('/carga', ParametricaAction::class.':genParamBiometrico');
+        $group->post('/consolida', ParametricaAction::class.':genParamBiometrico');
+        $group->post('/habilitar', ParametricaAction::class.':genParamBiometrico');
+        $group->delete('/dasavilitar/{id}', ParametricaAction::class.':genParamBiometrico');
+        
+    });
 };

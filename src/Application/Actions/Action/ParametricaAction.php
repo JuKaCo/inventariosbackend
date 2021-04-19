@@ -6,6 +6,7 @@ namespace App\Application\Actions\Action;
 
 use App\Application\Actions\Action;
 use App\Domain\ParametricaRepository;
+use App\Domain\LinameRepository;
 use Psr\Log\LoggerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -13,10 +14,12 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 class ParametricaAction  extends Action {
     
      protected $parametricaRepository;
+     protected $linameRepository;
 
-    public function __construct(LoggerInterface $logger, ParametricaRepository $parametricaRepository) {
+    public function __construct(LoggerInterface $logger, ParametricaRepository $parametricaRepository,LinameRepository $linameRepository) {
         parent::__construct($logger);
         $this->parametricaRepository = $parametricaRepository;
+        $this->linameRepository = $parametricaRepository;
     }
 
     public function action(): Response {
