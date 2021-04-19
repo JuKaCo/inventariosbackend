@@ -37,7 +37,6 @@ class MenuAction extends Action {
         $token=getenv('TOKEN_DATOS');
         $token=json_decode($token,true);
         $token=($token['realm_access'])['roles'];
-        
         $res=$this->menuRepository->getMenu($token);
 
         return $this->respondWithData($res);
