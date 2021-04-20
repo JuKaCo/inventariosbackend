@@ -71,8 +71,9 @@ class LinameAction extends Action {
         $this->request = $request;
         $this->response = $response;
         $this->args = $args;
-        $params=array();
-        $res=$this->linameRepository->getListLiname($params);
+        //$params=$args;
+        $query=$request->getQueryParams();
+        $res=$this->linameRepository->getListLiname($query);
         return $this->respondWithData($res);
     }
 
