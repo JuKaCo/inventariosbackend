@@ -11,8 +11,10 @@ use Psr\Http\Server\RequestHandlerInterface as RequestHandler;
 use Slim\Psr7\Response as ResponsePsr7;
 use App\Application\Actions\Payload\serviceOpenIdKeycloak;
 use Firebase\JWT\JWT;
+use App\Infrastructure\Persistence\DataRutaRepository;
 
-class SessionMiddleware implements Middleware {
+class SessionMiddleware implements Middleware
+{
 
     /**
      * {@inheritdoc}
@@ -69,7 +71,8 @@ class SessionMiddleware implements Middleware {
         "email": "ranvia@123.com"
       }
      */
-    public function process(Request $request, RequestHandler $handler): Response {
+    public function process(Request $request, RequestHandler $handler): Response
+    {
         $serviceOpenIdKeycloak = new ServiceOpenIdKeycloak();
 
 
@@ -86,7 +89,8 @@ class SessionMiddleware implements Middleware {
                         'statusCode' => 403,
                         'success' => false,
                         'data' => null,
-                        'message' => 'No tiene permiso para acceder'));
+                        'message' => 'No tiene permiso para acceder'
+                    ));
                     $payload = json_encode($resOauth);
                     $response->getBody()->write($payload);
                     return $response->withHeader('Content-Type', 'application/json')->withStatus(403);
@@ -107,6 +111,65 @@ class SessionMiddleware implements Middleware {
                 //*Setea datos del token en formato String JSON
                 //@putenv TOKEN_DATOS
                 putenv("TOKEN_DATOS=" . json_encode((array) $decoded));
+                
+                /* *******Validando Rutas******* */
+                
+                // obteniendo los roles
+                $token=getenv('TOKEN_DATOS');
+                $token=json_decode($token,true);
+                $roles=($token['realm_access'])['roles'];
+                //Importando el repositorio
+                $rutas = new DataRutaRepository();
+                //obteniendo el path del request
+                $uri = $request->getUri()->getPath();
+                // Eliminando la base del path
+                $path = str_replace('/ceass-back-end/public/', '', $uri);
+                //$path = 'api/v1/param/gen/5?filtro=6&aasd=asd';
+                // Combirtiendo a array el path
+                $pathArray = explode('/',$path);
+                // Obteniendo el metodo de la solicitud Ejem.: GET, POST, PUT, etc
+                $method = $request->getMethod();
+                // Funcion que busca en BD todos los accesos admitidos por el rol y el metodo
+                $listadoRutas = $rutas->getRuta($roles, $method);
+                // Comparando los paths
+                for ($i=0; $i < count($listadoRutas); $i++) {
+                    $pathDB = explode('/', $listadoRutas[$i]['label']);
+                    $contador = 0;
+                    if ($path == $listadoRutas[$i]['label']) {
+                        echo "POSITIVO -> 1 \n";
+                        break;
+                    } elseif (count($pathArray) == count($pathDB) ){
+                        for ($j=0; $j < count($pathArray); $j++) { 
+                            $buscaQuery = strpos($pathDB[$j], '?');
+                            if ($buscaQuery) {
+                                $pathDB[$j] =  substr($pathDB[$j],0, intval($buscaQuery));
+                            }
+                            if ($pathArray[$j] == $pathDB[$j] || $pathDB[$j] == '%') {
+                                $contador++;
+                            }
+                        }
+                        
+                    }
+                    if ($contador == count($pathArray)) {
+                        echo "POSITIVO -> 2 \n";
+                        break;
+                    }
+                    if (count($listadoRutas) == $i + 1) {
+                        $response = new ResponsePsr7();
+                        $payload = json_encode(array(
+                            'statusCode' => 401,
+                            'success' => false,
+                            'data' => null,
+                            'message' => 'No tiene permiso para acceder'
+                        ));
+                        $payload = json_encode($payload);
+                        $response->getBody()->write($payload);
+                        return $response->withHeader('Content-Type', 'application/json')->withStatus(401);
+                    }
+               
+                }
+                /* ********Fin Validando Rutas********* */
+                
             } catch (Exception $e) {
                 $existingContent = (string) $response->getBody();
 
@@ -115,7 +178,8 @@ class SessionMiddleware implements Middleware {
                     'statusCode' => 403,
                     'success' => false,
                     'data' => null,
-                    'message' => 'No tiene permiso para acceder2'));
+                    'message' => 'No tiene permiso para acceder2'
+                ));
                 $response->getBody()->write($payload);
                 return $response->withHeader('Content-Type', 'application/json')->withStatus(403);
             }
@@ -134,5 +198,4 @@ class SessionMiddleware implements Middleware {
 
           return $response; */
     }
-
 }
