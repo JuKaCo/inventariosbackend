@@ -9,6 +9,7 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
 use Slim\Interfaces\RouteCollectorProxyInterface as Group;
 use App\Application\Actions\Action\MenuAction;
+use App\Application\Actions\Action\LinameAction;
 use App\Application\Actions\Action\ParametricaAction;
 
 return function (App $app) {
@@ -21,10 +22,9 @@ return function (App $app) {
     
     $app->group('/api/v1/liname', function (Group $group) {
         $group->get('/lista', ParametricaAction::class.':genParamBiometrico');
-        $group->post('/carga', ParametricaAction::class.':genParamBiometrico');
-        $group->post('/consolida', ParametricaAction::class.':genParamBiometrico');
-        $group->post('/habilitar', ParametricaAction::class.':genParamBiometrico');
-        $group->delete('/dasavilitar/{id}', ParametricaAction::class.':genParamBiometrico');
+        $group->post('/cargar/valid/upload', LinameAction::class.':cargarValidUpload');
+        $group->post('/carga/consolida', LinameAction::class.':cargaConsolida');
+        $group->post('/habilitar/{id}', ParametricaAction::class.':genParamBiometrico');
         
     });
 };

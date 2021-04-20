@@ -6,6 +6,12 @@ namespace App\Infrastructure\Persistence;
 
 use App\Application\Actions\RepositoryConection\Conect;
 use App\Domain\LinameRepository;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Reader\IReader;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use App\Domain\DatosGeneralesRepository;
+use App\Infrastructure\Persistence\DataDatosGeneralesRepository;
 use \PDO;
 
 class DataLinameRepository implements LinameRepository {
@@ -14,6 +20,7 @@ class DataLinameRepository implements LinameRepository {
      * @var $db conection db
      */
     private $db;
+    private $datosGeneralesRepository;
 
     /**
      * DataMenuRepository constructor.
@@ -22,62 +29,335 @@ class DataLinameRepository implements LinameRepository {
     public function __construct() {
         $con = new Conect();
         $this->db = $con->getConection();
+        $this->datosGeneralesRepository = new DataDatosGeneralesRepository;
     }
 
-    public function getMenu($roles): array {
-        $role = '"' . implode('","', $roles) . '"';
-        $sql = "SELECT 
-            m.id_menu,
-            m.label,
-            m.descripcion,
-            m.orden,
-            m.ruta_url as routerLink,
-            m.icon,
-            m.id_menu_padre
-                FROM auth_menu m, auth_rol_menu rm
-                WHERE m.id_menu=rm.fid_menu and rm.fid_rol in (" . $role . ")
-                and m.activo=true and rm.activo=true and m.id_menu_padre is null
-                ORDER BY m.orden";
-        $res = ($this->db)->prepare($sql);
-        //$res->bindParam(':role', $role, PDO::PARAM_STR);
-        $res->execute();
-        $res = $res->fetchAll(PDO::FETCH_ASSOC);
-        $sql = "SELECT id_menu,
-            label,
-            descripcion,
-            orden,
-            ruta_url as routerLink,
-            icon,
-            id_menu_padre 
-                FROM auth_menu WHERE activo=true and id_menu_padre=:id_menu_padre
-                ORDER BY orden";
-        $menu = array();
-        foreach ($res as $value) {
-            if ($value['routerLink'] == null) {
-                unset($value['routerLink']);
+    public function setValidUpload($archivo, $body): array {
+        $comentario = $body['descripcion'];
+        $newfile = $archivo['uploadFile'];
+        if ($newfile->getError() === UPLOAD_ERR_OK) {
+            $newfile->getClientFilename();
+            $extencionFile = $newfile->getClientFilename();
+            $extencionFile = explode(".", $extencionFile);
+            if (count($extencionFile) >= 2) {
+                $extencionFile = $extencionFile[count($extencionFile) - 1];
             } else {
-                $value['routerLink'] = array($value['routerLink']);
+                return array('error' => true);
             }
-            $resSM = ($this->db)->prepare($sql);
-            $id_menu_padre = $value['id_menu'];
-            $resSM->bindParam(':id_menu_padre', $id_menu_padre, PDO::PARAM_INT);
-            $resSM->execute();
-            $resSM = $resSM->fetchAll(PDO::FETCH_ASSOC);
-            if (count($resSM) != 0) {
-                $menuSub = array();
-                foreach ($resSM as $valueSM) {
-                    if ($valueSM['routerLink'] == null) {
-                        unset($valueSM['routerLink']);
-                    } else {
-                        $valueSM['routerLink'] = array($valueSM['routerLink']);
-                        array_push($menuSub, $valueSM);
-                    }
+            if ($extencionFile == 'xls' || $extencionFile == 'xlsx') {
+                $fverif = $newfile->getFilePath();
+                $spreadsheet = IOFactory::load($fverif);
+                $sheetData = $spreadsheet->getActiveSheet()->toArray(null, true, true, true);
+                if (isset($sheetData[5])) {
+                    $verifCab = $sheetData[5];
+                } else {
+                    return array('error' => 'Cabecera incorrecta');
                 }
-                $value += ["items" => $menuSub];
+
+                if (!isset($verifCab['A'], $verifCab['B'], $verifCab['C'], $verifCab['D'], $verifCab['E'], $verifCab['F'], $verifCab['G'], $verifCab['H'], $verifCab['I'], $verifCab['J'])) {
+                    return array('error' => 'Cabecera incorrecta');
+                }
+
+                if ($verifCab['A'] == 'Código' &&
+                        $verifCab['B'] == 'Co' &&
+                        $verifCab['C'] == 'di' &&
+                        $verifCab['D'] == 'go' &&
+                        $verifCab['E'] == 'Medicamento' &&
+                        $verifCab['F'] == 'Forma Farmacéutica' &&
+                        $verifCab['G'] == 'Concentración' &&
+                        $verifCab['H'] == 'Classific. A.T.Q.' &&
+                        //$verifCab['I']=='Precio Referencial' &&
+                        $verifCab['J'] == 'Aclaración de Particularidades'
+                ) {
+                    $datosV = 0;
+                    $datosNV = 0;
+                    $obs = array();
+
+                    for ($ii = 6; $ii <= count($sheetData); $ii++) {
+                        if (isset(($sheetData[$ii])['A'])) {
+                            $A = str_replace(array("\r\n", "\r", "\n"), "", (string) ($sheetData[$ii])['A']);
+                        } else {
+                            $A = '';
+                        }
+                        if (isset(($sheetData[$ii])['B'])) {
+                            $B = str_replace(array("\r\n", "\r", "\n"), "", (string) ($sheetData[$ii])['B']);
+                        } else {
+                            $B = '';
+                        }
+                        if (isset(($sheetData[$ii])['C'])) {
+                            $C = str_replace(array("\r\n", "\r", "\n"), "", (string) ($sheetData[$ii])['C']);
+                        } else {
+                            $C = '';
+                        }
+                        if (isset(($sheetData[$ii])['D'])) {
+                            $D = str_replace(array("\r\n", "\r", "\n"), "", (string) ($sheetData[$ii])['D']);
+                        } else {
+                            $D = '';
+                        }
+                        if (isset(($sheetData[$ii])['E'])) {
+                            $E = str_replace(array("\r\n", "\r", "\n"), "", (string) ($sheetData[$ii])['E']);
+                        } else {
+                            $E = '';
+                        }
+                        if (isset(($sheetData[$ii])['F'])) {
+                            $F = str_replace(array("\r\n", "\r", "\n"), "", (string) ($sheetData[$ii])['F']);
+                        } else {
+                            $F = '';
+                        }
+                        if (isset(($sheetData[$ii])['G'])) {
+                            $G = str_replace(array("\r\n", "\r", "\n"), "", (string) ($sheetData[$ii])['G']);
+                        } else {
+                            $G = '';
+                        }
+                        if (isset(($sheetData[$ii])['H'])) {
+                            $H = str_replace(array("\r\n", "\r", "\n"), "", (string) ($sheetData[$ii])['H']);
+                        } else {
+                            $H = '';
+                        }
+                        if (isset(($sheetData[$ii])['I'])) {
+                            $I = str_replace(array("\r\n", "\r", "\n"), "", (string) ($sheetData[$ii])['I']);
+                        } else {
+                            $I = '';
+                        }
+                        if (isset(($sheetData[$ii])['J'])) {
+                            $J = str_replace(array("\r\n", "\r", "\n"), "", (string) ($sheetData[$ii])['J']);
+                        } else {
+                            $J = '';
+                        }
+
+                        if ($A != '' && $B != '' && $C != '' && $D != '' && $E != '' && $F != '' && $G != '' && $H != '' && preg_match('/^([+-]{1})?[0-9]+(\.[0-9]+)?$/', $I)) {
+                            $datosV++;
+                        } else {
+                            ($sheetData[$ii])['fila'] = $ii + 1;
+                            array_push($obs, $sheetData[$ii]);
+                            $datosNV++;
+                        }
+                    }
+                    $data = array('valid' => $datosV, 'invalid' => $datosNV, 'mensaje' => 'Datos del documento', 'obs' => $obs);
+                    return $data;
+                } else {
+                    return array('error' => 'Cabezera incorrecta');
+                }
+            } else {
+                return array('error' => 'Extencion no valida');
             }
-            array_push($menu, $value);
+        } else {
+            return array('error' => 'Error en archivo');
         }
-        return $menu;
+    }
+
+    public function setCargarUpload($archivo, $body, $id_usuario): array {
+        $comentario = $body['descripcion'];
+        $newfile = $archivo['uploadFile'];
+        if ($newfile->getError() === UPLOAD_ERR_OK) {
+            $newfile->getClientFilename();
+            $extencionFile = $newfile->getClientFilename();
+            $extencionFile = explode(".", $extencionFile);
+            if (count($extencionFile) >= 2) {
+                $extencionFile = $extencionFile[count($extencionFile) - 1];
+            } else {
+                return array('error' => true);
+            }
+            if ($extencionFile == 'xls' || $extencionFile == 'xlsx') {
+
+
+                $fverif = $newfile->getFilePath();
+                $spreadsheet = IOFactory::load($fverif);
+                $sheetData = $spreadsheet->getActiveSheet()->toArray(null, true, true, true);
+                if (isset($sheetData[5])) {
+                    $verifCab = $sheetData[5];
+                } else {
+                    return array('error' => 'Cabecera incorrecta');
+                }
+
+                if (!isset($verifCab['A'], $verifCab['B'], $verifCab['C'], $verifCab['D'], $verifCab['E'], $verifCab['F'], $verifCab['G'], $verifCab['H'], $verifCab['I'], $verifCab['J'])) {
+                    return array('error' => 'Cabecera incorrecta');
+                }
+
+                if ($verifCab['A'] == 'Código' &&
+                        $verifCab['B'] == 'Co' &&
+                        $verifCab['C'] == 'di' &&
+                        $verifCab['D'] == 'go' &&
+                        $verifCab['E'] == 'Medicamento' &&
+                        $verifCab['F'] == 'Forma Farmacéutica' &&
+                        $verifCab['G'] == 'Concentración' &&
+                        $verifCab['H'] == 'Classific. A.T.Q.' &&
+                        //$verifCab['I']=='Precio Referencial' &&
+                        $verifCab['J'] == 'Aclaración de Particularidades'
+                ) {
+                    $datosV = 0;
+                    $datosNV = 0;
+                    $obs = array();
+
+                    for ($ii = 6; $ii <= count($sheetData); $ii++) {
+                        if (isset(($sheetData[$ii])['A'])) {
+                            $A = str_replace(array("\r\n", "\r", "\n"), "", (string) ($sheetData[$ii])['A']);
+                        } else {
+                            $A = '';
+                        }
+                        if (isset(($sheetData[$ii])['B'])) {
+                            $B = str_replace(array("\r\n", "\r", "\n"), "", (string) ($sheetData[$ii])['B']);
+                        } else {
+                            $B = '';
+                        }
+                        if (isset(($sheetData[$ii])['C'])) {
+                            $C = str_replace(array("\r\n", "\r", "\n"), "", (string) ($sheetData[$ii])['C']);
+                        } else {
+                            $C = '';
+                        }
+                        if (isset(($sheetData[$ii])['D'])) {
+                            $D = str_replace(array("\r\n", "\r", "\n"), "", (string) ($sheetData[$ii])['D']);
+                        } else {
+                            $D = '';
+                        }
+                        if (isset(($sheetData[$ii])['E'])) {
+                            $E = str_replace(array("\r\n", "\r", "\n"), "", (string) ($sheetData[$ii])['E']);
+                        } else {
+                            $E = '';
+                        }
+                        if (isset(($sheetData[$ii])['F'])) {
+                            $F = str_replace(array("\r\n", "\r", "\n"), "", (string) ($sheetData[$ii])['F']);
+                        } else {
+                            $F = '';
+                        }
+                        if (isset(($sheetData[$ii])['G'])) {
+                            $G = str_replace(array("\r\n", "\r", "\n"), "", (string) ($sheetData[$ii])['G']);
+                        } else {
+                            $G = '';
+                        }
+                        if (isset(($sheetData[$ii])['H'])) {
+                            $H = str_replace(array("\r\n", "\r", "\n"), "", (string) ($sheetData[$ii])['H']);
+                        } else {
+                            $H = '';
+                        }
+                        if (isset(($sheetData[$ii])['I'])) {
+                            $I = str_replace(array("\r\n", "\r", "\n"), "", (string) ($sheetData[$ii])['I']);
+                        } else {
+                            $I = '';
+                        }
+                        if (isset(($sheetData[$ii])['J'])) {
+                            $J = str_replace(array("\r\n", "\r", "\n"), "", (string) ($sheetData[$ii])['J']);
+                        } else {
+                            $J = '';
+                        }
+                        try {
+                            $sql = "SELECT UUID() as uuid;";
+                            $uuid = $this->db->prepare($sql);
+                            $uuid->execute();
+                            $uuid = $uuid->fetch();
+                            $uuid = $uuid["uuid"];
+                            $sql = " INSERT INTO param_liname(
+                                    u_crea,
+                                    id_param_liname_archivo,
+
+                                    codigo,
+                                    codigo_p1,
+                                    codigo_p2,
+
+                                    codigo_p3,
+                                    medicamento,
+                                    for_farma,
+
+                                    concen,
+                                    class_atq,
+                                    pre_ref,
+
+                                    aclara_parti
+                                    )
+                                    VALUES (
+                                        :u_crea,
+                                        :id_param_liname_archivo,
+
+                                        REPLACE(REPLACE(REPLACE(:A, '\n', ''),'\r',''),'\t',''),
+                                        REPLACE(REPLACE(REPLACE(:B, '\n', ''),'\r',''),'\t',''),
+                                        REPLACE(REPLACE(REPLACE(:C, '\n', ''),'\r',''),'\t',''),
+
+                                        REPLACE(REPLACE(REPLACE(:D, '\n', ''),'\r',''),'\t',''),
+                                        REPLACE(REPLACE(REPLACE(:E, '\n', ''),'\r',''),'\t',''),
+                                        REPLACE(REPLACE(REPLACE(:F, '\n', ''),'\r',''),'\t',''),
+
+                                        REPLACE(REPLACE(REPLACE(:G, '\n', ''),'\r',''),'\t',''),
+                                        REPLACE(REPLACE(REPLACE(:H, '\n', ''),'\r',''),'\t',''),
+                                        REPLACE(REPLACE(REPLACE(:I, '\n', ''),'\r',''),'\t',''),
+
+                                        REPLACE(REPLACE(REPLACE(:J, '\n', ''),'\r',''),'\t','')
+                                        )
+                                        ";
+                            $query = $this->db->prepare($sql);
+                            $query->bindParam(':u_crea', $id_usuario, PDO::PARAM_STR);
+                            $query->bindParam(':id_param_liname_archivo', $uuid, PDO::PARAM_STR);
+
+                            $query->bindParam(':A', $A, PDO::PARAM_STR);
+                            $query->bindParam(':B', $B, PDO::PARAM_STR);
+                            $query->bindParam(':C', $C, PDO::PARAM_STR);
+
+                            $query->bindParam(':D', $D, PDO::PARAM_STR);
+                            $query->bindParam(':E', $E, PDO::PARAM_STR);
+                            $query->bindParam(':F', $F, PDO::PARAM_STR);
+
+                            $query->bindParam(':G', $G, PDO::PARAM_STR);
+                            $query->bindParam(':H', $H, PDO::PARAM_STR);
+                            $query->bindParam(':I', $I, PDO::PARAM_STR);
+
+                            $query->bindParam(':J', $J, PDO::PARAM_STR);
+
+                            $query->execute();
+                        } catch (Exception $ex) {
+                            $this->db->rollBack();
+                            return array('error' => 'Datos incorrectos');
+                        }
+                        if ($A != '' && $B != '' && $C != '' && $D != '' && $E != '' && $F != '' && $G != '' && $H != '' && preg_match('/^([+-]{1})?[0-9]+(\.[0-9]+)?$/', $I)) {
+                            $datosV++;
+                        }
+                    }
+
+                    //
+                    $ruta = $this->datosGeneralesRepository->getDatosCodigo('LINAME_FILE');
+                    $ruta = $ruta['recurso'];
+                    if (!file_exists($ruta)) {
+                        if (!mkdir($ruta, 0777, true)) {
+                            return array('error' => 'permisos');
+                        }
+                    }
+
+                    $uploadFileName = $uuid . '--' . $id_usuario;
+                    $name = $uploadFileName . '.' . $extencionFile;
+                    $newfile->moveTo($ruta . $name);
+                    $sql = " INSERT INTO param_liname_archivo (
+                        id,
+                        u_crea,
+                        codigo,
+                        nombre_archivo,
+                        comentario
+                        )VALUE(
+                        :id,
+                        :u_crea,
+                        :codigo,
+                        :nombre_archivo,
+                        :comentario
+                        )";
+                    $query1 = $this->db->prepare($sql);
+                    $dd="";
+                    $query1->bindParam(':id', $uuid, PDO::PARAM_STR);
+                    $query1->bindParam(':u_crea', $id_usuario, PDO::PARAM_STR);
+                    $query1->bindParam(':codigo', $dd, PDO::PARAM_STR);
+                    $query1->bindParam(':nombre_archivo', $name, PDO::PARAM_STR);
+                    $query1->bindParam(':comentario', $comentario, PDO::PARAM_STR);
+                    $query1->execute();
+                    if ($datosV != 0) {
+                        return array('error' => 'Datos incorrectos');
+                    }
+                    $data = array('mensaje' => 'Datos Correctos');
+                    return $data;
+                } else {
+                    return array('error' => 'Cabezera incorrecta');
+                }
+            } else {
+                return array('error' => 'Extencion no valida');
+            }
+        } else {
+            return array('error' => 'Error en archivo');
+        }
     }
 
 }
