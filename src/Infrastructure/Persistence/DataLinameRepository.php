@@ -12,6 +12,7 @@ use PhpOffice\PhpSpreadsheet\Reader\IReader;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use App\Domain\DatosGeneralesRepository;
 use App\Infrastructure\Persistence\DataDatosGeneralesRepository;
+use App\Infrastructure\Persistence\DataCorrelativoRepository;
 use \PDO;
 
 class DataLinameRepository implements LinameRepository {
@@ -21,6 +22,7 @@ class DataLinameRepository implements LinameRepository {
      */
     private $db;
     private $datosGeneralesRepository;
+    private $dataCorrelativoRepository;
 
     /**
      * DataMenuRepository constructor.
@@ -30,6 +32,7 @@ class DataLinameRepository implements LinameRepository {
         $con = new Conect();
         $this->db = $con->getConection();
         $this->datosGeneralesRepository = new DataDatosGeneralesRepository;
+        $this->dataCorrelativoRepository = new DataCorrelativoRepository;
     }
 
     public function setValidUpload($archivo, $body): array {
@@ -189,63 +192,67 @@ class DataLinameRepository implements LinameRepository {
                     $datosNV = 0;
                     $obs = array();
 
-                    for ($ii = 6; $ii <= count($sheetData); $ii++) {
-                        if (isset(($sheetData[$ii])['A'])) {
-                            $A = str_replace(array("\r\n", "\r", "\n"), "", (string) ($sheetData[$ii])['A']);
-                        } else {
-                            $A = '';
-                        }
-                        if (isset(($sheetData[$ii])['B'])) {
-                            $B = str_replace(array("\r\n", "\r", "\n"), "", (string) ($sheetData[$ii])['B']);
-                        } else {
-                            $B = '';
-                        }
-                        if (isset(($sheetData[$ii])['C'])) {
-                            $C = str_replace(array("\r\n", "\r", "\n"), "", (string) ($sheetData[$ii])['C']);
-                        } else {
-                            $C = '';
-                        }
-                        if (isset(($sheetData[$ii])['D'])) {
-                            $D = str_replace(array("\r\n", "\r", "\n"), "", (string) ($sheetData[$ii])['D']);
-                        } else {
-                            $D = '';
-                        }
-                        if (isset(($sheetData[$ii])['E'])) {
-                            $E = str_replace(array("\r\n", "\r", "\n"), "", (string) ($sheetData[$ii])['E']);
-                        } else {
-                            $E = '';
-                        }
-                        if (isset(($sheetData[$ii])['F'])) {
-                            $F = str_replace(array("\r\n", "\r", "\n"), "", (string) ($sheetData[$ii])['F']);
-                        } else {
-                            $F = '';
-                        }
-                        if (isset(($sheetData[$ii])['G'])) {
-                            $G = str_replace(array("\r\n", "\r", "\n"), "", (string) ($sheetData[$ii])['G']);
-                        } else {
-                            $G = '';
-                        }
-                        if (isset(($sheetData[$ii])['H'])) {
-                            $H = str_replace(array("\r\n", "\r", "\n"), "", (string) ($sheetData[$ii])['H']);
-                        } else {
-                            $H = '';
-                        }
-                        if (isset(($sheetData[$ii])['I'])) {
-                            $I = str_replace(array("\r\n", "\r", "\n"), "", (string) ($sheetData[$ii])['I']);
-                        } else {
-                            $I = '';
-                        }
-                        if (isset(($sheetData[$ii])['J'])) {
-                            $J = str_replace(array("\r\n", "\r", "\n"), "", (string) ($sheetData[$ii])['J']);
-                        } else {
-                            $J = '';
-                        }
-                        try {
-                            $sql = "SELECT UUID() as uuid;";
-                            $uuid = $this->db->prepare($sql);
-                            $uuid->execute();
-                            $uuid = $uuid->fetch();
-                            $uuid = $uuid["uuid"];
+                    $sql = "SELECT UUID() as uuid;";
+                    $uuid = $this->db->prepare($sql);
+                    $uuid->execute();
+                    $uuid = $uuid->fetch();
+                    $uuid = $uuid["uuid"];
+
+                    try {
+                        $this->db->beginTransaction();
+                        for ($ii = 6; $ii <= count($sheetData); $ii++) {
+                            if (isset(($sheetData[$ii])['A'])) {
+                                $A = str_replace(array("\r\n", "\r", "\n"), "", (string) ($sheetData[$ii])['A']);
+                            } else {
+                                $A = '';
+                            }
+                            if (isset(($sheetData[$ii])['B'])) {
+                                $B = str_replace(array("\r\n", "\r", "\n"), "", (string) ($sheetData[$ii])['B']);
+                            } else {
+                                $B = '';
+                            }
+                            if (isset(($sheetData[$ii])['C'])) {
+                                $C = str_replace(array("\r\n", "\r", "\n"), "", (string) ($sheetData[$ii])['C']);
+                            } else {
+                                $C = '';
+                            }
+                            if (isset(($sheetData[$ii])['D'])) {
+                                $D = str_replace(array("\r\n", "\r", "\n"), "", (string) ($sheetData[$ii])['D']);
+                            } else {
+                                $D = '';
+                            }
+                            if (isset(($sheetData[$ii])['E'])) {
+                                $E = str_replace(array("\r\n", "\r", "\n"), "", (string) ($sheetData[$ii])['E']);
+                            } else {
+                                $E = '';
+                            }
+                            if (isset(($sheetData[$ii])['F'])) {
+                                $F = str_replace(array("\r\n", "\r", "\n"), "", (string) ($sheetData[$ii])['F']);
+                            } else {
+                                $F = '';
+                            }
+                            if (isset(($sheetData[$ii])['G'])) {
+                                $G = str_replace(array("\r\n", "\r", "\n"), "", (string) ($sheetData[$ii])['G']);
+                            } else {
+                                $G = '';
+                            }
+                            if (isset(($sheetData[$ii])['H'])) {
+                                $H = str_replace(array("\r\n", "\r", "\n"), "", (string) ($sheetData[$ii])['H']);
+                            } else {
+                                $H = '';
+                            }
+                            if (isset(($sheetData[$ii])['I'])) {
+                                $I = str_replace(array("\r\n", "\r", "\n"), "", (string) ($sheetData[$ii])['I']);
+                            } else {
+                                $I = '';
+                            }
+                            if (isset(($sheetData[$ii])['J'])) {
+                                $J = str_replace(array("\r\n", "\r", "\n"), "", (string) ($sheetData[$ii])['J']);
+                            } else {
+                                $J = '';
+                            }
+
+
                             $sql = " INSERT INTO param_liname(
                                     u_crea,
                                     id_param_liname_archivo,
@@ -302,28 +309,26 @@ class DataLinameRepository implements LinameRepository {
                             $query->bindParam(':J', $J, PDO::PARAM_STR);
 
                             $query->execute();
-                        } catch (Exception $ex) {
-                            $this->db->rollBack();
-                            return array('error' => 'Datos incorrectos');
-                        }
-                        if ($A != '' && $B != '' && $C != '' && $D != '' && $E != '' && $F != '' && $G != '' && $H != '' && preg_match('/^([+-]{1})?[0-9]+(\.[0-9]+)?$/', $I)) {
-                            $datosV++;
-                        }
-                    }
 
-                    //
-                    $ruta = $this->datosGeneralesRepository->getDatosCodigo('LINAME_FILE');
-                    $ruta = $ruta['recurso'];
-                    if (!file_exists($ruta)) {
-                        if (!mkdir($ruta, 0777, true)) {
-                            return array('error' => 'permisos');
+                            if ($A == '' && $B == '' && $C == '' && $D == '' && $E == '' && $F == '' && $G == '' && $H != '' && !preg_match('/^([+-]{1})?[0-9]+(\.[0-9]+)?$/', $I)) {
+                                $datosV++;
+                            }
                         }
-                    }
 
-                    $uploadFileName = $uuid . '--' . $id_usuario;
-                    $name = $uploadFileName . '.' . $extencionFile;
-                    $newfile->moveTo($ruta . $name);
-                    $sql = " INSERT INTO param_liname_archivo (
+                        //
+                        $ruta = $this->datosGeneralesRepository->getDatosCodigo('LINAME_FILE');
+                        $ruta = $ruta['recurso'];
+                        if (!file_exists($ruta)) {
+                            if (!mkdir($ruta, 0777, true)) {
+                                $this->db->rollBack();
+                                return array('error' => 'permisos');
+                            }
+                        }
+
+                        $uploadFileName = $uuid . '--' . $id_usuario;
+                        $name = $uploadFileName . '.' . $extencionFile;
+                        $newfile->moveTo($ruta . $name);
+                        $sql = " INSERT INTO param_liname_archivo (
                         id,
                         u_crea,
                         codigo,
@@ -336,19 +341,33 @@ class DataLinameRepository implements LinameRepository {
                         :nombre_archivo,
                         :comentario
                         )";
-                    $query1 = $this->db->prepare($sql);
-                    $dd="";
-                    $query1->bindParam(':id', $uuid, PDO::PARAM_STR);
-                    $query1->bindParam(':u_crea', $id_usuario, PDO::PARAM_STR);
-                    $query1->bindParam(':codigo', $dd, PDO::PARAM_STR);
-                    $query1->bindParam(':nombre_archivo', $name, PDO::PARAM_STR);
-                    $query1->bindParam(':comentario', $comentario, PDO::PARAM_STR);
-                    $query1->execute();
+
+                        //call correlativo
+                        $correlativo = $this->dataCorrelativoRepository->genCorrelativo('LIN', '0', $id_usuario);
+                        $correlativo = $correlativo['correlativo'];
+                        $correlativo = 'LIN-' . $correlativo;
+
+                        $query = $this->db->prepare($sql);
+
+                        $query->bindParam(':id', $uuid, PDO::PARAM_STR);
+                        $query->bindParam(':u_crea', $id_usuario, PDO::PARAM_STR);
+                        $query->bindParam(':codigo', $correlativo, PDO::PARAM_STR);
+                        $query->bindParam(':nombre_archivo', $name, PDO::PARAM_STR);
+                        $query->bindParam(':comentario', $comentario, PDO::PARAM_STR);
+                        $query->execute();
+                        $sql = "UPDATE param_liname_archivo SET activo=false WHERE id!=:id";
+                        $query = $this->db->prepare($sql);
+                        $query->bindParam(':id', $uuid, PDO::PARAM_STR);
+                        $query->execute();
+                    } catch (Exception $ex) {
+                        $this->db->rollBack();
+                        return array('error' => 'Datos incorrectos');
+                    }
                     if ($datosV != 0) {
                         return array('error' => 'Datos incorrectos');
                     }
-                    $data = array('mensaje' => 'Datos Correctos');
-                    return $data;
+                    $this->db->commit();
+                    return array('mensaje' => 'Datos Correctos');
                 } else {
                     return array('error' => 'Cabezera incorrecta');
                 }
