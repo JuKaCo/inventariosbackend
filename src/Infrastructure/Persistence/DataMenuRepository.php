@@ -88,6 +88,10 @@ class DataMenuRepository implements MenuRepository {
                 ORDER BY m.orden";
         $menu = array();
         foreach ($res as $value) {
+            if ($value['permisos']) {
+                $aux1 = json_decode($value['permisos']);
+                $value['permisos'] = $aux1;
+            }
             if ($value['routerLink'] == null) {
                 unset($value['routerLink']);
             } else {
