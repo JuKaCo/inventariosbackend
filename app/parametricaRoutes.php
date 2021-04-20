@@ -19,11 +19,11 @@ return function (App $app) {
         $group->get('/biometrico/terminal', ParametricaAction::class.':genParamBiometrico');
     });
     $app->group('/api/v1/proveedor', function(Group $group){
-        $group->get('/obtiene/{id_proveedor}',ProveedorAction::class.':obtiene_Proveedor');
-        $group->put('/edit/{id_proveedor}',ProveedorAction::class.':edita_Proveedor');
-        $group->post('/create',ProveedorAction::class.':crea_Proveedor');
-        $group->delete('/delete/{id_proveedor}',ProveedorAction::class.':elimina_Proveedor');
-        $group->get('/lista/{filtro}/{items_pagina}/{pagina}',ProveedorAction::class.':lista_Proveedor');
+        $group->get('/obtiener/{id_proveedor}',ProveedorAction::class.':obtiene_Proveedor');
+        $group->put('/editar/{id_proveedor}',ProveedorAction::class.':edita_Proveedor');
+        $group->post('/crear',ProveedorAction::class.':crea_Proveedor');
+        $group->delete('/eliminar/{id_proveedor}',ProveedorAction::class.':elimina_Proveedor');
+        $group->get('/listar',ProveedorAction::class.':lista_Proveedor');
     });
     $app->group('/api/v1/liname', function (Group $group) {
         $group->get('/lista', ParametricaAction::class.':genParamBiometrico');

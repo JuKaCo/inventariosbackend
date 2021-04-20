@@ -43,9 +43,14 @@ class ProveedorAction extends Action {
         $this->request = $request;
         $this->response = $response;
         $this->args = $args;
-        $filtro = $args['filtro'];
-        $items_pagina = $args['items_pagina'];
-        $pagina = $args['pagina'];
+        $query=$request->getQueryParams();
+        
+        $filtro = $query['filtro'];
+        if($filtro==null){
+            $filtro='';
+        }
+        $items_pagina = $query['items_pagina']; 
+        $pagina = $query['pagina']; 
         $res=$this->proveedorRepository->listProveedor($filtro,$items_pagina,$pagina);
 
         return $this->respondWithData($res);
@@ -60,7 +65,7 @@ class ProveedorAction extends Action {
 
         $token=getenv('TOKEN_DATOS');
         $token=json_decode($token,true);
-        $uuid=($token['data'])['sub'];
+        $uuid=($token['sub']);
         
         $res=$this->proveedorRepository->listProveedor($id_proveedor,$data_proveedor,$uuid);
 
@@ -72,15 +77,21 @@ class ProveedorAction extends Action {
         $this->response = $response;
         $this->args = $args;
         $id_proveedor = $args['id_proveedor'];
-        $data_proveedor =  $request->getParsedBody();
+        //$data_proveedor =  $request->getParsedBody();
 
         $token=getenv('TOKEN_DATOS');
         $token=json_decode($token,true);
-        $uuid=($token['data'])['sub'];
+
+        $uuid=($token['sub']);
         
         $res=$this->proveedorRepository->deleteProveedor($id_proveedor,$uuid);
 
-        return $this->respondWithData($res);
+        if($res[0]['success']==false){
+            return $this->respondWithData(null,$res[0]['message'],202,true);
+        }else{
+            return $this->respondWithData(null,$res[0]['message'],200,true);
+        }
+        
     }
 
     public function crea_Proveedor(Request $request, Response $response, $args): Response {
@@ -91,7 +102,7 @@ class ProveedorAction extends Action {
 
         $token=getenv('TOKEN_DATOS');
         $token=json_decode($token,true);
-        $uuid=($token['data'])['sub'];
+        $uuid=($token['sub']);
         
         $res=$this->proveedorRepository->createProveedor($data_proveedor,$uuid);
 

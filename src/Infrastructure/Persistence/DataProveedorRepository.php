@@ -42,13 +42,17 @@ class DataProveedorRepository implements ProveedorRepository {
     }
 
     public function listProveedor($filter,$items_page,$page): array {
+        $filter="%".$filter."%";
+        $page=$page-1;
         $sql = "SELECT *
                 FROM proveedor
-                WHERE activo=1 AND (codigo LIKE '%cod%' OR nombre LIKE '%cod%' OR comentarios LIKE '%cod%');";
+                WHERE activo=1 AND (codigo LIKE :filter OR nombre LIKE :filter OR pais LIKE :filter OR direccion LIKE :filter OR comentarios LIKE :filter)
+                LIMIT :items_page
+                OFFSET :page;";
         $res = ($this->db)->prepare($sql);
         $res->bindParam(':filter', $filter, PDO::PARAM_STR);
-        echo($sql);
-        exit;
+        $res->bindParam(':items_page', $items_page, PDO::PARAM_INT);
+        $res->bindParam(':page', $page, PDO::PARAM_INT);
         $res->execute();
         $res = $res->fetchAll(PDO::FETCH_ASSOC);
         
@@ -80,16 +84,24 @@ class DataProveedorRepository implements ProveedorRepository {
     }
 
     public function deleteProveedor($id_proveedor,$uuid): array {
+
         $sql = "UPDATE proveedor 
                 SET activo=0,
                 f_inac=now(), 
-                u_inac=:u_mod
+                u_inac=:u_inac
                 WHERE id_proveedor=:id_proveedor;";
         $res = ($this->db)->prepare($sql);
         $res->bindParam(':u_inac', $uuid, PDO::PARAM_STR);
+        $res->bindParam(':id_proveedor', $id_proveedor, PDO::PARAM_STR);
         $res->execute();
         //$res = $res->fetchAll(PDO::FETCH_ASSOC);
-        return $res;
+        if($res->rowCount()==1){
+            $resp = array('success'=>true,'message'=>'1 fila afectada');
+        }else{
+            $resp = array('success'=>false,'message'=>'0 fila afectada');
+        }
+        return array($resp);
+
     }
 
     public function createProveedor($data_proveedor,$uuid): array {
