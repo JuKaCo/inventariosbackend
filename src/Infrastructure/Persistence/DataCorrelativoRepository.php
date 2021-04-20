@@ -28,7 +28,9 @@ class DataCorrelativoRepository implements CorrelativoRepository {
         $con = new Conect();
         $this->db = $con->getConection();
     }
-
+/*
+ * return array {codigo:? , parametro:?, correlativo:?}
+ */
     public function genCorrelativo($codigo,$parametro,$user_uuid): array {
 
         $sql = "SELECT MAX(correlativo)
