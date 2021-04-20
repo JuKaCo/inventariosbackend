@@ -31,57 +31,57 @@ class DataMenuRepository implements MenuRepository {
 
     public function getMenu($roles): array {
         $role = '"' . implode('","', $roles) . '"';
-        $sql = "SELECT m.id_menu,
+        $sql = "SELECT m.id,
                        m.label,
                        m.descripcion,
                        m.orden,
                        m.ruta_url as routerLink,
                        m.icon,
-                       m.id_menu_padre	
+                       m.id_menu	
                 FROM auth_menu m
-                WHERE m.id_menu_padre is null
-                      and m.id_menu in (
-                                SELECT m.id_menu_padre
+                WHERE m.id_menu is null
+                      and m.id in (
+                                SELECT m.id_menu
                                 FROM auth_rol_menu rm, auth_menu m
                                 WHERE rm.activo = true
-                                        and fid_rol in (" . $role . ")
-                                        and m.id_menu = rm.fid_menu
+                                        and id_rol in (" . $role . ")
+                                        and m.id = rm.id_menu
                                 )
                 union
-                SELECT m.id_menu,
+                SELECT m.id,
                         m.label,
                         m.descripcion,
                         m.orden,
                         m.ruta_url as routerLink,
                         m.icon,
-                        m.id_menu_padre	
+                        m.id_menu	
                 FROM auth_menu m
-                WHERE m.id_menu_padre is null
+                WHERE m.id_menu is null
                       and ruta_url <> ''
-                      and m.id_menu in (
-                                SELECT m.id_menu
+                      and m.id in (
+                                SELECT m.id
                                 FROM auth_rol_menu rm, auth_menu m
                                 WHERE rm.activo = true
-                                        and fid_rol in (" . $role . ")
-                                        and m.id_menu = rm.fid_menu
+                                        and id_rol in (" . $role . ")
+                                        and m.id = rm.id_menu
                                 )";
         $res = ($this->db)->prepare($sql);
         //$res->bindParam(':role', $role, PDO::PARAM_STR);
         $res->execute();
         $res = $res->fetchAll(PDO::FETCH_ASSOC);
-        $sql = "SELECT id_menu,
+        $sql = "SELECT m.id,
                         m.label,
                         m.descripcion,
                         m.orden,
                         rm.permisos,
                         m.ruta_url as routerLink,
                         m.icon,
-                        m.id_menu_padre 
+                        m.id_menu 
                 FROM auth_menu m, auth_rol_menu rm 
                 WHERE m.activo=true 
-                      AND m.id_menu_padre=:id_menu_padre 
-                      AND m.id_menu=rm.fid_menu 
-                      AND rm.fid_rol in (" . $role . ")
+                      AND m.id_menu=:id_menu_padre 
+                      AND m.id=rm.id_menu 
+                      AND rm.id_rol in (" . $role . ")
                 ORDER BY m.orden";
         $menu = array();
         foreach ($res as $value) {
@@ -91,7 +91,7 @@ class DataMenuRepository implements MenuRepository {
                 $value['routerLink'] = array($value['routerLink']);
             }
             $resSM = ($this->db)->prepare($sql);
-            $id_menu_padre = $value['id_menu'];
+            $id_menu_padre = $value['id'];
             $resSM->bindParam(':id_menu_padre', $id_menu_padre, PDO::PARAM_INT);
             $resSM->execute();
             $resSM = $resSM->fetchAll(PDO::FETCH_ASSOC);
