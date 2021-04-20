@@ -27,9 +27,9 @@ return function (App $app) {
         $group->get('/lista/{filtro}/{items_pagina}/{pagina}',ProveedorAction::class.':lista_Proveedor');
     });
     $app->group('/api/v1/liname', function (Group $group) {
-        $group->get('/lista', ParametricaAction::class.':genParamBiometrico');
-        $group->post('/cargar/valid/upload', LinameAction::class.':cargarValidUpload');
-        $group->post('/carga/consolida', LinameAction::class.':cargaConsolida');
+        $group->get('/listar', LinameAction::class.':getListLiname');
+        $group->post('/cargar/validar', LinameAction::class.':cargarValidUpload');
+        $group->post('/cargar/consolidar', LinameAction::class.':cargarConsolida');
         $group->post('/habilitar/{id}', ParametricaAction::class.':genParamBiometrico');
         
     });

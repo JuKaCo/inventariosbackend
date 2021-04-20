@@ -379,4 +379,13 @@ class DataLinameRepository implements LinameRepository {
         }
     }
 
+    public function getListLiname($params): array {
+        $sql = "SELECT activo,codigo,id,comentario FROM param_liname_archivo";
+        $query = $this->db->prepare($sql);
+        //$query->bindParam(':comentario', $comentario, PDO::PARAM_STR);
+        $query->execute();
+        $res = $query->fetchAll(PDO::FETCH_ASSOC);
+        return $res;
+    }
+
 }

@@ -46,25 +46,34 @@ class LinameAction extends Action {
         }
     }
 
-    public function cargaConsolida(Request $request, Response $response, $args): Response {
+    public function cargarConsolida(Request $request, Response $response, $args): Response {
         $this->request = $request;
         $this->response = $response;
         $this->args = $args;
         //datos form
         $archivo = $this->request->getUploadedFiles();
         $body = $this->request->getParsedBody();
-        
-        //get token id usuario
-        $token=getenv('TOKEN_DATOS');
-        $token=json_decode($token,true);
-        $id_usuario=$token['sub'];
 
-        $res = $this->linameRepository->setCargarUpload($archivo, $body,$id_usuario);
+        //get token id usuario
+        $token = getenv('TOKEN_DATOS');
+        $token = json_decode($token, true);
+        $id_usuario = $token['sub'];
+
+        $res = $this->linameRepository->setCargarUpload($archivo, $body, $id_usuario);
         if (isset($res['error'])) {
             return $this->respondWithData(array(), $res['error'], 202, false);
         } else {
             return $this->respondWithData($res);
         }
+    }
+
+    public function getListLiname(Request $request, Response $response, $args): Response {
+        $this->request = $request;
+        $this->response = $response;
+        $this->args = $args;
+        $params=array();
+        $res=$this->linameRepository->getListLiname($params);
+        return $this->respondWithData($res);
     }
 
 }
