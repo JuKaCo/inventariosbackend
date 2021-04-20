@@ -37,7 +37,8 @@ class DataMenuRepository implements MenuRepository {
                        m.orden,
                        m.ruta_url as routerLink,
                        m.icon,
-                       m.id_menu	
+                       m.id_menu,
+                       null as permisos
                 FROM auth_menu m
                 WHERE m.id_menu is null
                       and m.id in (
@@ -54,10 +55,12 @@ class DataMenuRepository implements MenuRepository {
                         m.orden,
                         m.ruta_url as routerLink,
                         m.icon,
-                        m.id_menu	
-                FROM auth_menu m
+                        m.id_menu,
+                        rm.permisos	
+                FROM auth_menu m, auth_rol_menu rm
                 WHERE m.id_menu is null
                       and ruta_url <> ''
+                      and m.id = rm.id_menu
                       and m.id in (
                                 SELECT m.id
                                 FROM auth_rol_menu rm, auth_menu m
