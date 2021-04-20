@@ -9,7 +9,9 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
 use Slim\Interfaces\RouteCollectorProxyInterface as Group;
 use App\Application\Actions\Action\MenuAction;
+use App\Application\Actions\Action\LinameAction;
 use App\Application\Actions\Action\ParametricaAction;
+use App\Application\Actions\Action\ProveedorAction;
 
 return function (App $app) {
     $app->group('/api/v1/param', function (Group $group) {
@@ -17,14 +19,18 @@ return function (App $app) {
         $group->get('/gen/{cod_grupo}/{id_padre}', ParametricaAction::class.':genParamPadre');
         $group->get('/biometrico/terminal', ParametricaAction::class.':genParamBiometrico');
     });
-    
-    
+    $app->group('/api/v1/proveedor', function(Group $group){
+        $group->get('/obtiener/{id_proveedor}',ProveedorAction::class.':obtiene_Proveedor');
+        $group->put('/editar/{id_proveedor}',ProveedorAction::class.':edita_Proveedor');
+        $group->post('/crear',ProveedorAction::class.':crea_Proveedor');
+        $group->delete('/eliminar/{id_proveedor}',ProveedorAction::class.':elimina_Proveedor');
+        $group->get('/listar',ProveedorAction::class.':lista_Proveedor');
+    });
     $app->group('/api/v1/liname', function (Group $group) {
-        $group->get('/lista', ParametricaAction::class.':genParamBiometrico');
-        $group->post('/carga', ParametricaAction::class.':genParamBiometrico');
-        $group->post('/consolida', ParametricaAction::class.':genParamBiometrico');
-        $group->post('/habilitar', ParametricaAction::class.':genParamBiometrico');
-        $group->delete('/dasavilitar/{id}', ParametricaAction::class.':genParamBiometrico');
+        $group->get('/listar', LinameAction::class.':getListLiname');
+        $group->post('/cargar/validar', LinameAction::class.':cargarValidUpload');
+        $group->post('/cargar/consolidar', LinameAction::class.':cargarConsolida');
+        $group->post('/habilitar/{id}', ParametricaAction::class.':genParamBiometrico');
         
     });
 };
