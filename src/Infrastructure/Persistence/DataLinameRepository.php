@@ -380,12 +380,49 @@ class DataLinameRepository implements LinameRepository {
     }
 
     public function getListLiname($params): array {
-        $sql = "SELECT activo,codigo,id,comentario FROM param_liname_archivo";
+
+        $filtro=$params['filtro'];
+        $indice=$params['indice'];
+        $limite=$params['limite'];
+        if(str_contains(strtolower($filtro),'activo')){
+            $activo=1;
+        }else{
+            $activo=null;
+        }
+        $offset=floor($indice/$limite); 
+        $filtro='%'.$filtro.'%';
+        $sql = "SELECT CASE WHEN activo = 1
+                            THEN 'activo'
+                            ELSE 'inactivo'
+                        END as activo,codigo,id,comentario,f_crea
+                FROM param_liname_archivo
+                WHERE activo=:activo OR codigo LIKE :codigo OR comentario LIKE :comentario OR DATE_FORMAT(f_crea,'%d/%m/%Y') LIKE :filtro
+                LIMIT :limite
+                OFFSET :offset;";
         $query = $this->db->prepare($sql);
+        $query->bindParam(':activo', $activo, PDO::PARAM_INT);
+        $query->bindParam(':codigo', $filtro, PDO::PARAM_STR);
+        $query->bindParam(':comentario', $filtro, PDO::PARAM_STR);
+        $query->bindParam(':filtro', $filtro, PDO::PARAM_STR);
+        $query->bindParam(':limite', $limite, PDO::PARAM_INT);
+        $query->bindParam(':offset', $offset, PDO::PARAM_INT);
         //$query->bindParam(':comentario', $comentario, PDO::PARAM_STR);
         $query->execute();
-        $res = $query->fetchAll(PDO::FETCH_ASSOC);
-        return $res;
+        if($query->rowCount()>0){
+            $res = $query->fetchAll(PDO::FETCH_ASSOC);
+        }else{
+            $res = array();
+        }
+        $sql = "SELECT activo
+                FROM param_liname_archivo
+                WHERE activo=:activo OR codigo LIKE :codigo OR comentario LIKE :comentario OR DATE_FORMAT(f_crea,'%d/%m/%Y') LIKE :filtro; ";
+        $query = $this->db->prepare($sql);
+        $query->bindParam(':activo', $activo, PDO::PARAM_INT);
+        $query->bindParam(':codigo', $filtro, PDO::PARAM_STR);
+        $query->bindParam(':comentario', $filtro, PDO::PARAM_STR);
+        $query->bindParam(':filtro', $filtro, PDO::PARAM_STR);
+        $query->execute();
+        return array('total'=>$query->rowCount(),'resultados'=>$res);
     }
 
 }
