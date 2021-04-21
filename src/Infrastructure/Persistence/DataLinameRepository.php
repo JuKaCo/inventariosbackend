@@ -397,7 +397,7 @@ class DataLinameRepository implements LinameRepository {
                         END as activo,codigo,id,comentario,f_crea
                 FROM param_liname_archivo
                 WHERE activo=:activo OR codigo LIKE :codigo OR comentario LIKE :comentario OR DATE_FORMAT(f_crea,'%d/%m/%Y') LIKE :filtro
-                ORDER BY f_crea
+                ORDER BY f_crea DESC
                 LIMIT :indice, :limite;";
         $query = $this->db->prepare($sql);
         $query->bindParam(':activo', $activo, PDO::PARAM_INT);
