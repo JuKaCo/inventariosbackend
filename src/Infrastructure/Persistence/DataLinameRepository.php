@@ -389,7 +389,7 @@ class DataLinameRepository implements LinameRepository {
         }else{
             $activo=null;
         }
-        $offset=floor($indice/$limite); 
+        $limite=$indice+$limite;
         $filtro='%'.$filtro.'%';
         $sql = "SELECT CASE WHEN activo = 1
                             THEN 'activo'
@@ -397,15 +397,15 @@ class DataLinameRepository implements LinameRepository {
                         END as activo,codigo,id,comentario,f_crea
                 FROM param_liname_archivo
                 WHERE activo=:activo OR codigo LIKE :codigo OR comentario LIKE :comentario OR DATE_FORMAT(f_crea,'%d/%m/%Y') LIKE :filtro
-                LIMIT :limite
-                OFFSET :offset;";
+                ORDER BY f_crea
+                LIMIT :indice, :limite;";
         $query = $this->db->prepare($sql);
         $query->bindParam(':activo', $activo, PDO::PARAM_INT);
         $query->bindParam(':codigo', $filtro, PDO::PARAM_STR);
         $query->bindParam(':comentario', $filtro, PDO::PARAM_STR);
         $query->bindParam(':filtro', $filtro, PDO::PARAM_STR);
         $query->bindParam(':limite', $limite, PDO::PARAM_INT);
-        $query->bindParam(':offset', $offset, PDO::PARAM_INT);
+        $query->bindParam(':indice', $indice, PDO::PARAM_INT);
         //$query->bindParam(':comentario', $comentario, PDO::PARAM_STR);
         $query->execute();
         if($query->rowCount()>0){
