@@ -359,8 +359,6 @@ class DataLinameRepository implements LinameRepository {
                         $query = $this->db->prepare($sql);
                         $query->bindParam(':id', $uuid, PDO::PARAM_STR);
                         $query->execute();
-                    } catch (Exception $ex) {
-                        
                     } catch (\Exception $ex) {
                         $this->db->rollBack();
                         return array('error' => 'Datos incorrectos');
@@ -383,16 +381,23 @@ class DataLinameRepository implements LinameRepository {
 
     public function getListLiname($params): array {
 
-        $filtro = $params['filtro'];
-        $indice = $params['indice'];
-        $limite = $params['limite'];
-        if (str_contains(strtolower($filtro), 'a') || str_contains(strtolower($filtro), 'ac') || str_contains(strtolower($filtro), 'act') || str_contains(strtolower($filtro), 'acti') || str_contains(strtolower($filtro), 'activ') || str_contains(strtolower($filtro), 'activo')) {
-            $activo = 1;
-        } else {
-            $activo = null;
+
+        $filtro=$params['filtro'];
+        $indice=$params['indice'];
+        $limite=$params['limite'];
+        $estado=strtolower($filtro);
+        if(str_contains($estado,'a')||str_contains($estado,'ac')||str_contains($estado,'act')||str_contains($estado,'acti')||str_contains($estado,'activ')||str_contains($estado,'activo')){
+            $activo=1;
+        }else{
+            $activo=null;
         }
-        $limite = $indice + $limite;
-        $filtro = '%' . $filtro . '%';
+        if(str_contains($estado,'i')||str_contains($estado,'in')||str_contains($estado,'ina')||str_contains($estado,'inac')||str_contains($estado,'inact')||str_contains($estado,'inacti')||str_contains($estado,'inactiv')||str_contains($estado,'inactivo')){
+            $activo=0;
+        }else{
+            $activo=null;
+        }
+        $limite=$indice+$limite;
+        $filtro='%'.$filtro.'%';
         $sql = "SELECT CASE WHEN activo = 1
                             THEN 'activo'
                             ELSE 'inactivo'
