@@ -360,6 +360,7 @@ class DataLinameRepository implements LinameRepository {
                         $query->bindParam(':id', $uuid, PDO::PARAM_STR);
                         $query->execute();
                     } catch (Exception $ex) {
+                    } catch (\Exception $ex) {
                         $this->db->rollBack();
                         return array('error' => 'Datos incorrectos');
                     }
@@ -384,7 +385,7 @@ class DataLinameRepository implements LinameRepository {
         $filtro=$params['filtro'];
         $indice=$params['indice'];
         $limite=$params['limite'];
-        if(str_contains(strtolower($filtro),'activo')){
+        if(str_contains(strtolower($filtro),'a')||str_contains(strtolower($filtro),'ac')||str_contains(strtolower($filtro),'act')||str_contains(strtolower($filtro),'acti')||str_contains(strtolower($filtro),'activ')||str_contains(strtolower($filtro),'activo')){
             $activo=1;
         }else{
             $activo=null;
