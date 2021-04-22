@@ -12,4 +12,6 @@ interface LinameRepository
     public function getListLiname($params):array;
     
     public function setActivaInactiva($uuid,$estado,$id_usuario):array;
+    
+    public function gerArchive($uuid):array;
 }

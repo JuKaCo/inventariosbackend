@@ -150,7 +150,7 @@ class SessionMiddleware implements Middleware
                     $pathDB = explode('/', $listadoRutas[$i]['label']);
                     $contador = 0;
                     if ($path == $listadoRutas[$i]['label']) {
-                        echo "POSITIVO -> 1 \n";
+                        //echo "POSITIVO -> 1 \n";
                         break;
                     } elseif (count($pathArray) == count($pathDB) ){
                         for ($j=0; $j < count($pathArray); $j++) { 
@@ -165,7 +165,7 @@ class SessionMiddleware implements Middleware
                         
                     }
                     if ($contador == count($pathArray)) {
-                        echo "POSITIVO -> 2 \n";
+                        //echo "POSITIVO -> 2 \n";
                         break;
                     }
                     if (count($listadoRutas) == $i + 1) {

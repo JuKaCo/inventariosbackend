@@ -382,22 +382,22 @@ class DataLinameRepository implements LinameRepository {
     public function getListLiname($params): array {
 
 
-        $filtro=$params['filtro'];
-        $indice=$params['indice'];
-        $limite=$params['limite'];
-        $estado=strtolower($filtro);
-        if(str_contains($estado,'a')||str_contains($estado,'ac')||str_contains($estado,'act')||str_contains($estado,'acti')||str_contains($estado,'activ')||str_contains($estado,'activo')){
-            $activo=1;
-        }else{
-            $activo=null;
+        $filtro = $params['filtro'];
+        $indice = $params['indice'];
+        $limite = $params['limite'];
+        $estado = strtolower($filtro);
+        if (str_contains($estado, 'a') || str_contains($estado, 'ac') || str_contains($estado, 'act') || str_contains($estado, 'acti') || str_contains($estado, 'activ') || str_contains($estado, 'activo')) {
+            $activo = 1;
+        } else {
+            $activo = null;
         }
-        if(str_contains($estado,'i')||str_contains($estado,'in')||str_contains($estado,'ina')||str_contains($estado,'inac')||str_contains($estado,'inact')||str_contains($estado,'inacti')||str_contains($estado,'inactiv')||str_contains($estado,'inactivo')){
-            $activo=0;
-        }else{
-            $activo=null;
+        if (str_contains($estado, 'i') || str_contains($estado, 'in') || str_contains($estado, 'ina') || str_contains($estado, 'inac') || str_contains($estado, 'inact') || str_contains($estado, 'inacti') || str_contains($estado, 'inactiv') || str_contains($estado, 'inactivo')) {
+            $activo = 0;
+        } else {
+            $activo = null;
         }
-        $limite=$indice+$limite;
-        $filtro='%'.$filtro.'%';
+        $limite = $indice + $limite;
+        $filtro = '%' . $filtro . '%';
         $sql = "SELECT CASE WHEN activo = 1
                             THEN 'activo'
                             ELSE 'inactivo'
@@ -448,12 +448,12 @@ class DataLinameRepository implements LinameRepository {
         $query = $this->db->prepare($sql);
         $query->bindParam(':id', $uuid, PDO::PARAM_INT);
         $query->execute();
-        $res = $res->fetchAll(PDO::FETCH_ASSOC);
+        $res = $query->fetchAll(PDO::FETCH_ASSOC);
         if (count($res) != 1) {
-            return array('error' => 'registro incorrecto');
+            return array('error' => 'Registro incorrecto');
         }
         $estadoSelec = ($res[0])['activo'];
-        if ($estadoSelec == 1 && $estado == 'inactivo') {
+        if ($estadoSelec == 0 && $estado == 'inactivo') {
             $sql = "UPDATE param_liname_archivo SET activo=1 WHERE id=:id";
             $query = $this->db->prepare($sql);
             $query->bindParam(':id', $uuid, PDO::PARAM_INT);
@@ -465,9 +465,9 @@ class DataLinameRepository implements LinameRepository {
             $query->bindParam(':u_mod', $id_usuario, PDO::PARAM_STR);
             $query->execute();
 
-            return array('ejecutado' => $query->rowCount());
+            return array('id' => $uuid, 'estado' => $estado);
         }
-        if ($estadoSelec == 0 && $estado == 'activo') {
+        if ($estadoSelec == 1 && $estado == 'activo') {
             $sql = "UPDATE param_liname_archivo SET activo=0 WHERE id=:id";
             $query = $this->db->prepare($sql);
             $query->bindParam(':id', $uuid, PDO::PARAM_INT);
@@ -475,6 +475,26 @@ class DataLinameRepository implements LinameRepository {
             return array('ejecutado' => $query->rowCount());
         }
         return array('error' => 'Datos invalidos');
+    }
+
+    public function gerArchive($uuid): array {
+        $sql = "SELECT nombre_archivo FROM param_liname_archivo WHERE id=:id";
+        $query = $this->db->prepare($sql);
+        $query->bindParam(':id', $uuid, PDO::PARAM_INT);
+        $query->execute();
+        $res = $query->fetchAll(PDO::FETCH_ASSOC);
+        if (count($res) != 1) {
+            return array('error' => 'Registro incorrecto');
+        }
+        
+        $ruta = $this->datosGeneralesRepository->getDatosCodigo('LINAME_FILE');
+        $ruta = $ruta['recurso'];
+        
+        $pathArch = $ruta .($res[0])['nombre_archivo'];
+        if (!file_exists($pathArch)) {
+            return array('error' => "No se encuentra el archivo");
+        }
+        return array('nombre_archivo' => ($res[0])['nombre_archivo'], 'ruta' => $ruta);
     }
 
 }

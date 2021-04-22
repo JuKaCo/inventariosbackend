@@ -87,9 +87,38 @@ class LinameAction extends Action {
         $token = json_decode($token, true);
         $id_usuario = $token['sub'];
 
-        $query = $request->getQueryParams();
-        $res = $this->linameRepository->getListLiname($query);
+        $estado = $args['estado'];
+        $uuid = $args['uuid'];
+
+        $res = $this->linameRepository->setActivaInactiva($uuid, $estado, $id_usuario);
+        if (isset($res['error'])) {
+            return $this->respondWithData(array(), $res['error'], 202, false);
+        }
         return $this->respondWithData($res);
+    }
+
+    public function getArchive(Request $request, Response $response, $args): Response {
+        $this->request = $request;
+        $this->response = $response;
+        $this->args = $args;
+
+        $uuid = $args['uuid'];
+
+        $res = $this->linameRepository->gerArchive($uuid);
+        if (isset($res['error'])) {
+            return $this->respondWithData(array(), $res['error'], 404, false);
+        }
+        $pathArch = $res['ruta'] . $res['nombre_archivo'];
+        header('Content-Description: File Transfer');
+        header('Content-Type: application/octet-stream');
+        header('Content-Disposition: attachment;filename="' . basename($res['nombre_archivo']) . '"');
+        header('Expires: 0');
+        header('Cache-Control: must-revalidate');
+        header('Pragma: public');
+        header('access-control-allow-origin: *');
+        header('Content-Length: ' . filesize($pathArch));
+        readfile($pathArch);
+        exit;
     }
 
 }
