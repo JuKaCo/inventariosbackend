@@ -197,6 +197,16 @@ class SessionMiddleware implements Middleware
                 $response->getBody()->write($payload);
                 return $response->withHeader('Content-Type', 'application/json')->withStatus(403);
             }
+        }else{
+            $response = new ResponsePsr7();
+                $payload = json_encode(array(
+                    'statusCode' => 403,
+                    'success' => false,
+                    'data' => null,
+                    'message' => 'No tiene permiso para acceder2'
+                ));
+                $response->getBody()->write($payload);
+                return $response->withHeader('Content-Type', 'application/json')->withStatus(403);
         }
         return $handler->handle($request);
 
