@@ -176,7 +176,6 @@ class SessionMiddleware implements Middleware
                             'data' => null,
                             'message' => 'No tiene permiso para acceder'
                         ));
-                        $payload = json_encode($payload);
                         $response->getBody()->write($payload);
                         return $response->withHeader('Content-Type', 'application/json')->withStatus(401);
                     }
@@ -192,7 +191,7 @@ class SessionMiddleware implements Middleware
                     'statusCode' => 403,
                     'success' => false,
                     'data' => null,
-                    'message' => 'No tiene permiso para acceder2'
+                    'message' => 'No tiene permiso para acceder'
                 ));
                 $response->getBody()->write($payload);
                 return $response->withHeader('Content-Type', 'application/json')->withStatus(403);
@@ -203,7 +202,7 @@ class SessionMiddleware implements Middleware
                     'statusCode' => 403,
                     'success' => false,
                     'data' => null,
-                    'message' => 'No tiene permiso para acceder2'
+                    'message' => 'No tiene permiso para acceder'
                 ));
                 $response->getBody()->write($payload);
                 return $response->withHeader('Content-Type', 'application/json')->withStatus(403);
