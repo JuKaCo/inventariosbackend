@@ -10,4 +10,8 @@ interface LinameRepository
     public function setCargarUpload($archivo,$body,$id_usuario): array;
     
     public function getListLiname($params):array;
+    
+    public function setActivaInactiva($uuid,$estado,$id_usuario):array;
+    
+    public function gerArchive($uuid):array;
 }

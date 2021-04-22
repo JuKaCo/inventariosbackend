@@ -381,22 +381,23 @@ class DataLinameRepository implements LinameRepository {
 
     public function getListLiname($params): array {
 
-        $filtro=$params['filtro'];
-        $indice=$params['indice'];
-        $limite=$params['limite'];
-        $estado=strtolower($filtro);
-        if(str_contains($estado,'a')||str_contains($estado,'ac')||str_contains($estado,'act')||str_contains($estado,'acti')||str_contains($estado,'activ')||str_contains($estado,'activo')){
-            $activo=1;
-        }else{
-            $activo=null;
+
+        $filtro = $params['filtro'];
+        $indice = $params['indice'];
+        $limite = $params['limite'];
+        $estado = strtolower($filtro);
+        if (str_contains($estado, 'a') || str_contains($estado, 'ac') || str_contains($estado, 'act') || str_contains($estado, 'acti') || str_contains($estado, 'activ') || str_contains($estado, 'activo')) {
+            $activo = 1;
+        } else {
+            $activo = null;
         }
-        if(str_contains($estado,'i')||str_contains($estado,'in')||str_contains($estado,'ina')||str_contains($estado,'inac')||str_contains($estado,'inact')||str_contains($estado,'inacti')||str_contains($estado,'inactiv')||str_contains($estado,'inactivo')){
-            $activo=0;
-        }else{
-            $activo=null;
+        if (str_contains($estado, 'i') || str_contains($estado, 'in') || str_contains($estado, 'ina') || str_contains($estado, 'inac') || str_contains($estado, 'inact') || str_contains($estado, 'inacti') || str_contains($estado, 'inactiv') || str_contains($estado, 'inactivo')) {
+            $activo = 0;
+        } else {
+            $activo = null;
         }
-        $limite=$indice+$limite;
-        $filtro='%'.$filtro.'%';
+        $limite = $indice + $limite;
+        $filtro = '%' . $filtro . '%';
         $sql = "SELECT CASE WHEN activo = 1
                             THEN 'activo'
                             ELSE 'inactivo'
@@ -414,9 +415,9 @@ class DataLinameRepository implements LinameRepository {
         $query->bindParam(':indice', $indice, PDO::PARAM_INT);
         //$query->bindParam(':comentario', $comentario, PDO::PARAM_STR);
         $query->execute();
-        if($query->rowCount()>0){
+        if ($query->rowCount() > 0) {
             $res = $query->fetchAll(PDO::FETCH_ASSOC);
-        }else{
+        } else {
             $res = array();
         }
         $sql = "SELECT activo
@@ -428,7 +429,72 @@ class DataLinameRepository implements LinameRepository {
         $query->bindParam(':comentario', $filtro, PDO::PARAM_STR);
         $query->bindParam(':filtro', $filtro, PDO::PARAM_STR);
         $query->execute();
-        return array('total'=>$query->rowCount(),'resultados'=>$res);
+        return array('total' => $query->rowCount(), 'resultados' => $res);
+    }
+
+    public function setActivaInactiva($uuid, $estado, $id_usuario): array {
+        $est = "-1";
+        $estAnt = "-1";
+        if ($estado == 'activo') {
+            $est = "1";
+            $estAnt = "0";
+        }
+        if ($estado == 'inactivo') {
+            $est = "0";
+            $estAnt = "1";
+        }
+
+        $sql = "SELECT * FROM param_liname_archivo WHERE id=:id";
+        $query = $this->db->prepare($sql);
+        $query->bindParam(':id', $uuid, PDO::PARAM_INT);
+        $query->execute();
+        $res = $query->fetchAll(PDO::FETCH_ASSOC);
+        if (count($res) != 1) {
+            return array('error' => 'Registro incorrecto');
+        }
+        $estadoSelec = ($res[0])['activo'];
+        if ($estadoSelec == 0 && $estado == 'inactivo') {
+            $sql = "UPDATE param_liname_archivo SET activo=1 WHERE id=:id";
+            $query = $this->db->prepare($sql);
+            $query->bindParam(':id', $uuid, PDO::PARAM_INT);
+            $query->execute();
+
+            $sql = "UPDATE param_liname_archivo SET activo=0, f_mod=now(), u_mod=:u_mod WHERE id!=:id and activo=1";
+            $query = $this->db->prepare($sql);
+            $query->bindParam(':id', $uuid, PDO::PARAM_INT);
+            $query->bindParam(':u_mod', $id_usuario, PDO::PARAM_STR);
+            $query->execute();
+
+            return array('id' => $uuid, 'estado' => $estado);
+        }
+        if ($estadoSelec == 1 && $estado == 'activo') {
+            $sql = "UPDATE param_liname_archivo SET activo=0 WHERE id=:id";
+            $query = $this->db->prepare($sql);
+            $query->bindParam(':id', $uuid, PDO::PARAM_INT);
+            $query->execute();
+            return array('ejecutado' => $query->rowCount());
+        }
+        return array('error' => 'Datos invalidos');
+    }
+
+    public function gerArchive($uuid): array {
+        $sql = "SELECT nombre_archivo FROM param_liname_archivo WHERE id=:id";
+        $query = $this->db->prepare($sql);
+        $query->bindParam(':id', $uuid, PDO::PARAM_INT);
+        $query->execute();
+        $res = $query->fetchAll(PDO::FETCH_ASSOC);
+        if (count($res) != 1) {
+            return array('error' => 'Registro incorrecto');
+        }
+        
+        $ruta = $this->datosGeneralesRepository->getDatosCodigo('LINAME_FILE');
+        $ruta = $ruta['recurso'];
+        
+        $pathArch = $ruta .($res[0])['nombre_archivo'];
+        if (!file_exists($pathArch)) {
+            return array('error' => "No se encuentra el archivo");
+        }
+        return array('nombre_archivo' => ($res[0])['nombre_archivo'], 'ruta' => $ruta);
     }
 
 }
