@@ -35,8 +35,11 @@ class ProveedorAction extends Action {
         $this->args = $args;
         $id_proveedor = $args['id_proveedor'];
         $res=$this->proveedorRepository->getProveedor($id_proveedor);
-
-        return $this->respondWithData($res);
+        if($res['success']==false){
+            return $this->respondWithData(null,$res['message'],202,true);
+        }else{
+            return $this->respondWithData($res['data_proveedor'],$res['message'],200,true);
+        }
     }
 
     public function lista_Proveedor(Request $request, Response $response, $args): Response {
@@ -49,13 +52,23 @@ class ProveedorAction extends Action {
         if($filtro==null){
             $filtro='';
         }
-        $items_pagina = $query['items_pagina']; 
-        $pagina = $query['pagina']; 
-        $res=$this->proveedorRepository->listProveedor($filtro,$items_pagina,$pagina);
+        $limite = $query['limite']; 
+        $indice = $query['indice']; 
+        $res=$this->proveedorRepository->listProveedor($filtro,$limite,$indice);
 
         return $this->respondWithData($res);
     }
-
+    /* body servicio de edicion de proveedor
+    {
+        'id_proveedor':int,
+        'codigo':string,
+        'nombre':string,
+        'pais':string,
+        'direccion':string,
+        'comentarios':string,
+        'activo':int
+    } 
+    */
     public function edita_Proveedor(Request $request, Response $response, $args): Response {
         $this->request = $request;
         $this->response = $response;
@@ -67,33 +80,43 @@ class ProveedorAction extends Action {
         $token=json_decode($token,true);
         $uuid=($token['sub']);
         
-        $res=$this->proveedorRepository->listProveedor($id_proveedor,$data_proveedor,$uuid);
+        $res=$this->proveedorRepository->editProveedor($id_proveedor,$data_proveedor,$uuid);
 
         return $this->respondWithData($res);
     }
 
-    public function elimina_Proveedor(Request $request, Response $response, $args): Response {
+    public function cambiaestado_Proveedor(Request $request, Response $response, $args): Response {
         $this->request = $request;
         $this->response = $response;
         $this->args = $args;
         $id_proveedor = $args['id_proveedor'];
-        //$data_proveedor =  $request->getParsedBody();
+        $estado = $args['estado'];
 
         $token=getenv('TOKEN_DATOS');
         $token=json_decode($token,true);
 
         $uuid=($token['sub']);
         
-        $res=$this->proveedorRepository->deleteProveedor($id_proveedor,$uuid);
+        $res=$this->proveedorRepository->changestatusProveedor($id_proveedor,$estado,$uuid);
 
-        if($res[0]['success']==false){
-            return $this->respondWithData(null,$res[0]['message'],202,true);
+        if($res['success']==false){
+            return $this->respondWithData(null,$res['message'],202,true);
         }else{
-            return $this->respondWithData(null,$res[0]['message'],200,true);
+            return $this->respondWithData(null,$res['message'],200,true);
         }
         
     }
 
+    /* body servicio de creacion proveedores
+    {
+        'codigo':string,
+        'nombre':string,
+        'pais':string,
+        'direccion':string,
+        'comentarios':string,
+        'activo':int
+    } 
+    */
     public function crea_Proveedor(Request $request, Response $response, $args): Response {
         $this->request = $request;
         $this->response = $response;
@@ -106,7 +129,11 @@ class ProveedorAction extends Action {
         
         $res=$this->proveedorRepository->createProveedor($data_proveedor,$uuid);
 
-        return $this->respondWithData($res);
+        if($res['success']==false){
+            return $this->respondWithData(null,$res['message'],202,true);
+        }else{
+            return $this->respondWithData($res['data_proveedor'],$res['message'],200,true);
+        }
     }
 
 }
