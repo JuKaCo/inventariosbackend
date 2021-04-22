@@ -30,7 +30,7 @@ return function (App $app) {
         $group->get('/listar', LinameAction::class.':getListLiname');
         $group->post('/cargar/validar', LinameAction::class.':cargarValidUpload');
         $group->post('/cargar/consolidar', LinameAction::class.':cargarConsolida');
-        $group->put('/habilitar/{id}', ParametricaAction::class.':genParamBiometrico');
+        $group->put('/cambia_estado/{estado}/{uuid}', LinameAction::class.':setInhabilitaHabilita');
         
     });
 };

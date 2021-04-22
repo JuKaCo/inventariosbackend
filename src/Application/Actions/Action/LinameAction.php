@@ -72,8 +72,23 @@ class LinameAction extends Action {
         $this->response = $response;
         $this->args = $args;
         //$params=$args;
-        $query=$request->getQueryParams();
-        $res=$this->linameRepository->getListLiname($query);
+        $query = $request->getQueryParams();
+        $res = $this->linameRepository->getListLiname($query);
+        return $this->respondWithData($res);
+    }
+
+    public function setInhabilitaHabilita(Request $request, Response $response, $args): Response {
+        $this->request = $request;
+        $this->response = $response;
+        $this->args = $args;
+        //$params=$args;
+        //get token id usuario
+        $token = getenv('TOKEN_DATOS');
+        $token = json_decode($token, true);
+        $id_usuario = $token['sub'];
+
+        $query = $request->getQueryParams();
+        $res = $this->linameRepository->getListLiname($query);
         return $this->respondWithData($res);
     }
 

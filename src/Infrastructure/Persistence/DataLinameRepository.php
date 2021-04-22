@@ -360,6 +360,7 @@ class DataLinameRepository implements LinameRepository {
                         $query->bindParam(':id', $uuid, PDO::PARAM_STR);
                         $query->execute();
                     } catch (Exception $ex) {
+                        
                     } catch (\Exception $ex) {
                         $this->db->rollBack();
                         return array('error' => 'Datos incorrectos');
@@ -382,16 +383,16 @@ class DataLinameRepository implements LinameRepository {
 
     public function getListLiname($params): array {
 
-        $filtro=$params['filtro'];
-        $indice=$params['indice'];
-        $limite=$params['limite'];
-        if(str_contains(strtolower($filtro),'a')||str_contains(strtolower($filtro),'ac')||str_contains(strtolower($filtro),'act')||str_contains(strtolower($filtro),'acti')||str_contains(strtolower($filtro),'activ')||str_contains(strtolower($filtro),'activo')){
-            $activo=1;
-        }else{
-            $activo=null;
+        $filtro = $params['filtro'];
+        $indice = $params['indice'];
+        $limite = $params['limite'];
+        if (str_contains(strtolower($filtro), 'a') || str_contains(strtolower($filtro), 'ac') || str_contains(strtolower($filtro), 'act') || str_contains(strtolower($filtro), 'acti') || str_contains(strtolower($filtro), 'activ') || str_contains(strtolower($filtro), 'activo')) {
+            $activo = 1;
+        } else {
+            $activo = null;
         }
-        $limite=$indice+$limite;
-        $filtro='%'.$filtro.'%';
+        $limite = $indice + $limite;
+        $filtro = '%' . $filtro . '%';
         $sql = "SELECT CASE WHEN activo = 1
                             THEN 'activo'
                             ELSE 'inactivo'
@@ -409,9 +410,9 @@ class DataLinameRepository implements LinameRepository {
         $query->bindParam(':indice', $indice, PDO::PARAM_INT);
         //$query->bindParam(':comentario', $comentario, PDO::PARAM_STR);
         $query->execute();
-        if($query->rowCount()>0){
+        if ($query->rowCount() > 0) {
             $res = $query->fetchAll(PDO::FETCH_ASSOC);
-        }else{
+        } else {
             $res = array();
         }
         $sql = "SELECT activo
@@ -423,7 +424,52 @@ class DataLinameRepository implements LinameRepository {
         $query->bindParam(':comentario', $filtro, PDO::PARAM_STR);
         $query->bindParam(':filtro', $filtro, PDO::PARAM_STR);
         $query->execute();
-        return array('total'=>$query->rowCount(),'resultados'=>$res);
+        return array('total' => $query->rowCount(), 'resultados' => $res);
+    }
+
+    public function setActivaInactiva($uuid, $estado, $id_usuario): array {
+        $est = "-1";
+        $estAnt = "-1";
+        if ($estado == 'activo') {
+            $est = "1";
+            $estAnt = "0";
+        }
+        if ($estado == 'inactivo') {
+            $est = "0";
+            $estAnt = "1";
+        }
+
+        $sql = "SELECT * FROM param_liname_archivo WHERE id=:id";
+        $query = $this->db->prepare($sql);
+        $query->bindParam(':id', $uuid, PDO::PARAM_INT);
+        $query->execute();
+        $res = $res->fetchAll(PDO::FETCH_ASSOC);
+        if (count($res) != 1) {
+            return array('error' => 'registro incorrecto');
+        }
+        $estadoSelec = ($res[0])['activo'];
+        if ($estadoSelec == 1 && $estado == 'inactivo') {
+            $sql = "UPDATE param_liname_archivo SET activo=1 WHERE id=:id";
+            $query = $this->db->prepare($sql);
+            $query->bindParam(':id', $uuid, PDO::PARAM_INT);
+            $query->execute();
+
+            $sql = "UPDATE param_liname_archivo SET activo=0, f_mod=now(), u_mod=:u_mod WHERE id!=:id and activo=1";
+            $query = $this->db->prepare($sql);
+            $query->bindParam(':id', $uuid, PDO::PARAM_INT);
+            $query->bindParam(':u_mod', $id_usuario, PDO::PARAM_STR);
+            $query->execute();
+
+            return array('ejecutado' => $query->rowCount());
+        }
+        if ($estadoSelec == 0 && $estado == 'activo') {
+            $sql = "UPDATE param_liname_archivo SET activo=0 WHERE id=:id";
+            $query = $this->db->prepare($sql);
+            $query->bindParam(':id', $uuid, PDO::PARAM_INT);
+            $query->execute();
+            return array('ejecutado' => $query->rowCount());
+        }
+        return array('error' => 'Datos invalidos');
     }
 
 }
