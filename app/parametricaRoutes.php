@@ -26,7 +26,16 @@ return function (App $app) {
         $group->put('/cambiaestado/{id_proveedor}/{estado}',ProveedorAction::class.':cambiaestado_Proveedor');
         $group->get('/listar',ProveedorAction::class.':lista_Proveedor');
     });
+    //liname rutas
     $app->group('/api/v1/liname', function (Group $group) {
+        $group->get('/listar', LinameAction::class.':getListLiname');
+        $group->post('/cargar/validar', LinameAction::class.':cargarValidUpload');
+        $group->post('/cargar/consolidar', LinameAction::class.':cargarConsolida');
+        $group->put('/cambia_estado/{estado}/{uuid}', LinameAction::class.':setInhabilitaHabilita');
+        $group->get('/descargar/{uuid}', LinameAction::class.':getArchive');
+    });
+    //linadime rutas
+    $app->group('/api/v1/linadime', function (Group $group) {
         $group->get('/listar', LinameAction::class.':getListLiname');
         $group->post('/cargar/validar', LinameAction::class.':cargarValidUpload');
         $group->post('/cargar/consolidar', LinameAction::class.':cargarConsolida');
