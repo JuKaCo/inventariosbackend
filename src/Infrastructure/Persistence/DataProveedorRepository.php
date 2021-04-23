@@ -63,6 +63,9 @@ class DataProveedorRepository implements ProveedorRepository {
     }
 
     public function editProveedor($id_proveedor,$data_proveedor,$uuid): array {
+        if(!(isset($data_proveedor['codigo'])&&isset($data_proveedor['nombre'])&&isset($data_proveedor['pais'])&&isset($data_proveedor['direccion'])&&isset($data_proveedor['comentarios'])&&isset($data_proveedor['activo']))){
+            return array('success'=>false,'message'=>'Datos invalidos');
+        }
         $sql = "SELECT *
                 FROM proveedor
                 WHERE codigo=:codigo";
@@ -93,7 +96,7 @@ class DataProveedorRepository implements ProveedorRepository {
             $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
             $res->execute();
             //$res = $res->fetchAll(PDO::FETCH_ASSOC);
-            $resp = array('success'=>false,'message'=>'proveedor actualizado');
+            $resp = array('success'=>true,'message'=>'proveedor actualizado');
         }
         return $resp;
     }
@@ -120,6 +123,9 @@ class DataProveedorRepository implements ProveedorRepository {
     }
 
     public function createProveedor($data_proveedor,$uuid): array {
+        if(!(isset($data_proveedor['codigo'])&&isset($data_proveedor['nombre'])&&isset($data_proveedor['pais'])&&isset($data_proveedor['direccion'])&&isset($data_proveedor['comentarios']))){
+            return array('success'=>false,'message'=>'Datos invalidos');
+        }
         $sql = "SELECT *
                 FROM proveedor
                 WHERE codigo=:codigo";
@@ -134,7 +140,7 @@ class DataProveedorRepository implements ProveedorRepository {
                     nombre,
                     pais,
                     direccion,
-                    cometarios,
+                    comentarios,
                     activo,
                     f_crea,
                     u_crea
@@ -144,7 +150,7 @@ class DataProveedorRepository implements ProveedorRepository {
                     :pais,
                     :direccion,
                     :comentarios,
-                    :activo,
+                    1,
                     now(),
                     :u_crea
                     );";
@@ -152,8 +158,8 @@ class DataProveedorRepository implements ProveedorRepository {
             $res->bindParam(':codigo', $data_proveedor['codigo'], PDO::PARAM_STR);
             $res->bindParam(':nombre', $data_proveedor['nombre'], PDO::PARAM_STR);
             $res->bindParam(':pais', $data_proveedor['pais'], PDO::PARAM_STR);
+            $res->bindParam(':direccion', $data_proveedor['direccion'], PDO::PARAM_STR);
             $res->bindParam(':comentarios', $data_proveedor['comentarios'], PDO::PARAM_STR);
-            $res->bindParam(':activo', $data_proveedor['activo'], PDO::PARAM_INT);
             $res->bindParam(':u_crea', $uuid, PDO::PARAM_STR);
             $res->execute();
             $res = $res->fetchAll(PDO::FETCH_ASSOC);

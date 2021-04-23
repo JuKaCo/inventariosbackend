@@ -79,10 +79,14 @@ class ProveedorAction extends Action {
         $token=getenv('TOKEN_DATOS');
         $token=json_decode($token,true);
         $uuid=($token['sub']);
-        
+
         $res=$this->proveedorRepository->editProveedor($id_proveedor,$data_proveedor,$uuid);
 
-        return $this->respondWithData($res);
+        if($res['success']==false){
+            return $this->respondWithData(null,$res['message'],202,false);
+        }else{
+            return $this->respondWithData(null,$res['message'],200,true);
+        }
     }
 
     public function cambiaestado_Proveedor(Request $request, Response $response, $args): Response {
@@ -130,7 +134,7 @@ class ProveedorAction extends Action {
         $res=$this->proveedorRepository->createProveedor($data_proveedor,$uuid);
 
         if($res['success']==false){
-            return $this->respondWithData(null,$res['message'],202,true);
+            return $this->respondWithData(null,$res['message'],202,false);
         }else{
             return $this->respondWithData($res['data_proveedor'],$res['message'],200,true);
         }
