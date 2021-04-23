@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Persistence;
 
 use App\Application\Actions\RepositoryConection\Conect;
-use App\Domain\LinameRepository;
+use App\Domain\LinadimeRepository;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Reader\IReader;
@@ -51,8 +51,9 @@ class DataLinadimeRepository implements LinadimeRepository {
                 $fverif = $newfile->getFilePath();
                 $spreadsheet = IOFactory::load($fverif);
                 $sheetData = $spreadsheet->getActiveSheet()->toArray(null, true, true, true);
-                if (isset($sheetData[5])) {
+                if (isset($sheetData[5], $sheetData[6])) {
                     $verifCab = $sheetData[5];
+                    $verifCab2 = $sheetData[6];
                 } else {
                     return array('error' => 'Cabecera incorrecta');
                 }
@@ -61,27 +62,20 @@ class DataLinadimeRepository implements LinadimeRepository {
                     return array('error' => 'Cabecera incorrecta');
                 }
 
-                if ($verifCab['A'] == 'Código' &&
-                        $verifCab['B'] == 'Co' &&
-                        $verifCab['C'] == 'di' &&
-                        $verifCab['D'] == 'go' &&
-                        $verifCab['E'] == 'Medicamento' &&
-                        $verifCab['F'] == 'Forma Farmacéutica' &&
-                        $verifCab['G'] == 'Concentración' &&
-                        $verifCab['H'] == 'Classific. A.T.Q.' &&
-                        //$verifCab['I']=='Precio Referencial' &&
-                        $verifCab['J'] == 'Aclaración de Particularidades'
+                if (
+                        strrpos($verifCab['B'], "CÓDIGO") !== 0 &&
+                        strrpos($verifCab['C'], "DISPOSITIVO") !== 0 &&
+                        strrpos($verifCab['D'], "ESPECIFICACIÓN TÉCNICA") !== 0 &&
+                        strrpos($verifCab['E'], "PRESENTACIÓN") !== 0 &&
+                        strrpos($verifCab2['F'], "I") !== 0 &&
+                        strrpos($verifCab2['G'], "II") !== 0 &&
+                        strrpos($verifCab2['H'], "III") !== 0
                 ) {
                     $datosV = 0;
                     $datosNV = 0;
                     $obs = array();
 
-                    for ($ii = 6; $ii <= count($sheetData); $ii++) {
-                        if (isset(($sheetData[$ii])['A'])) {
-                            $A = str_replace(array("\r\n", "\r", "\n"), "", (string) ($sheetData[$ii])['A']);
-                        } else {
-                            $A = '';
-                        }
+                    for ($ii = 7; $ii <= count($sheetData); $ii++) {
                         if (isset(($sheetData[$ii])['B'])) {
                             $B = str_replace(array("\r\n", "\r", "\n"), "", (string) ($sheetData[$ii])['B']);
                         } else {
@@ -117,18 +111,8 @@ class DataLinadimeRepository implements LinadimeRepository {
                         } else {
                             $H = '';
                         }
-                        if (isset(($sheetData[$ii])['I'])) {
-                            $I = str_replace(array("\r\n", "\r", "\n"), "", (string) ($sheetData[$ii])['I']);
-                        } else {
-                            $I = '';
-                        }
-                        if (isset(($sheetData[$ii])['J'])) {
-                            $J = str_replace(array("\r\n", "\r", "\n"), "", (string) ($sheetData[$ii])['J']);
-                        } else {
-                            $J = '';
-                        }
-
-                        if ($A != '' && $B != '' && $C != '' && $D != '' && $E != '' && $F != '' && $G != '' && $H != '' && preg_match('/^([+-]{1})?[0-9]+(\.[0-9]+)?$/', $I)) {
+                       
+                        if ($B != '' && $C != '' && $D != '' && $E != '' && $F != '' && $G != '' && $H != '' ) {
                             $datosV++;
                         } else {
                             ($sheetData[$ii])['fila'] = $ii + 1;
@@ -139,7 +123,15 @@ class DataLinadimeRepository implements LinadimeRepository {
                     $data = array('valid' => $datosV, 'invalid' => $datosNV, 'mensaje' => 'Datos del documento', 'obs' => $obs);
                     return $data;
                 } else {
-                    return array('error' => 'Cabezera incorrecta');
+                    return array('error' => array(
+                        'B'=>strrpos($verifCab['B'], "CÓDIGO"),
+                        'C'=>strrpos($verifCab['C'], "DISPOSITIVO"),
+                        'D'=>strrpos($verifCab['D'], "ESPECIFICACIÓN TÉCNICA"),
+                        'E'=>strrpos($verifCab['E'], "PRESENTACIÓN"),
+                        'F'=>strrpos($verifCab['F'], "I"),
+                        'G'=>strrpos($verifCab['G'], "II"),
+                        'H'=>strrpos($verifCab['H'], "III"))
+                        );
                 }
             } else {
                 return array('error' => 'Extencion no valida');
@@ -200,7 +192,7 @@ class DataLinadimeRepository implements LinadimeRepository {
 
                     try {
                         $this->db->beginTransaction();
-                        for ($ii = 6; $ii <= count($sheetData); $ii++) {
+                        for ($ii = 7; $ii <= count($sheetData); $ii++) {
                             if (isset(($sheetData[$ii])['A'])) {
                                 $A = str_replace(array("\r\n", "\r", "\n"), "", (string) ($sheetData[$ii])['A']);
                             } else {
@@ -486,11 +478,11 @@ class DataLinadimeRepository implements LinadimeRepository {
         if (count($res) != 1) {
             return array('error' => 'Registro incorrecto');
         }
-        
+
         $ruta = $this->datosGeneralesRepository->getDatosCodigo('LINAME_FILE');
         $ruta = $ruta['recurso'];
-        
-        $pathArch = $ruta .($res[0])['nombre_archivo'];
+
+        $pathArch = $ruta . ($res[0])['nombre_archivo'];
         if (!file_exists($pathArch)) {
             return array('error' => "No se encuentra el archivo");
         }

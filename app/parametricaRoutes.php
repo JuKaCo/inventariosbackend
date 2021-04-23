@@ -10,6 +10,7 @@ use Slim\App;
 use Slim\Interfaces\RouteCollectorProxyInterface as Group;
 use App\Application\Actions\Action\MenuAction;
 use App\Application\Actions\Action\LinameAction;
+use App\Application\Actions\Action\LinadimeAction;
 use App\Application\Actions\Action\ParametricaAction;
 use App\Application\Actions\Action\ProveedorAction;
 
@@ -36,10 +37,10 @@ return function (App $app) {
     });
     //linadime rutas
     $app->group('/api/v1/linadime', function (Group $group) {
-        $group->get('/listar', LinameAction::class.':getListLiname');
-        $group->post('/cargar/validar', LinameAction::class.':cargarValidUpload');
-        $group->post('/cargar/consolidar', LinameAction::class.':cargarConsolida');
-        $group->put('/cambia_estado/{estado}/{uuid}', LinameAction::class.':setInhabilitaHabilita');
-        $group->get('/descargar/{uuid}', LinameAction::class.':getArchive');
+        $group->get('/listar', LinadimeAction::class.':getListLinadime');
+        $group->post('/cargar/validar', LinadimeAction::class.':cargarValidUpload');
+        $group->post('/cargar/consolidar', LinadimeAction::class.':cargarConsolida');
+        $group->put('/cambia_estado/{estado}/{uuid}', LinadimeAction::class.':setInhabilitaHabilita');
+        $group->get('/descargar/{uuid}', LinadimeAction::class.':getArchive');
     });
 };

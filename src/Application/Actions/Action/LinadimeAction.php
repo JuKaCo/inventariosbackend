@@ -19,6 +19,7 @@ class LinadimeAction extends Action {
      * @param LoggerInterface $logger
      * @param MenuRepository  $menuRepository
      */
+    
     public function __construct(LoggerInterface $logger, LinadimeRepository $linadimeRepository) {
         parent::__construct($logger);
         $this->linadimeRepository = $linadimeRepository;
@@ -34,7 +35,6 @@ class LinadimeAction extends Action {
         $this->request = $request;
         $this->response = $response;
         $this->args = $args;
-
         $archivo = $this->request->getUploadedFiles();
         $body = $this->request->getParsedBody();
 
@@ -73,7 +73,7 @@ class LinadimeAction extends Action {
         $this->args = $args;
         //$params=$args;
         $query = $request->getQueryParams();
-        $res = $this->linadimeRepository->getListLiname($query);
+        $res = $this->linadimeRepository->getListLinadime($query);
         return $this->respondWithData($res);
     }
 
