@@ -39,7 +39,7 @@ class DataProveedorRepository implements ProveedorRepository {
         if($res->rowCount()>0){
             $res = $res->fetchAll(PDO::FETCH_ASSOC);
             $res[0]['pais'] = json_decode($res[0]['pais']);
-            $resp = array('success'=>true,'message'=>'Exito','data_proveedor'=>$res);
+            $resp = array('success'=>true,'message'=>'Exito','data_proveedor'=>$res[0]);
         }else{
             $resp = array('success'=>false,'message'=>'No se encontraron registros');
         }
