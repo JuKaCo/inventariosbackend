@@ -26,6 +26,8 @@ return function (App $app) {
 
     $app->group('/api/v1/general', function (Group $group) {
         $group->get('/menu', MenuAction::class.':menu');
+        //$group->get('/notificacion', MenuAction::class.':menu');
+        //$group->get('/notificacion/{id_notificacion}', MenuAction::class.':menu');
     });
 
 };
