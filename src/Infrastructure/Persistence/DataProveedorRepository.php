@@ -198,7 +198,7 @@ class DataProveedorRepository implements ProveedorRepository {
             $res->execute();
             $res = $res->fetchAll(PDO::FETCH_ASSOC);
             $res[0]['pais'] = json_decode($res[0]['pais']);
-            $resp = array('success'=>true,'message'=>'proveedor registrado exitosamente','data_proveedor'=>$res);
+            $resp = array('success'=>true,'message'=>'proveedor registrado exitosamente','data_proveedor'=>$res[0]);
         }
         return $resp;
     }

@@ -35,7 +35,8 @@ class DataParametricaRepository implements ParametricaRepository {
                 valor
 
                 FROM param_general
-                WHERE cod_grupo=:cod_grupo AND id_padre=:id_padre AND LOWER(valor) LIKE :filtro";
+                WHERE cod_grupo=:cod_grupo AND id_padre=:id_padre AND LOWER(valor) LIKE :filtro
+                ORDER BY id_param";
             $res = ($this->db)->prepare($sql);
             $res->bindParam(':filtro', $filtro, PDO::PARAM_STR);
             $res->bindParam(':cod_grupo', $cod_grupo, PDO::PARAM_STR);
