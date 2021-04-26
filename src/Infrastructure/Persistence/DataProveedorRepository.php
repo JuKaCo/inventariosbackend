@@ -30,16 +30,28 @@ class DataProveedorRepository implements ProveedorRepository {
     }
 
     public function getProveedor($id_proveedor): array {
-        $sql = "SELECT *
-                FROM proveedor
-                WHERE id=:id_proveedor AND activo=1";
+        $sql = "SELECT pr.*, pg.id_param, pg.cod_grupo, pg.codigo as cod_param, pg.valor
+                FROM proveedor pr, param_general pg
+                WHERE pr.id=:id_proveedor AND pr.activo=1 AND pr.pais=pg.id_param";
         $res = ($this->db)->prepare($sql);
         $res->bindParam(':id_proveedor', $id_proveedor, PDO::PARAM_STR);
         $res->execute();
         if($res->rowCount()>0){
             $res = $res->fetchAll(PDO::FETCH_ASSOC);
-            $res[0]['pais'] = json_decode($res[0]['pais']);
-            $resp = array('success'=>true,'message'=>'Exito','data_proveedor'=>$res);
+            $res = $res[0];
+            $result = array('id'=>$res['id'],
+                            'codigo'=>$res['codigo'],
+                            'nombre'=>$res['nombre'],
+                            'pais'=>array(
+                                'id_param'=>$res['id_param'],
+                                'cod_grupo'=>$res['cod_grupo'],
+                                'codigo'=>$res['cod_param'],
+                                'valor'=>$res['valor']
+                            ),
+                            'direccion'=>$res['direccion'],
+                            'comentarios'=>$res['comentarios'],
+                            'activo'=>$res['activo']);
+            $resp = array('success'=>true,'message'=>'Exito','data_proveedor'=>$result);
         }else{
             $resp = array('success'=>false,'message'=>'No se encontraron registros');
         }
@@ -55,16 +67,16 @@ class DataProveedorRepository implements ProveedorRepository {
         $indice=$query['indice'];
         $limite=$limite+$indice;
         $filter="%".strtolower($filtro)."%";
-        $sql = "SELECT *
-                FROM proveedor
-                WHERE activo=1 AND (LOWER(codigo) LIKE :filter OR LOWER(nombre) LIKE :filter OR LOWER(pais) LIKE :filter OR LOWER(direccion) LIKE :filter OR LOWER(comentarios) LIKE :filter OR DATE_FORMAT(f_crea,'%d/%m/%Y') LIKE :filter)";
+        $sql = "SELECT pr.*, pg.id_param, pg.cod_grupo, pg.codigo as cod_param, pg.valor
+                FROM proveedor pr JOIN param_general pg ON pr.pais=pg.id_param
+                WHERE pr.activo=1 AND (LOWER(pr.codigo) LIKE :filter OR LOWER(pr.nombre) LIKE :filter OR LOWER(pg.valor) LIKE :filter OR LOWER(pr.direccion) LIKE :filter OR LOWER(pr.comentarios) LIKE :filter OR DATE_FORMAT(pr.f_crea,'%d/%m/%Y') LIKE :filter)";
         $res = ($this->db)->prepare($sql);
         $res->bindParam(':filter', $filter, PDO::PARAM_STR);
         $res->execute();
         $total=$res->rowCount();
-        $sql = "SELECT *
-                FROM proveedor
-                WHERE activo=1 AND (LOWER(codigo) LIKE :filter OR LOWER(nombre) LIKE :filter OR LOWER(pais) LIKE :filter OR LOWER(direccion) LIKE :filter OR LOWER(comentarios) LIKE :filter OR DATE_FORMAT(f_crea,'%d/%m/%Y') LIKE :filter)
+        $sql = "SELECT pr.*, pg.id_param, pg.cod_grupo, pg.codigo as cod_param, pg.valor
+                FROM proveedor pr JOIN param_general pg ON pr.pais=pg.id_param
+                WHERE pr.activo=1 AND (LOWER(pr.codigo) LIKE :filter OR LOWER(pr.nombre) LIKE :filter OR LOWER(pg.valor) LIKE :filter OR LOWER(pr.direccion) LIKE :filter OR LOWER(pr.comentarios) LIKE :filter OR DATE_FORMAT(pr.f_crea,'%d/%m/%Y') LIKE :filter)
                 LIMIT :indice, :limite;
                 ORDER BY f_crea DESC";
         $res = ($this->db)->prepare($sql);
@@ -74,10 +86,23 @@ class DataProveedorRepository implements ProveedorRepository {
         $res->execute();
         if($res->rowCount()>0){
             $res = $res->fetchAll(PDO::FETCH_ASSOC);
-            for ($i = 0; $i < count($res); ++$i){
-                $res[$i]['pais']=json_decode($res[$i]['pais']);
+            $arrayres = array();
+            foreach ($res as $item){
+                $result = array('id'=>$item['id'],
+                            'codigo'=>$item['codigo'],
+                            'nombre'=>$item['nombre'],
+                            'pais'=>array(
+                                'id_param'=>$item['id_param'],
+                                'cod_grupo'=>$item['cod_grupo'],
+                                'codigo'=>$item['cod_param'],
+                                'valor'=>$item['valor']
+                            ),
+                            'direccion'=>$item['direccion'],
+                            'comentarios'=>$item['comentarios'],
+                            'activo'=>$item['activo']);
+                array_push($arrayres,$result);
             }
-            $concat=array('resultados'=>$res,'total'=>$total);
+            $concat=array('resultados'=>$arrayres,'total'=>$total);
             $resp = array('success'=>true,'message'=>'Exito','data_proveedor'=>$concat);
         }else{
             $resp = array('success'=>false,'message'=>'No se encontraron registros');
@@ -86,23 +111,25 @@ class DataProveedorRepository implements ProveedorRepository {
     }
 
     public function editProveedor($id_proveedor,$data_proveedor,$uuid): array {
-        if(!(isset($data_proveedor['codigo'])&&isset($data_proveedor['nombre'])&&isset($data_proveedor['pais'])&&isset($data_proveedor['direccion'])&&isset($data_proveedor['comentarios'])&&isset($data_proveedor['activo']))){
+        if(!(isset($data_proveedor['codigo'])&&isset($data_proveedor['nombre'])&&isset($data_proveedor['pais'])&&isset($data_proveedor['direccion'])&&isset($data_proveedor['comentarios']))){
             return array('success'=>false,'message'=>'Datos invalidos');
         }
         $sql = "SELECT *
                 FROM proveedor
-                WHERE codigo=:codigo";
-        $res = ($this->db)->prepare($sql);
-        $res->bindParam(':codigo', $data_proveedor['codigo'], PDO::PARAM_STR);
-        $res->execute();
-        if($res->rowCount()==1){
+                WHERE codigo=:codigo AND id!=:id_proveedor";
+            $res = ($this->db)->prepare($sql);
+            $res->bindParam(':codigo', $data_proveedor['codigo'], PDO::PARAM_STR);
+            $res->bindParam(':id_proveedor', $id_proveedor, PDO::PARAM_STR);
+            $res->execute();
+        if($res->rowCount()>0){
+            $resp = array('success'=>false,'message'=>'Error, el codigo proveedor ya existe en otro registro');
+        }else{
             $sql = "UPDATE proveedor 
                     SET codigo=:codigo,
                     nombre=:nombre,
                     pais=:pais,
                     direccion=:direccion,
                     comentarios=:comentarios,
-                    activo=:activo,
                     f_mod=now(), 
                     u_mod=:u_mod
                     WHERE id=:id_proveedor;";
@@ -110,30 +137,26 @@ class DataProveedorRepository implements ProveedorRepository {
             $res->bindParam(':id_proveedor', $id_proveedor, PDO::PARAM_STR);
             $res->bindParam(':codigo', $data_proveedor['codigo'], PDO::PARAM_STR);
             $res->bindParam(':nombre', $data_proveedor['nombre'], PDO::PARAM_STR);
-            $aux = json_encode($data_proveedor['pais']);
-            $res->bindParam(':pais', $aux, PDO::PARAM_STR);
+            $aux = $data_proveedor['pais']['id_param'];
+            $res->bindParam(':pais', $aux, PDO::PARAM_INT);
             $res->bindParam(':direccion', $data_proveedor['direccion'], PDO::PARAM_STR);
             $res->bindParam(':comentarios', $data_proveedor['comentarios'], PDO::PARAM_STR);
-            $res->bindParam(':activo', $data_proveedor['activo'], PDO::PARAM_INT);
             $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
             $res->execute();
             //$res = $res->fetchAll(PDO::FETCH_ASSOC);
             $resp = array('success'=>true,'message'=>'proveedor actualizado','data_proveedor'=>$data_proveedor);
-        }else{
-            $resp = array('success'=>false,'message'=>'Error, el codigo proveedor no existe');
         }
         return $resp;
     }
 
-    public function changestatusProveedor($id_proveedor,$estado,$uuid): array {
+    public function changestatusProveedor($id_proveedor,$uuid): array {
         $sql = "UPDATE proveedor 
-                SET activo=:activo,
+                SET activo=0,
                 f_inac=now(), 
                 u_inac=:u_inac
                 WHERE id=:id_proveedor;";
         $res = ($this->db)->prepare($sql);
         $res->bindParam(':u_inac', $uuid, PDO::PARAM_STR);
-        $res->bindParam(':activo', $estado, PDO::PARAM_STR);
         $res->bindParam(':id_proveedor', $id_proveedor, PDO::PARAM_STR);
         $res->execute();
         //$res = $res->fetchAll(PDO::FETCH_ASSOC);
@@ -183,22 +206,34 @@ class DataProveedorRepository implements ProveedorRepository {
             $res = ($this->db)->prepare($sql);
             $res->bindParam(':codigo', $data_proveedor['codigo'], PDO::PARAM_STR);
             $res->bindParam(':nombre', $data_proveedor['nombre'], PDO::PARAM_STR);
-            $aux = json_encode($data_proveedor['pais']);
-            $res->bindParam(':pais', $aux, PDO::PARAM_STR);
+            $aux = $data_proveedor['pais']['id_param'];
+            $res->bindParam(':pais', $aux, PDO::PARAM_INT);
             $res->bindParam(':direccion', $data_proveedor['direccion'], PDO::PARAM_STR);
             $res->bindParam(':comentarios', $data_proveedor['comentarios'], PDO::PARAM_STR);
             $res->bindParam(':u_crea', $uuid, PDO::PARAM_STR);
             $res->execute();
             $res = $res->fetchAll(PDO::FETCH_ASSOC);
-            $sql = "SELECT *
-                FROM proveedor
-                WHERE codigo=:codigo";
+            $sql = "SELECT pr.*, pg.id_param, pg.cod_grupo, pg.codigo as cod_param, pg.valor
+                    FROM proveedor pr, param_general pg
+                    WHERE pr.codigo=:codigo AND pr.activo=1 AND pr.pais=pg.id_param";
             $res = ($this->db)->prepare($sql);
             $res->bindParam(':codigo', $data_proveedor['codigo'], PDO::PARAM_STR);
             $res->execute();
             $res = $res->fetchAll(PDO::FETCH_ASSOC);
-            $res[0]['pais'] = json_decode($res[0]['pais']);
-            $resp = array('success'=>true,'message'=>'proveedor registrado exitosamente','data_proveedor'=>$res[0]);
+            $res = $res[0];
+            $result = array('id'=>$res['id'],
+                            'codigo'=>$res['codigo'],
+                            'nombre'=>$res['nombre'],
+                            'pais'=>array(
+                                'id_param'=>$res['id_param'],
+                                'cod_grupo'=>$res['cod_grupo'],
+                                'codigo'=>$res['cod_param'],
+                                'valor'=>$res['valor']
+                            ),
+                            'direccion'=>$res['direccion'],
+                            'comentarios'=>$res['comentarios'],
+                            'activo'=>$res['activo']);
+            $resp = array('success'=>true,'message'=>'proveedor registrado exitosamente','data_proveedor'=>$result);
         }
         return $resp;
     }

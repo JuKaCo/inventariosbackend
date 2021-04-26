@@ -93,15 +93,10 @@ class ProveedorAction extends Action {
         $this->response = $response;
         $this->args = $args;
         $id_proveedor = $args['id_proveedor'];
-        $estado = $args['estado'];
-
         $token=getenv('TOKEN_DATOS');
         $token=json_decode($token,true);
-
         $uuid=($token['sub']);
-        
-        $res=$this->proveedorRepository->changestatusProveedor($id_proveedor,$estado,$uuid);
-
+        $res=$this->proveedorRepository->changestatusProveedor($id_proveedor,$uuid);
         if($res['success']==false){
             return $this->respondWithData(null,$res['message'],202,true);
         }else{

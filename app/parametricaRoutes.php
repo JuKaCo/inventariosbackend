@@ -24,7 +24,7 @@ return function (App $app) {
         $group->get('/obtener/{id_proveedor}',ProveedorAction::class.':obtiene_Proveedor');
         $group->put('/editar/{id_proveedor}',ProveedorAction::class.':edita_Proveedor');
         $group->post('/crear',ProveedorAction::class.':crea_Proveedor');
-        $group->put('/cambiarestado/{id_proveedor}/{estado}',ProveedorAction::class.':cambiaestado_Proveedor');
+        $group->delete('/cambiarestado/{id_proveedor}',ProveedorAction::class.':cambiaestado_Proveedor');
         $group->get('/listar',ProveedorAction::class.':lista_Proveedor');
     });
     //liname rutas
