@@ -77,8 +77,8 @@ class DataProveedorRepository implements ProveedorRepository {
         $sql = "SELECT pr.*, pg.id_param, pg.cod_grupo, pg.codigo as cod_param, pg.valor
                 FROM proveedor pr JOIN param_general pg ON pr.pais=pg.id_param
                 WHERE pr.activo=1 AND (LOWER(pr.codigo) LIKE :filter OR LOWER(pr.nombre) LIKE :filter OR LOWER(pg.valor) LIKE :filter OR LOWER(pr.direccion) LIKE :filter OR LOWER(pr.comentarios) LIKE :filter OR DATE_FORMAT(pr.f_crea,'%d/%m/%Y') LIKE :filter)
-                LIMIT :indice, :limite;
-                ORDER BY pr.f_crea DESC";
+                ORDER BY pr.f_crea DESC
+                LIMIT :indice, :limite;";
         $res = ($this->db)->prepare($sql);
         $res->bindParam(':filter', $filter, PDO::PARAM_STR);
         $res->bindParam(':limite', $limite, PDO::PARAM_INT);
