@@ -54,17 +54,17 @@ class DataProveedorRepository implements ProveedorRepository {
         $limite=$query['limite'];
         $indice=$query['indice'];
         $limite=$limite+$indice;
-        $filter="%".$filtro."%";
+        $filter="%".strtolower($filtro)."%";
         $sql = "SELECT *
                 FROM proveedor
-                WHERE activo=1 AND (codigo LIKE :filter OR nombre LIKE :filter OR pais LIKE :filter OR direccion LIKE :filter OR comentarios LIKE :filter OR DATE_FORMAT(f_crea,'%d/%m/%Y') LIKE :filter)";
+                WHERE activo=1 AND (LOWER(codigo) LIKE :filter OR LOWER(nombre) LIKE :filter OR LOWER(pais) LIKE :filter OR LOWER(direccion) LIKE :filter OR LOWER(comentarios) LIKE :filter OR DATE_FORMAT(f_crea,'%d/%m/%Y') LIKE :filter)";
         $res = ($this->db)->prepare($sql);
         $res->bindParam(':filter', $filter, PDO::PARAM_STR);
         $res->execute();
         $total=$res->rowCount();
         $sql = "SELECT *
                 FROM proveedor
-                WHERE activo=1 AND (codigo LIKE :filter OR nombre LIKE :filter OR pais LIKE :filter OR direccion LIKE :filter OR comentarios LIKE :filter OR DATE_FORMAT(f_crea,'%d/%m/%Y') LIKE :filter)
+                WHERE activo=1 AND (LOWER(codigo) LIKE :filter OR LOWER(nombre) LIKE :filter OR LOWER(pais) LIKE :filter OR LOWER(direccion) LIKE :filter OR LOWER(comentarios) LIKE :filter OR DATE_FORMAT(f_crea,'%d/%m/%Y') LIKE :filter)
                 LIMIT :indice, :limite;
                 ORDER BY f_crea DESC";
         $res = ($this->db)->prepare($sql);
