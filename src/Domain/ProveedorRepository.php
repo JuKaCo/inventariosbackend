@@ -9,5 +9,5 @@ interface ProveedorRepository
     public function editProveedor($id_proveedor,$data_proveedor,$uuid): array;
     public function createProveedor($data_proveedor,$uuid): array;
     public function changestatusProveedor($id_proveedor,$estado,$uuid): array;
-    public function listProveedor($filtro,$limite,$indice): array;
+    public function listProveedor($query): array;
 }

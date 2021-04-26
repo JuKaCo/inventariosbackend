@@ -47,23 +47,22 @@ class ProveedorAction extends Action {
         $this->response = $response;
         $this->args = $args;
         $query=$request->getQueryParams();
-        
-        $filtro = $query['filtro'];
-        if($filtro==null){
-            $filtro='';
-        }
-        $limite = $query['limite']; 
-        $indice = $query['indice']; 
-        $res=$this->proveedorRepository->listProveedor($filtro,$limite,$indice);
 
-        return $this->respondWithData($res);
+        $res=$this->proveedorRepository->listProveedor($query);
+
+        if($res['success']==false){
+            return $this->respondWithData(null,$res['message'],202,true);
+        }else{
+            return $this->respondWithData($res['data_proveedor'],$res['message'],200,true);
+        }
     }
+
     /* body servicio de edicion de proveedor
     {
         'id_proveedor':int,
         'codigo':string,
         'nombre':string,
-        'pais':string,
+        'pais':array,
         'direccion':string,
         'comentarios':string,
         'activo':int
@@ -85,7 +84,7 @@ class ProveedorAction extends Action {
         if($res['success']==false){
             return $this->respondWithData(null,$res['message'],202,false);
         }else{
-            return $this->respondWithData(null,$res['message'],200,true);
+            return $this->respondWithData($res['data_proveedor'],$res['message'],200,true);
         }
     }
 
@@ -115,10 +114,9 @@ class ProveedorAction extends Action {
     {
         'codigo':string,
         'nombre':string,
-        'pais':string,
+        'pais':array,
         'direccion':string,
-        'comentarios':string,
-        'activo':int
+        'comentarios':string
     } 
     */
     public function crea_Proveedor(Request $request, Response $response, $args): Response {
@@ -139,5 +137,4 @@ class ProveedorAction extends Action {
             return $this->respondWithData($res['data_proveedor'],$res['message'],200,true);
         }
     }
-
 }
