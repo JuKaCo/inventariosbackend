@@ -65,7 +65,8 @@ class DataProveedorRepository implements ProveedorRepository {
         $sql = "SELECT *
                 FROM proveedor
                 WHERE activo=1 AND (codigo LIKE :filter OR nombre LIKE :filter OR pais LIKE :filter OR direccion LIKE :filter OR comentarios LIKE :filter OR DATE_FORMAT(f_crea,'%d/%m/%Y') LIKE :filter)
-                LIMIT :indice, :limite;";
+                LIMIT :indice, :limite;
+                ORDER BY f_crea DESC";
         $res = ($this->db)->prepare($sql);
         $res->bindParam(':filter', $filter, PDO::PARAM_STR);
         $res->bindParam(':limite', $limite, PDO::PARAM_INT);
