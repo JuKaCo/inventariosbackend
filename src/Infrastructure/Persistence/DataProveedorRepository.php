@@ -76,7 +76,7 @@ class DataProveedorRepository implements ProveedorRepository {
             for ($i = 0; $i < count($res); ++$i){
                 $res[$i]['pais']=json_decode($res[$i]['pais']);
             }
-            $concat=array('data'=>$res,'total'=>$total);
+            $concat=array('resultados'=>$res,'total'=>$total);
             $resp = array('success'=>true,'message'=>'Exito','data_proveedor'=>$concat);
         }else{
             $resp = array('success'=>false,'message'=>'No se encontraron registros');
