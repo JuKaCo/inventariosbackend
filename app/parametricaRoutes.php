@@ -13,6 +13,7 @@ use App\Application\Actions\Action\LinameAction;
 use App\Application\Actions\Action\LinadimeAction;
 use App\Application\Actions\Action\ParametricaAction;
 use App\Application\Actions\Action\ProveedorAction;
+use App\Application\Actions\Action\ClienteAction;
 
 return function (App $app) {
     $app->group('/api/v1/param', function (Group $group) {
@@ -20,12 +21,21 @@ return function (App $app) {
         $group->get('/gen/{cod_grupo}/{id_padre}', ParametricaAction::class.':genParamPadre');
         $group->get('/biometrico/terminal', ParametricaAction::class.':genParamBiometrico');
     });
+    //proveedor rutas 
     $app->group('/api/v1/proveedor', function(Group $group){
         $group->get('/obtener/{id_proveedor}',ProveedorAction::class.':obtiene_Proveedor');
         $group->put('/editar/{id_proveedor}',ProveedorAction::class.':edita_Proveedor');
         $group->post('/crear',ProveedorAction::class.':crea_Proveedor');
         $group->delete('/cambiarestado/{id_proveedor}',ProveedorAction::class.':cambiaestado_Proveedor');
         $group->get('/listar',ProveedorAction::class.':lista_Proveedor');
+    });
+    //cliente rutas
+    $app->group('/api/v1/cliente', function(Group $group){
+        $group->get('/obtener/{id_cliente}',ClienteAction::class.':obtiene_Cliente');
+        $group->put('/editar/{id_cliente}',ClienteAction::class.':edita_Cliente');
+        $group->post('/crear',ClienteAction::class.':crea_Cliente');
+        $group->delete('/cambiarestado/{id_cliente}',ClienteAction::class.':cambiaestado_Cliente');
+        $group->get('/listar',ClienteAction::class.':lista_Cliente');
     });
     //liname rutas
     $app->group('/api/v1/liname', function (Group $group) {
