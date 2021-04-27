@@ -8,4 +8,6 @@ interface NotificacionRepository
     public function getNotificacion($id_usuario): array;
     public function getNotificacionId($id_usuario, $id_notificacion): array;
     public function createNotificacion($id_usuario, $data_notificacion): array;
+    public function inactivaNotificacion($id_usuario, $id_notificacion): array;
+    public function confirmaNotificacion($id_usuario, $id_notificacion): array;
 }

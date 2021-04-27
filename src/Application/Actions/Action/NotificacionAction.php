@@ -43,7 +43,7 @@ class NotificacionAction extends Action {
         if($res['success']==false){
             return $this->respondWithData(null,$res['message'],202,true);
         }else{
-            return $this->respondWithData($res['data_proveedor'],$res['message'],200,true);
+            return $this->respondWithData($res['data_notificacion'],$res['message'],200,true);
         }
     }
 
@@ -75,6 +75,44 @@ class NotificacionAction extends Action {
         $res=$this->notificacionRepository->createNotificacion($id_usuario, $data_notificacion);
 
         // return $this->respondWithData($res);
+
+        if($res['success']==false){
+            return $this->respondWithData(null,$res['message'],202,true);
+        }else{
+            return $this->respondWithData($res['data_notificacion'],$res['message'],200,true);
+        }
+    }
+
+    public function inactiva_notificacion(Request $request, Response $response, $args): Response {
+        $this->request = $request;
+        $this->response = $response;
+        $this->args = $args;
+        $id_notificacion = $args['id_notificacion'];
+        //get token  -> id_usuario
+        $token=getenv('TOKEN_DATOS');
+        $token=json_decode($token,true);
+        $id_usuario=$token['sub'];
+
+        $res=$this->notificacionRepository->inactivaNotificacion($id_usuario, $id_notificacion);
+
+        if($res['success']==false){
+            return $this->respondWithData(null,$res['message'],202,true);
+        }else{
+            return $this->respondWithData($res['data_notificacion'],$res['message'],200,true);
+        }
+    }
+
+    public function confirma_notificacion(Request $request, Response $response, $args): Response {
+        $this->request = $request;
+        $this->response = $response;
+        $this->args = $args;
+        $id_notificacion = $args['id_notificacion'];
+        //get token  -> id_usuario
+        $token=getenv('TOKEN_DATOS');
+        $token=json_decode($token,true);
+        $id_usuario=$token['sub'];
+
+        $res=$this->notificacionRepository->confirmaNotificacion($id_usuario, $id_notificacion);
 
         if($res['success']==false){
             return $this->respondWithData(null,$res['message'],202,true);

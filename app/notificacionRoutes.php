@@ -16,7 +16,8 @@ return function (App $app) {
         $group->get('/listar', NotificacionAction::class.':lista_notificacion');
         $group->get('/{id_notificacion}', NotificacionAction::class.':lista_id_notificacion');
         $group->post('/crear', NotificacionAction::class.':crea_notificacion');
-        //$group->get('/notificacion', MenuAction::class.':menu');
+        $group->delete('/cambia_estado/{id_notificacion}', NotificacionAction::class.':inactiva_notificacion');
+        $group->patch('/confirma/{id_notificacion}', NotificacionAction::class.':confirma_notificacion');
     });
 
 };
