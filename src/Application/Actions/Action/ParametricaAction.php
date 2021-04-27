@@ -32,7 +32,9 @@ class ParametricaAction  extends Action {
         $this->response = $response;
         $this->args = $args;
         $cod_grupo = $args['cod_grupo'];
-        $data = $this->parametricaRepository->getParametrica($cod_grupo, 0);
+        $query=$request->getQueryParams();
+        $filtro=$query['filtro'];
+        $data = $this->parametricaRepository->getParametrica($cod_grupo, 0,$filtro);
         if (isset($data['error'])) {
             return $this->respondWithData(array(), 'Error', 500, false);
         }

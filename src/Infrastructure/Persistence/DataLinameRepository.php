@@ -379,7 +379,7 @@ class DataLinameRepository implements LinameRepository {
         }
     }
 
-    public function getListLiname($params): array {
+    public function getListLiname($params): array {     
         $filtro = $params['filtro'];
         $indice = $params['indice'];
         $limite = $params['limite'];

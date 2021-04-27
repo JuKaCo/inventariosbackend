@@ -25,8 +25,9 @@ class DataParametricaRepository implements ParametricaRepository {
         $this->db = $con->getConection();
     }
 
-    public function getParametrica($cod_grupo,$id_padre): array {
+    public function getParametrica($cod_grupo,$id_padre,$filtro=''): array {
         try {
+            $filtro='%'.strtolower($filtro).'%';
             $sql = "SELECT 
                 id_param,
                 cod_grupo,
@@ -34,8 +35,10 @@ class DataParametricaRepository implements ParametricaRepository {
                 valor
 
                 FROM param_general
-                WHERE cod_grupo=:cod_grupo and id_padre=:id_padre";
+                WHERE cod_grupo=:cod_grupo AND id_padre=:id_padre AND LOWER(valor) LIKE :filtro
+                ORDER BY id_param";
             $res = ($this->db)->prepare($sql);
+            $res->bindParam(':filtro', $filtro, PDO::PARAM_STR);
             $res->bindParam(':cod_grupo', $cod_grupo, PDO::PARAM_STR);
             $res->bindParam(':id_padre', $id_padre, PDO::PARAM_INT);
             $res->execute();
