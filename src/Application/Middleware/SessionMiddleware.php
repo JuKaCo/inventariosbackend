@@ -119,7 +119,7 @@ class SessionMiddleware implements Middleware {
                             EOD;
 
                     $jwt = new \Firebase\JWT\JWT;
-                    $jwt::$leeway = 60;
+                    $jwt::$leeway = 256;
                     $decoded = JWT::decode($Autorization, $publicKey, array('RS256'));
                     //*Setea datos del token en formato String JSON
                     //@putenv TOKEN_DATOS
