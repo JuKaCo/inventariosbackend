@@ -56,6 +56,8 @@ $routes($app);
 
 $routes = require __DIR__ . '/../app/parametricaRoutes.php';
 $routes($app);
+$routes = require __DIR__ . '/../app/inventarioRoutes.php';
+$routes($app);
 $routes = require __DIR__ . '/../app/rrhhRoutes.php';
 $routes($app);
 $routes = require __DIR__ . '/../app/notificacionRoutes.php';

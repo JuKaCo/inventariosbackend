@@ -7,6 +7,7 @@ use App\Domain\ParametricaRepository;
 use App\Domain\RrhhRepository;
 use App\Domain\ProveedorRepository;
 use App\Domain\ClienteRepository;
+use App\Domain\ProductoRepository;
 use App\Domain\LinameRepository;
 use App\Domain\LinadimeRepository;
 use App\Domain\CorrelativoRepository;
@@ -17,6 +18,7 @@ use App\Infrastructure\Persistence\DataParametricaRepository;
 use App\Infrastructure\Persistence\DataRrhhRepository;
 use App\Infrastructure\Persistence\DataProveedorRepository;
 use App\Infrastructure\Persistence\DataClienteRepository;
+use App\Infrastructure\Persistence\DataProductoRepository;
 use App\Infrastructure\Persistence\DataLinameRepository;
 use App\Infrastructure\Persistence\DataLinadimeRepository;
 use App\Infrastructure\Persistence\DataCorrelativoRepository;
@@ -33,6 +35,7 @@ return function (ContainerBuilder $containerBuilder) {
         RrhhRepository::class => \DI\autowire(DataRrhhRepository::class),
         ProveedorRepository::class => \DI\autowire(DataProveedorRepository::class),
         ClienteRepository::class => \DI\autowire(DataClienteRepository::class),
+        ProductoRepository::class => \DI\autowire(DataProductoRepository::class),
         LinameRepository::class => \DI\autowire(DataLinameRepository::class),
         LinadimeRepository::class => \DI\autowire(DataLinadimeRepository::class),
         CorrelativoRepository::class => \DI\autowire(DataCorrelativoRepository::class),
