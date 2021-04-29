@@ -167,14 +167,20 @@ class DataProductoRepository implements ProductoRepository {
         &&isset($data_producto['dispositivo'])&&isset($data_producto['especificacion_tec'])&&isset($data_producto['presentacion']))){
             return array('success'=>false,'message'=>'Datos invalidos');
         }
+        if($data_producto['reg_san']==""){
+            $data_producto['reg_san']==null;
+            $aux_query=" ";
+        }else{
+            $aux_query = "OR reg_san LIKE '".$data_producto['reg_san']."'";
+        }
         $sql = "SELECT *
                 FROM producto
-                WHERE (codigo=:codigo OR nombre_comercial=:nombre_comercial OR reg_san=:reg_san) AND id!=:id_producto";
+                WHERE (codigo LIKE :codigo OR nombre_comercial LIKE :nombre_comercial ".$aux_query.") AND id!=:id_producto";
             $res = ($this->db)->prepare($sql);
             $res->bindParam(':codigo', $data_producto['codigo'], PDO::PARAM_STR);
             $res->bindParam(':id_producto', $id_producto, PDO::PARAM_STR);
             $res->bindParam(':nombre_comercial', $data_producto['codinombre_comercialgo'], PDO::PARAM_STR);
-            $res->bindParam(':reg_san', $data_producto['reg_san'], PDO::PARAM_STR);
+            //$res->bindParam(':reg_san', $data_producto['reg_san'], PDO::PARAM_STR);
             $res->execute();
         if($res->rowCount()>0){
             $resp = array('success'=>false,'message'=>'Error, el nombre comercial, codigo o registro sanitario del producto ya existe en otro registro');
@@ -225,7 +231,8 @@ class DataProductoRepository implements ProductoRepository {
             $res->execute();
             //$res = $res->fetchAll(PDO::FETCH_ASSOC);
             if($data_producto['codigo_liname']['id_liname']==null){$data_producto['codigo_liname']=json_decode ("{}");}
-            if($data_producto['codigo_linadime']['id_linadime']==null){$data_producto['codigo_linadime']=json_decode ("{}");}  
+            if($data_producto['codigo_linadime']['id_linadime']==null){$data_producto['codigo_linadime']=json_decode ("{}");} 
+            if($data_producto['reg_san']==""){$data_producto['reg_san']=null;}
             $resp = array('success'=>true,'message'=>'producto actualizado','data_producto'=>$data_producto);
         }
         return $resp;
@@ -259,13 +266,19 @@ class DataProductoRepository implements ProductoRepository {
         &&isset($data_producto['dispositivo'])&&isset($data_producto['especificacion_tec'])&&isset($data_producto['presentacion']))){
             return array('success'=>false,'message'=>'Datos invalidos');
         }
+        if($data_producto['reg_san']==""){
+            $data_producto['reg_san']==null;
+            $aux_query=" ";
+        }else{
+            $aux_query = "OR reg_san LIKE '".$data_producto['reg_san']."'";
+        }
         $sql = "SELECT *
                 FROM producto
-                WHERE codigo=:codigo OR nombre_comercial=:nombre_comercial OR reg_san=:reg_san";
+                WHERE codigo LIKE :codigo OR nombre_comercial LIKE :nombre_comercial ".$aux_query.";";
         $res = ($this->db)->prepare($sql);
-        $res->bindParam(':codigo', $data_producto['codigo'], PDO::PARAM_INT);
+        $res->bindParam(':codigo', $data_producto['codigo'], PDO::PARAM_STR);
         $res->bindParam(':nombre_comercial', $data_producto['nombre_comercial'], PDO::PARAM_STR);
-        $res->bindParam(':reg_san', $data_producto['reg_san'], PDO::PARAM_STR);
+        //$res->bindParam(':reg_san', $data_producto['reg_san'], PDO::PARAM_STR);
         $res->execute();
         if($res->rowCount()==1){
             $resp = array('success'=>false,'message'=>'Error, ya existe un producto con el mismo codigo, nombre comercial o registro sanitario');
@@ -341,9 +354,9 @@ class DataProductoRepository implements ProductoRepository {
             $res = $res->fetchAll(PDO::FETCH_ASSOC);
             $sql = "SELECT *
                     FROM producto pr
-                    WHERE pr.codigo=:codigo AND pr.activo=1";
+                    WHERE pr.codigo LIKE :codigo AND pr.activo=1";
             $res = ($this->db)->prepare($sql);
-            $res->bindParam(':codigo', $data_producto['codigo'], PDO::PARAM_INT);
+            $res->bindParam(':codigo', $data_producto['codigo'], PDO::PARAM_STR);
             $res->execute();
             $res = $res->fetchAll(PDO::FETCH_ASSOC);
             $res = $res[0];
@@ -368,7 +381,8 @@ class DataProductoRepository implements ProductoRepository {
                             'nivel_uso_iii'=>$res['nivel_uso_iii'],
                             'activo'=>$res['activo']);
             if($data_producto['codigo_liname']['id_liname']==null){$result['codigo_liname']=json_decode ("{}");}
-            if($data_producto['codigo_linadime']['id_linadime']==null){$result['codigo_linadime']=json_decode ("{}");}             
+            if($data_producto['codigo_linadime']['id_linadime']==null){$result['codigo_linadime']=json_decode ("{}");}
+            if($data_producto['reg_san']==null){$result['reg_san']=null;}         
             $resp = array('success'=>true,'message'=>'producto registrado exitosamente','data_producto'=>$result);
         }
         return $resp;
