@@ -39,12 +39,12 @@ class DataClienteRepository implements ClienteRepository {
         pg5.id_param as id_param5, pg5.cod_grupo as cod_grupo5, pg5.codigo as cod_param5, pg5.valor as valor5,
         pg6.id_param as id_param6, pg6.cod_grupo as cod_grupo6, pg6.codigo as cod_param6, pg6.valor as valor6
         FROM ((((((cliente cl LEFT JOIN param_general pg ON cl.dependencia=pg.id_param) 
-        JOIN param_general pg1 ON cl.nivel=pg1.id_param)
-        JOIN param_general pg2 ON cl.departamento=pg2.id_param)
-        JOIN param_general pg3 ON cl.provincia=pg3.id_param)
-        JOIN param_general pg4 ON cl.municipio=pg4.id_param)
-        JOIN param_general pg5 ON cl.subsector=pg5.id_param)
-        JOIN param_general pg6 ON cl.tipo=pg6.id_param
+        LEFT JOIN param_general pg1 ON cl.nivel=pg1.id_param)
+        LEFT JOIN param_general pg2 ON cl.departamento=pg2.id_param)
+        LEFT JOIN param_general pg3 ON cl.provincia=pg3.id_param)
+        LEFT JOIN param_general pg4 ON cl.municipio=pg4.id_param)
+        LEFT JOIN param_general pg5 ON cl.subsector=pg5.id_param)
+        LEFT JOIN param_general pg6 ON cl.tipo=pg6.id_param
         WHERE cl.id=:id_cliente AND cl.activo=1";
         $res = ($this->db)->prepare($sql);
         $res->bindParam(':id_cliente', $id_cliente, PDO::PARAM_STR);
@@ -128,14 +128,14 @@ class DataClienteRepository implements ClienteRepository {
 
         $sql = "SELECT cl.id
             FROM ((((((cliente cl LEFT JOIN param_general pg ON cl.dependencia=pg.id_param) 
-            JOIN param_general pg1 ON cl.nivel=pg1.id_param)
-            JOIN param_general pg2 ON cl.departamento=pg2.id_param)
-            JOIN param_general pg3 ON cl.provincia=pg3.id_param)
-            JOIN param_general pg4 ON cl.municipio=pg4.id_param)
-            JOIN param_general pg5 ON cl.subsector=pg5.id_param)
-            JOIN param_general pg6 ON cl.tipo=pg6.id_param
+            LEFT JOIN param_general pg1 ON cl.nivel=pg1.id_param)
+            LEFT JOIN param_general pg2 ON cl.departamento=pg2.id_param)
+            LEFT JOIN param_general pg3 ON cl.provincia=pg3.id_param)
+            LEFT JOIN param_general pg4 ON cl.municipio=pg4.id_param)
+            LEFT JOIN param_general pg5 ON cl.subsector=pg5.id_param)
+            LEFT JOIN param_general pg6 ON cl.tipo=pg6.id_param
             WHERE cl.activo=1 AND (
-            LOWER(cl.nombre) LIKE LOWER(:filtro) OR LOWER(cl.telefono) LIKE LOWER(:filtro) OR LOWER(cl.nit) LIKE LOWER(:filtro) OR
+            LOWER(cl.nombre) LIKE LOWER(:filtro) OR LOWER(cl.telefono) LIKE LOWER(:filtro) OR (cl.nit) LIKE (:filtro) OR
             LOWER(cl.correo) LIKE LOWER(:filtro) OR LOWER(cl.ciudad) LIKE LOWER(:filtro) OR LOWER(cl.direccion) LIKE LOWER(:filtro) OR
             LOWER(pg.valor) LIKE LOWER(:filtro) OR LOWER(pg1.valor) LIKE LOWER(:filtro) OR LOWER(pg2.valor) LIKE LOWER(:filtro) OR
             LOWER(pg3.valor) LIKE LOWER(:filtro) OR LOWER(pg4.valor) LIKE LOWER(:filtro) OR LOWER(pg5.valor) LIKE LOWER(:filtro) OR
@@ -153,14 +153,14 @@ class DataClienteRepository implements ClienteRepository {
         pg5.id_param as id_param5, pg5.cod_grupo as cod_grupo5, pg5.codigo as cod_param5, pg5.valor as valor5,
         pg6.id_param as id_param6, pg6.cod_grupo as cod_grupo6, pg6.codigo as cod_param6, pg6.valor as valor6
         FROM ((((((cliente cl LEFT JOIN param_general pg ON cl.dependencia=pg.id_param) 
-        JOIN param_general pg1 ON cl.nivel=pg1.id_param)
-        JOIN param_general pg2 ON cl.departamento=pg2.id_param)
-        JOIN param_general pg3 ON cl.provincia=pg3.id_param)
-        JOIN param_general pg4 ON cl.municipio=pg4.id_param)
-        JOIN param_general pg5 ON cl.subsector=pg5.id_param)
-        JOIN param_general pg6 ON cl.tipo=pg6.id_param
+        LEFT JOIN param_general pg1 ON cl.nivel=pg1.id_param)
+        LEFT JOIN param_general pg2 ON cl.departamento=pg2.id_param)
+        LEFT JOIN param_general pg3 ON cl.provincia=pg3.id_param)
+        LEFT JOIN param_general pg4 ON cl.municipio=pg4.id_param)
+        LEFT JOIN param_general pg5 ON cl.subsector=pg5.id_param)
+        LEFT JOIN param_general pg6 ON cl.tipo=pg6.id_param
         WHERE cl.activo=1 AND (
-        LOWER(cl.nombre) LIKE LOWER(:filtro) OR LOWER(cl.telefono) LIKE LOWER(:filtro) OR LOWER(cl.nit) LIKE LOWER(:filtro) OR
+        LOWER(cl.nombre) LIKE LOWER(:filtro) OR LOWER(cl.telefono) LIKE (:filtro) OR (cl.nit) LIKE (:filtro) OR
         LOWER(cl.correo) LIKE LOWER(:filtro) OR LOWER(cl.ciudad) LIKE LOWER(:filtro) OR LOWER(cl.direccion) LIKE LOWER(:filtro) OR
         LOWER(pg.valor) LIKE LOWER(:filtro) OR LOWER(pg1.valor) LIKE LOWER(:filtro) OR LOWER(pg2.valor) LIKE LOWER(:filtro) OR
         LOWER(pg3.valor) LIKE LOWER(:filtro) OR LOWER(pg4.valor) LIKE LOWER(:filtro) OR LOWER(pg5.valor) LIKE LOWER(:filtro) OR
