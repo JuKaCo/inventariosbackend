@@ -68,8 +68,8 @@ class DataProductoRepository implements ProductoRepository {
                             'nivel_uso_ii'=>$res['nivel_uso_ii'],
                             'nivel_uso_iii'=>$res['nivel_uso_iii'],
                             'activo'=>$res['activo']);
-            //if($res['codigo_liname']['id_liname']==null){$result['codigo_liname']=json_decode ("{}");}
-            //if($res['codigo_linadime']['id_linadime']==null){$result['codigo_linadime']=json_decode ("{}");}  
+            if($result['codigo_liname']['id_liname']==null){ $result['codigo_liname']=json_decode ("{}");}
+            if($result['codigo_linadime']['id_linadime']==null){$result['codigo_linadime']=json_decode ("{}");}  
             
             $resp = array('success'=>true,'message'=>'Exito','data_producto'=>$result);
         }else{
@@ -91,7 +91,7 @@ class DataProductoRepository implements ProductoRepository {
         $sql = "SELECT pr.id
                 FROM (producto pr LEFT JOIN param_liname pl ON pr.codigo_liname=pl.id) 
                 LEFT JOIN param_linadime pld ON pr.codigo_linadime=pld.id
-                WHERE pr.id=:id_producto AND pr.activo=1 AND (
+                WHERE pr.activo=1 AND (
             LOWER(pr.codigo) LIKE LOWER(:filtro) OR LOWER(pr.nombre_comercial) LIKE LOWER(:filtro) OR LOWER(pr.reg_san) LIKE LOWER(:filtro) OR
             LOWER(pr.referencia) LIKE LOWER(:filtro) OR LOWER(pr.medicamento) LIKE LOWER(:filtro) OR LOWER(pr.form_farm) LIKE LOWER(:filtro) OR
             LOWER(pr.concen) LIKE LOWER(:filtro) OR LOWER(pr.atq) LIKE LOWER(:filtro) OR LOWER(pr.precio_ref) LIKE LOWER(:filtro) OR
@@ -104,7 +104,7 @@ class DataProductoRepository implements ProductoRepository {
         $sql = "SELECT pr.*, pl.id as id_liname, pl.codigo as cod_liname, pld.id as id_linadime, pld.codigo as cod_linadime
                 FROM (producto pr LEFT JOIN param_liname pl ON pr.codigo_liname=pl.id) 
                 LEFT JOIN param_linadime pld ON pr.codigo_linadime=pld.id
-                WHERE pr.id=:id_producto AND pr.activo=1 AND (
+                WHERE pr.activo=1 AND (
             LOWER(pr.codigo) LIKE LOWER(:filtro) OR LOWER(pr.nombre_comercial) LIKE LOWER(:filtro) OR LOWER(pr.reg_san) LIKE LOWER(:filtro) OR
             LOWER(pr.referencia) LIKE LOWER(:filtro) OR LOWER(pr.medicamento) LIKE LOWER(:filtro) OR LOWER(pr.form_farm) LIKE LOWER(:filtro) OR
             LOWER(pr.concen) LIKE LOWER(:filtro) OR LOWER(pr.atq) LIKE LOWER(:filtro) OR LOWER(pr.precio_ref) LIKE LOWER(:filtro) OR
@@ -147,8 +147,8 @@ class DataProductoRepository implements ProductoRepository {
                                 'nivel_uso_ii'=>$res['nivel_uso_ii'],
                                 'nivel_uso_iii'=>$res['nivel_uso_iii'],
                                 'activo'=>$res['activo']);
-                if($res['codigo_liname']['id_liname']==null){$result['codigo_liname']=json_decode ("{}");}
-                if($res['codigo_linadime']['id_linadime']==null){$result['codigo_linadime']=json_decode ("{}");}  
+                if($result['codigo_liname']['id_liname']==null){$result['codigo_liname']=json_decode ("{}");}
+                if($result['codigo_linadime']['id_linadime']==null){$result['codigo_linadime']=json_decode ("{}");}  
                 array_push($arrayres,$result);
             }
             $concat=array('resultados'=>$arrayres,'total'=>$total);
@@ -224,8 +224,8 @@ class DataProductoRepository implements ProductoRepository {
             $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
             $res->execute();
             //$res = $res->fetchAll(PDO::FETCH_ASSOC);
-            //if($data_producto['codigo_liname']['id_liname']==null){$result['codigo_liname']=json_decode ("{}");}
-            //if($data_producto['codigo_linadime']['id_linadime']==null){$result['codigo_linadime']=json_decode ("{}");}  
+            if($data_producto['codigo_liname']['id_liname']==null){$data_producto['codigo_liname']=json_decode ("{}");}
+            if($data_producto['codigo_linadime']['id_linadime']==null){$data_producto['codigo_linadime']=json_decode ("{}");}  
             $resp = array('success'=>true,'message'=>'producto actualizado','data_producto'=>$data_producto);
         }
         return $resp;
@@ -367,8 +367,8 @@ class DataProductoRepository implements ProductoRepository {
                             'nivel_uso_ii'=>$res['nivel_uso_ii'],
                             'nivel_uso_iii'=>$res['nivel_uso_iii'],
                             'activo'=>$res['activo']);
-            //if($data_producto['codigo_liname']['id_liname']==null){$result['codigo_liname']=json_decode ("{}");}
-            //if($data_producto['codigo_linadime']['id_linadime']==null){$result['codigo_linadime']=json_decode ("{}");}             
+            if($data_producto['codigo_liname']['id_liname']==null){$result['codigo_liname']=json_decode ("{}");}
+            if($data_producto['codigo_linadime']['id_linadime']==null){$result['codigo_linadime']=json_decode ("{}");}             
             $resp = array('success'=>true,'message'=>'producto registrado exitosamente','data_producto'=>$result);
         }
         return $resp;
