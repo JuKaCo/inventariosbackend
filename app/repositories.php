@@ -13,6 +13,8 @@ use App\Domain\LinadimeRepository;
 use App\Domain\CorrelativoRepository;
 use App\Domain\NotificacionRepository;
 use App\Domain\RegionalRepository;
+use App\Domain\ProgramaRepository;
+use App\Domain\AlmacenRepository;
 use App\Infrastructure\Persistence\User\InMemoryUserRepository;
 use App\Infrastructure\Persistence\DataMenuRepository;
 use App\Infrastructure\Persistence\DataParametricaRepository;
@@ -25,6 +27,8 @@ use App\Infrastructure\Persistence\DataLinadimeRepository;
 use App\Infrastructure\Persistence\DataCorrelativoRepository;
 use App\Infrastructure\Persistence\DataNotificacionRepository;
 use App\Infrastructure\Persistence\DataRegionalRepository;
+use App\Infrastructure\Persistence\DataProgramaRepository;
+use App\Infrastructure\Persistence\DataAlmacenRepository;
 
 use DI\ContainerBuilder;
 
@@ -42,6 +46,8 @@ return function (ContainerBuilder $containerBuilder) {
         LinadimeRepository::class => \DI\autowire(DataLinadimeRepository::class),
         CorrelativoRepository::class => \DI\autowire(DataCorrelativoRepository::class),
         NotificacionRepository::class => \DI\autowire(DataNotificacionRepository::class),
-        RegionalRepository::class => \DI\autowire(DataRegionalRepository::class)
+        RegionalRepository::class => \DI\autowire(DataRegionalRepository::class),
+        ProgramaRepository::class => \DI\autowire(DataProgramaRepository::class),
+        AlmacenRepository::class => \DI\autowire(DataAlmacenRepository::class)
     ]);
 };

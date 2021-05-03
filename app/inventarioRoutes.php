@@ -7,6 +7,8 @@ use Slim\Interfaces\RouteCollectorProxyInterface as Group;
 
 use App\Application\Actions\Action\ProductoAction;
 use App\Application\Actions\Action\RegionalAction;
+use App\Application\Actions\Action\ProgramaAction;
+use App\Application\Actions\Action\AlmacenAction;
 
 return function (App $app) {
 
@@ -25,6 +27,22 @@ return function (App $app) {
         $group->post('/crear',RegionalAction::class.':crea_Regional');
         $group->delete('/cambiarestado/{id_regional}',RegionalAction::class.':cambiaestado_Regional');
         $group->get('/listar',RegionalAction::class.':lista_Regional');
+    });
+    //programa rutas
+    $app->group('/api/v1/programa', function(Group $group){
+        $group->get('/obtener/{id_programa}',ProgramaAction::class.':obtiene_Programa');
+        $group->put('/editar/{id_programa}',ProgramaAction::class.':edita_Programa');
+        $group->post('/crear',ProgramaAction::class.':crea_Programa');
+        $group->delete('/cambiarestado/{id_programa}',ProgramaAction::class.':cambiaestado_Programa');
+        $group->get('/listar',ProgramaAction::class.':lista_Programa');
+    });
+    //almacen rutas
+    $app->group('/api/v1/almacen', function(Group $group){
+        $group->get('/obtener/{id_almacen}',AlmacenAction::class.':obtiene_Almacen');
+        $group->put('/editar/{id_almacen}',AlmacenAction::class.':edita_Almacen');
+        $group->post('/crear',AlmacenAction::class.':crea_Almacen');
+        $group->delete('/cambiarestado/{id_almacen}',AlmacenAction::class.':cambiaestado_Almacen');
+        $group->get('/listar',AlmacenAction::class.':lista_Almacen');
     });
 
 };
