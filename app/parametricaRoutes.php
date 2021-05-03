@@ -19,7 +19,11 @@ return function (App $app) {
     $app->group('/api/v1/param', function (Group $group) {
         $group->get('/gen/{cod_grupo}', ParametricaAction::class.':genParam');
         $group->get('/gen/{cod_grupo}/{id_padre}', ParametricaAction::class.':genParamPadre');
+        
         $group->get('/biometrico/terminal', ParametricaAction::class.':genParamBiometrico');
+        
+        $group->get('/liname', ParametricaAction::class.':genParamLiname');
+        $group->get('/linadime', ParametricaAction::class.':genParamLinadime');
     });
     //proveedor rutas 
     $app->group('/api/v1/proveedor', function(Group $group){
