@@ -70,7 +70,9 @@ class DataParametricaRepository implements ParametricaRepository {
     public function getLiname($filtro): array {
         $filtro = '%' . $filtro . '%';
         try {
-            $sql = "SELECT l.codigo,
+            $sql = "SELECT 
+                    l.id as id_liname,
+                    l.codigo as cod_liname,
                     l.medicamento,
                     l.for_farma,
                     l.concen,
@@ -98,7 +100,9 @@ class DataParametricaRepository implements ParametricaRepository {
     public function getLinadime($filtro): array {
         $filtro = '%' . $filtro . '%';
         try {
-            $sql = "SELECT l.codigo,
+            $sql = "SELECT
+                    l.id as id_linadime,
+                    l.codigo as cod_linadime,
                     l.dispositivo,
                     l.esp_tec,
                     l.presen,
