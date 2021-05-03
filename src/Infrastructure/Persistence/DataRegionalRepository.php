@@ -6,6 +6,7 @@ namespace App\Infrastructure\Persistence;
 
 use App\Application\Actions\RepositoryConection\Conect;
 use App\Domain\RegionalRepository;
+use App\Infrastructure\Persistence\DataCorrelativoRepository;
 use \PDO;
 
 class DataRegionalRepository implements RegionalRepository {
@@ -19,6 +20,7 @@ class DataRegionalRepository implements RegionalRepository {
      * @var $db conection db
      */
     private $db;
+    private $dataCorrelativoRepository;
 
     /**
      * DataRegionalRepository constructor.
@@ -27,6 +29,7 @@ class DataRegionalRepository implements RegionalRepository {
     public function __construct() {
         $con = new Conect();
         $this->db = $con->getConection();
+        $this->dataCorrelativoRepository = new DataCorrelativoRepository;
     }
 
     public function getRegional($id_regional): array {
@@ -40,6 +43,7 @@ class DataRegionalRepository implements RegionalRepository {
             $res = $res->fetchAll(PDO::FETCH_ASSOC);
             $res = $res[0];
             $result = array('id'=>$res['id'],
+                            'codigo'=>$res['codigo'],
                             'nombre'=>$res['nombre'],
                             'departamento'=>array(
                                 'id_param'=>$res['id_param'],
@@ -68,14 +72,14 @@ class DataRegionalRepository implements RegionalRepository {
         $filter="%".strtolower($filtro)."%";
         $sql = "SELECT reg.*, pg.id_param, pg.cod_grupo, pg.codigo as cod_param, pg.valor
                 FROM regional reg LEFT JOIN param_general pg ON reg.departamento=pg.id_param
-                WHERE reg.activo=1 AND (LOWER(reg.nombre) LIKE LOWER(:filter) OR LOWER(pg.valor) LIKE LOWER(:filter) OR LOWER(reg.direccion) LIKE LOWER(:filter) OR LOWER(reg.telefono) LIKE LOWER(:filter) OR DATE_FORMAT(reg.f_crea,'%d/%m/%Y') LIKE :filter)";
+                WHERE reg.activo=1 AND (LOWER(reg.codigo) LIKE LOWER(:filter) OR LOWER(reg.nombre) LIKE LOWER(:filter) OR LOWER(pg.valor) LIKE LOWER(:filter) OR LOWER(reg.direccion) LIKE LOWER(:filter) OR LOWER(reg.telefono) LIKE LOWER(:filter) OR DATE_FORMAT(reg.f_crea,'%d/%m/%Y') LIKE :filter)";
         $res = ($this->db)->prepare($sql);
         $res->bindParam(':filter', $filter, PDO::PARAM_STR);
         $res->execute();
         $total=$res->rowCount();
         $sql = "SELECT reg.*, pg.id_param, pg.cod_grupo, pg.codigo as cod_param, pg.valor
                 FROM regional reg LEFT JOIN param_general pg ON reg.departamento=pg.id_param
-                WHERE reg.activo=1 AND (LOWER(reg.nombre) LIKE LOWER(:filter) OR LOWER(pg.valor) LIKE LOWER(:filter) OR LOWER(reg.direccion) LIKE LOWER(:filter) OR LOWER(reg.telefono) LIKE LOWER(:filter) OR DATE_FORMAT(reg.f_crea,'%d/%m/%Y') LIKE :filter)
+                WHERE reg.activo=1 AND (LOWER(reg.codigo) LIKE LOWER(:filter) OR LOWER(reg.nombre) LIKE LOWER(:filter) OR LOWER(pg.valor) LIKE LOWER(:filter) OR LOWER(reg.direccion) LIKE LOWER(:filter) OR LOWER(reg.telefono) LIKE LOWER(:filter) OR DATE_FORMAT(reg.f_crea,'%d/%m/%Y') LIKE :filter)
                 ORDER BY reg.f_crea DESC
                 LIMIT :indice, :limite;";
         $res = ($this->db)->prepare($sql);
@@ -88,6 +92,7 @@ class DataRegionalRepository implements RegionalRepository {
             $arrayres = array();
             foreach ($res as $item){
                 $result = array('id'=>$item['id'],
+                            'codigo'=>$item['codigo'],
                             'nombre'=>$item['nombre'],
                             'departamento'=>array(
                                 'id_param'=>$item['id_param'],
@@ -171,15 +176,19 @@ class DataRegionalRepository implements RegionalRepository {
         }
         $sql = "SELECT *
                 FROM regional
-                WHERE nombre=:nombre";
+                WHERE nombre LIKE :nombre";
         $res = ($this->db)->prepare($sql);
         $res->bindParam(':nombre', $data_regional['nombre'], PDO::PARAM_STR);
         $res->execute();
         if($res->rowCount()==1){
             $resp = array('success'=>false,'message'=>'Error, el nombre de la regional ya existe');
         }else{
+            $correlativo = $this->dataCorrelativoRepository->genCorrelativo('REGIO', '0', $uuid);
+            $correlativo = $correlativo['correlativo'];
+            $correlativo = "REGIO-".$correlativo;
             $sql = "INSERT INTO regional (
                     id,
+                    codigo,
                     nombre,
                     departamento,
                     direccion,
@@ -189,6 +198,7 @@ class DataRegionalRepository implements RegionalRepository {
                     u_crea
                     )VALUES(
                     uuid(),
+                    :codigo,
                     :nombre,
                     :departamento,
                     :direccion,
@@ -198,6 +208,7 @@ class DataRegionalRepository implements RegionalRepository {
                     :u_crea
                     );";
             $res = ($this->db)->prepare($sql);
+            $res->bindParam(':codigo', $correlativo, PDO::PARAM_STR);
             $res->bindParam(':nombre', $data_regional['nombre'], PDO::PARAM_STR);
             $aux = $data_regional['departamento']['id_param'];
             $res->bindParam(':departamento', $aux, PDO::PARAM_INT);
@@ -208,13 +219,14 @@ class DataRegionalRepository implements RegionalRepository {
             $res = $res->fetchAll(PDO::FETCH_ASSOC);
             $sql = "SELECT reg.*, pg.id_param, pg.cod_grupo, pg.codigo as cod_param, pg.valor
                     FROM regional reg, param_general pg
-                    WHERE reg.nombre=:nombre AND reg.activo=1 AND reg.departamento=pg.id_param";
+                    WHERE reg.codigo=:codigo AND reg.activo=1 AND reg.departamento=pg.id_param";
             $res = ($this->db)->prepare($sql);
-            $res->bindParam(':nombre', $data_regional['nombre'], PDO::PARAM_STR);
+            $res->bindParam(':codigo', $correlativo, PDO::PARAM_STR);
             $res->execute();
             $res = $res->fetchAll(PDO::FETCH_ASSOC);
             $res = $res[0];
             $result = array('id'=>$res['id'],
+                            'codigo'=>$res['codigo'],
                             'nombre'=>$res['nombre'],
                             'departamento'=>array(
                                 'id_param'=>$res['id_param'],
