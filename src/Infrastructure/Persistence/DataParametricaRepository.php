@@ -28,19 +28,34 @@ class DataParametricaRepository implements ParametricaRepository {
     public function getParametrica($cod_grupo, $id_padre, $filtro = ''): array {
         try {
             $filtro = '%' . strtolower($filtro) . '%';
-            $sql = "SELECT 
-                id_param,
-                cod_grupo,
-                codigo,
-                valor
+            if($id_padre==0){
+                $sql = "SELECT 
+                    id_param,
+                    cod_grupo,
+                    codigo,
+                    valor
 
-                FROM param_general
-                WHERE cod_grupo=:cod_grupo AND id_padre=:id_padre AND LOWER(valor) LIKE :filtro
-                ORDER BY id_param";
-            $res = ($this->db)->prepare($sql);
-            $res->bindParam(':filtro', $filtro, PDO::PARAM_STR);
-            $res->bindParam(':cod_grupo', $cod_grupo, PDO::PARAM_STR);
-            $res->bindParam(':id_padre', $id_padre, PDO::PARAM_INT);
+                    FROM param_general
+                    WHERE cod_grupo=:cod_grupo AND LOWER(valor) LIKE :filtro
+                    ORDER BY id_param";
+                $res = ($this->db)->prepare($sql);
+                $res->bindParam(':filtro', $filtro, PDO::PARAM_STR);
+                $res->bindParam(':cod_grupo', $cod_grupo, PDO::PARAM_STR);
+            }else{
+                $sql = "SELECT 
+                    id_param,
+                    cod_grupo,
+                    codigo,
+                    valor
+
+                    FROM param_general
+                    WHERE cod_grupo=:cod_grupo AND id_padre=:id_padre AND LOWER(valor) LIKE :filtro
+                    ORDER BY id_param";
+                $res = ($this->db)->prepare($sql);
+                $res->bindParam(':filtro', $filtro, PDO::PARAM_STR);
+                $res->bindParam(':cod_grupo', $cod_grupo, PDO::PARAM_STR);
+                $res->bindParam(':id_padre', $id_padre, PDO::PARAM_INT);
+            }
             $res->execute();
             $res = $res->fetchAll(PDO::FETCH_ASSOC);
             return $res;

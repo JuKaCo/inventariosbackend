@@ -50,7 +50,9 @@ class ParametricaAction  extends Action {
         $this->args = $args;
         $cod_grupo = $args['cod_grupo'];
         $id_padre = $args['id_padre'];
-        $data = $this->parametricaRepository->getParametrica($cod_grupo, $id_padre);
+        $query=$request->getQueryParams();
+        $filtro=$query['filtro'];
+        $data = $this->parametricaRepository->getParametrica($cod_grupo, $id_padre,$filtro);
         if (isset($data['error'])) {
             return $this->respondWithData(array(), 'Error', 500, false);
         }
