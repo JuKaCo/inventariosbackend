@@ -24,6 +24,11 @@ return function (App $app) {
         
         $group->get('/liname', ParametricaAction::class.':genParamLiname');
         $group->get('/linadime', ParametricaAction::class.':genParamLinadime');
+
+        $group->get('/proveedor', ParametricaAction::class.':genParamProveedor');
+
+        $group->get('/regional', ParametricaAction::class.':genParamRegional');
+
     });
     //proveedor rutas 
     $app->group('/api/v1/proveedor', function(Group $group){

@@ -143,4 +143,63 @@ class DataParametricaRepository implements ParametricaRepository {
         return array();
     }
 
+    public function getProveedor($filtro): array {
+        $filtro = '%' . $filtro . '%';
+        try {
+            $sql = "SELECT
+                    pr.id,
+                    pr.codigo,
+                    pr.nombre,
+                    pr.direccion,
+                    pg.valor,
+                    pg.id_param
+                    FROM proveedor pr JOIN param_general pg ON pr.pais=pg.id_param
+                    WHERE pr.activo = 1 
+                          AND (LOWER(pr.codigo) LIKE :filter OR LOWER(pr.nombre) LIKE :filter)";
+            $res = ($this->db)->prepare($sql);
+            $res->bindParam(':filter', $filtro, PDO::PARAM_STR);
+            $res->execute();
+            $res = $res->fetchAll(PDO::FETCH_ASSOC);
+            $arrayres = array();
+            foreach ($res as $item){
+                $result = array('id'=>$item['id'],
+                                'codigo'=>$item['codigo'],
+                                'nombre'=>$item['nombre'],
+                                'pais'=>array(
+                                    'id_param'=>$item['id_param'],
+                                    'valor'=>$item['valor']
+                                ),
+                                'direccion'=>$item['direccion']);
+                array_push($arrayres,$result);
+            }
+            return $arrayres;
+        } catch (Exception $e) {
+            return array('error' => true);
+        }
+        return array();
+    }
+
+
+    public function getRegional($filtro): array {
+        $filtro = '%' . $filtro . '%';
+        try {
+            $sql = "SELECT
+                    r.id,
+                    r.codigo,
+                    r.nombre,
+                    r.direccion
+                    FROM regional r
+                    WHERE r.activo = 1 
+                          AND (LOWER(r.codigo) LIKE :filter OR LOWER(r.nombre) LIKE :filter)";
+            $res = ($this->db)->prepare($sql);
+            $res->bindParam(':filter', $filtro, PDO::PARAM_STR);
+            $res->execute();
+            $res = $res->fetchAll(PDO::FETCH_ASSOC);
+            return $res;
+        } catch (Exception $e) {
+            return array('error' => true);
+        }
+        return array();
+    }
+
 }

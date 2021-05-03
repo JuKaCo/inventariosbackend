@@ -9,4 +9,6 @@ interface ParametricaRepository
     public function getTerminalBiometrico(): array ;
     public function getLiname($filtro): array;
     public function getLinadime($filtro): array;
+    public function getProveedor($filtro): array;
+    public function getRegional($filtro): array;
 }
