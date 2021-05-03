@@ -29,7 +29,7 @@ class NotificacionAction extends Action {
         return $this->respondWithData($users);
     }
 
-    public function lista_notificacion(Request $request, Response $response, $args): Response {
+    public function lista_notificacion_simple(Request $request, Response $response, $args): Response {
         $this->request = $request;
         $this->response = $response;
         $this->args = $args;
@@ -38,10 +38,29 @@ class NotificacionAction extends Action {
         $token=json_decode($token,true);
         $id_usuario=$token['sub'];
 
-        $res=$this->notificacionRepository->getNotificacion($id_usuario);
+        $res=$this->notificacionRepository->getNotificacionSimple($id_usuario);
 
         if($res['success']==false){
-            return $this->respondWithData(null,$res['message'],202,true);
+            return $this->respondWithData([],$res['message'],202,true);
+        }else{
+            return $this->respondWithData($res['data_notificacion'],$res['message'],200,true);
+        }
+    }
+
+
+    public function lista_notificacion(Request $request, Response $response, $args): Response {
+        $this->request = $request;
+        $this->response = $response;
+        $this->args = $args;
+        //get token  -> id_usuario
+        $token=getenv('TOKEN_DATOS');
+        $token=json_decode($token,true);
+        $id_usuario=$token['sub'];
+        $query=$request->getQueryParams();
+        $res=$this->notificacionRepository->getNotificacion($id_usuario, $query);
+
+        if($res['success']==false){
+            return $this->respondWithData([],$res['message'],202,true);
         }else{
             return $this->respondWithData($res['data_notificacion'],$res['message'],200,true);
         }

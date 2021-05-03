@@ -5,7 +5,8 @@ namespace App\Domain;
 
 interface NotificacionRepository
 {
-    public function getNotificacion($id_usuario): array;
+    public function getNotificacionSimple($id_usuario): array;
+    public function getNotificacion($id_usuario, $query): array;
     public function getNotificacionId($id_usuario, $id_notificacion): array;
     public function createNotificacion($id_usuario, $data_notificacion): array;
     public function inactivaNotificacion($id_usuario, $id_notificacion): array;

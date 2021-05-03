@@ -13,6 +13,7 @@ use App\Application\Actions\Action\NotificacionAction;
 return function (App $app) {
 
     $app->group('/api/v1/notificacion', function (Group $group) {
+        $group->get('/lista/simple', NotificacionAction::class.':lista_notificacion_simple');
         $group->get('/listar', NotificacionAction::class.':lista_notificacion');
         $group->get('/{id_notificacion}', NotificacionAction::class.':lista_id_notificacion');
         $group->post('/crear', NotificacionAction::class.':crea_notificacion');
