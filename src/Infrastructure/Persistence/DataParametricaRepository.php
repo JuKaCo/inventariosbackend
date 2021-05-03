@@ -25,9 +25,9 @@ class DataParametricaRepository implements ParametricaRepository {
         $this->db = $con->getConection();
     }
 
-    public function getParametrica($cod_grupo,$id_padre,$filtro=''): array {
+    public function getParametrica($cod_grupo, $id_padre, $filtro = ''): array {
         try {
-            $filtro='%'.strtolower($filtro).'%';
+            $filtro = '%' . strtolower($filtro) . '%';
             $sql = "SELECT 
                 id_param,
                 cod_grupo,
@@ -45,9 +45,10 @@ class DataParametricaRepository implements ParametricaRepository {
             $res = $res->fetchAll(PDO::FETCH_ASSOC);
             return $res;
         } catch (Exception $e) {
-            return array('error'=>true);
+            return array('error' => true);
         }
     }
+
     public function getTerminalBiometrico(): array {
         $con = new ConectBiometrico();
         $this->db = $con->getConection();
@@ -62,7 +63,65 @@ class DataParametricaRepository implements ParametricaRepository {
             $res = $res->fetchAll(PDO::FETCH_ASSOC);
             return $res;
         } catch (Exception $e) {
-            return array('error'=>true);
+            return array('error' => true);
         }
     }
+
+    public function getLiname($filtro): array {
+        $filtro = '%' . $filtro . '%';
+        try {
+            $sql = "SELECT l.codigo,
+                    l.medicamento,
+                    l.for_farma,
+                    l.concen,
+                    l.class_atq,
+                    l.pre_ref,
+                    l.aclara_parti
+                    FROM param_liname_archivo pa, param_liname l
+                    WHERE pa.activo=true and pa.id=l.id_param_liname_archivo
+                    and (upper(l.codigo) like upper(:filtro) or upper(l.medicamento) like upper(:filtro)
+                    or upper(l.class_atq) like upper(:filtro) or upper(l.concen) like upper(:filtro)
+                    or upper(l.for_farma) like upper(:filtro) or upper(l.pre_ref) like upper(:filtro)
+                    or upper(l.aclara_parti) like upper(:filtro)
+                    )";
+            $res = ($this->db)->prepare($sql);
+            $res->bindParam(':filtro', $filtro, PDO::PARAM_STR);
+            $res->execute();
+            $res = $res->fetchAll(PDO::FETCH_ASSOC);
+            return $res;
+        } catch (Exception $e) {
+            return array('error' => true);
+        }
+        return array();
+    }
+
+    public function getLinadime($filtro): array {
+        $filtro = '%' . $filtro . '%';
+        try {
+            $sql = "SELECT l.codigo,
+                    l.dispositivo,
+                    l.esp_tec,
+                    l.presen,
+                    l.niv_uso_I,
+                    l.niv_uso_II,
+                    l.niv_uso_III
+
+                    FROM param_linadime_archivo pa, param_linadime l
+                    WHERE pa.activo=true and pa.id=l.id_param_liname_archivo
+                    and (upper(l.codigo) like upper(:filtro) or upper(l.dispositivo) like upper(:filtro)
+                    or upper(l.esp_tec) like upper(:filtro) or upper(l.presen) like upper(:filtro)
+                    or upper(l.niv_uso_I) like upper(:filtro) or upper(l.niv_uso_II) like upper(:filtro)
+                    or upper(l.niv_uso_III) like upper(:filtro)
+                    )";
+            $res = ($this->db)->prepare($sql);
+            $res->bindParam(':filtro', $filtro, PDO::PARAM_STR);
+            $res->execute();
+            $res = $res->fetchAll(PDO::FETCH_ASSOC);
+            return $res;
+        } catch (Exception $e) {
+            return array('error' => true);
+        }
+        return array();
+    }
+
 }

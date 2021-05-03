@@ -73,4 +73,34 @@ class ParametricaAction  extends Action {
         }
         return $this->respondWithData($data);
     }
+    
+     public function genParamLiname(Request $request, Response $response, $args): Response {
+        $this->response = $response;
+        $this->args = $args;
+        $query=$request->getQueryParams();
+        $filtro=$query['filtro'];
+        $data = $this->parametricaRepository->getLiname($filtro);
+        if (isset($data['error'])) {
+            return $this->respondWithData(array(), 'Error', 500, false);
+        }
+        if ($data == null) {
+            return $this->respondWithData(array(), 'No se encontro datos', 202, false);
+        }
+        return $this->respondWithData($data);
+    }
+    
+    public function genParamLinadime(Request $request, Response $response, $args): Response {
+        $this->response = $response;
+        $this->args = $args;
+        $query=$request->getQueryParams();
+        $filtro=$query['filtro'];
+        $data = $this->parametricaRepository->getLinadime($filtro);
+        if (isset($data['error'])) {
+            return $this->respondWithData(array(), 'Error', 500, false);
+        }
+        if ($data == null) {
+            return $this->respondWithData(array(), 'No se encontro datos', 202, false);
+        }
+        return $this->respondWithData($data);
+    }
 }
