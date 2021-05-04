@@ -203,4 +203,26 @@ class DataParametricaRepository implements ParametricaRepository {
         return array();
     }
 
+    public function getPrograma($filtro): array {
+        $filtro = '%' . $filtro . '%';
+        try {
+            $sql = "SELECT
+                    pr.id,
+                    pr.codigo,
+                    pr.nombre,
+                    pr.referencia
+                    FROM programa pr
+                    WHERE pr.activo = 1 
+                          AND (LOWER(pr.codigo) LIKE :filter OR LOWER(pr.nombre) LIKE :filter)";
+            $res = ($this->db)->prepare($sql);
+            $res->bindParam(':filter', $filtro, PDO::PARAM_STR);
+            $res->execute();
+            $res = $res->fetchAll(PDO::FETCH_ASSOC);
+            return $res;
+        } catch (Exception $e) {
+            return array('error' => true);
+        }
+        return array();
+    }
+
 }
