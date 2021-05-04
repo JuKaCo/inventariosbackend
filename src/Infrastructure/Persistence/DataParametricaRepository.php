@@ -225,4 +225,108 @@ class DataParametricaRepository implements ParametricaRepository {
         return array();
     }
 
+    public function getProducto($filtro): array {
+        $filtro = '%' . $filtro . '%';
+        try {
+            $sql = "SELECT pr.*, pl.id as id_liname, pl.codigo as cod_liname, pld.id as id_linadime, pld.codigo as cod_linadime
+                    FROM (producto pr LEFT JOIN param_liname pl ON pr.codigo_liname=pl.id) 
+									  LEFT JOIN param_linadime pld ON pr.codigo_linadime=pld.id
+                    WHERE pr.activo=1 
+                          AND (LOWER(pr.codigo) LIKE :filter OR LOWER(pr.nombre_comercial) LIKE :filter)";
+            $res = ($this->db)->prepare($sql);
+            $res->bindParam(':filter', $filtro, PDO::PARAM_STR);
+            $res->execute();
+            $resultado = $res->fetchAll(PDO::FETCH_ASSOC);
+            $arrayres = array();
+            
+            foreach ($resultado as $res){
+                $result = array('id'=>$res['id'],
+                                'codigo'=>$res['codigo'],
+                                'nombre_comercial'=>$res['nombre_comercial'],
+                                'codigo_liname'=>array(
+                                    'id_liname'=>$res['id_liname'],
+                                    'cod_liname'=>$res['cod_liname'],
+                                ),
+                                'codigo_linadime'=>array(
+                                    'id_linadime'=>$res['id_linadime'],
+                                    'cod_linadime'=>$res['cod_linadime'],
+                                ),
+                                'reg_san'=>$res['reg_san'],
+                                'referencia'=>$res['referencia'],
+                                'medicamento'=>$res['medicamento'],
+                                'form_farm'=>$res['form_farm'],
+                                'concen'=>$res['concen'],
+                                'atq'=>$res['atq'],
+                                'precio_ref'=>$res['precio_ref'],
+                                'aclara_parti'=>$res['aclara_parti'],
+                                'dispositivo'=>$res['dispositivo'],
+                                'especificacion_tec'=>$res['especificacion_tec'],
+                                'presentacion'=>$res['presentacion'],
+                                'nivel_uso_i'=>$res['nivel_uso_i'],
+                                'nivel_uso_ii'=>$res['nivel_uso_ii'],
+                                'nivel_uso_iii'=>$res['nivel_uso_iii']);
+                if($result['codigo_liname']['id_liname']==null){$result['codigo_liname']=json_decode ("{}");}
+                if($result['codigo_linadime']['id_linadime']==null){$result['codigo_linadime']=json_decode ("{}");}  
+                array_push($arrayres,$result);
+            }
+            return $arrayres;
+        } catch (Exception $e) {
+            return array('error' => true);
+        }
+        return array();
+    }
+
+
+    public function getAlmacen($filtro): array {
+        $filtro = '%' . $filtro . '%';
+        try {
+            $sql = "SELECT alm.*, 
+                           reg.id as id_regional, 
+                           reg.codigo as codigo_regional, 
+                           reg.nombre as nombre_regional, 
+                           reg.direccion as direccion_regional, 
+                           reg.telefono as telefono_regional,
+                           prog.id as id_programa,
+                           prog.codigo as codigo_programa,
+                           prog.nombre as nombre_programa
+                    FROM almacen alm, regional reg, programa prog
+                    WHERE alm.activo = 1 
+                          AND alm.id_regional=reg.id 
+                          AND alm.id_programa=prog.id
+                          AND (LOWER(alm.nombre) LIKE LOWER(:filter) 
+                          OR LOWER(alm.direccion) LIKE LOWER(:filter)
+                          OR LOWER(alm.codigo) LIKE LOWER(:filter))";
+            $res = ($this->db)->prepare($sql);
+            $res->bindParam(':filter', $filtro, PDO::PARAM_STR);
+            $res->execute();
+            $res = $res->fetchAll(PDO::FETCH_ASSOC);
+
+            $arrayres = array();
+            foreach ($res as $item){
+                $result = array('id'=>$item['id'],
+                                'codigo'=>$item['codigo'],
+                                'nombre'=>$item['nombre'],
+                                'regional'=>array(
+                                    'id'=>$item['id_regional'],
+                                    'codigo'=>$item['codigo_regional'],
+                                    'nombre'=>$item['nombre_regional'],
+                                    'direccion'=>$item['direccion_regional'],
+                                    'telefono'=>$item['telefono_regional']
+                                ),
+                                'programa'=>array(
+                                    'id'=>$item['id_programa'],
+                                    'codigo'=>$item['codigo_programa'],
+                                    'nombre'=>$item['nombre_programa']
+                                ),
+                                'direccion'=>$item['direccion'],
+                                'telefono'=>$item['telefono'],
+                                'activo'=>$item['activo']);
+                array_push($arrayres,$result);
+            }
+            return $arrayres;
+        } catch (Exception $e) {
+            return array('error' => true);
+        }
+        return array();
+    }
 }

@@ -150,4 +150,34 @@ class ParametricaAction  extends Action {
         }
         return $this->respondWithData($data);
     }
+
+    public function genParamProducto(Request $request, Response $response, $args): Response {
+        $this->response = $response;
+        $this->args = $args;
+        $query=$request->getQueryParams();
+        $filtro=$query['filtro'];
+        $data = $this->parametricaRepository->getProducto($filtro);
+        if (isset($data['error'])) {
+            return $this->respondWithData(array(), 'Error', 500, false);
+        }
+        if ($data == null) {
+            return $this->respondWithData(array(), 'No se encontro datos', 202, false);
+        }
+        return $this->respondWithData($data);
+    }
+
+    public function genParamAlmacen(Request $request, Response $response, $args): Response {
+        $this->response = $response;
+        $this->args = $args;
+        $query=$request->getQueryParams();
+        $filtro=$query['filtro'];
+        $data = $this->parametricaRepository->getAlmacen($filtro);
+        if (isset($data['error'])) {
+            return $this->respondWithData(array(), 'Error', 500, false);
+        }
+        if ($data == null) {
+            return $this->respondWithData(array(), 'No se encontro datos', 202, false);
+        }
+        return $this->respondWithData($data);
+    }
 }

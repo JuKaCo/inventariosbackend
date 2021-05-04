@@ -12,4 +12,7 @@ interface ParametricaRepository
     public function getProveedor($filtro): array;
     public function getRegional($filtro): array;
     public function getPrograma($filtro): array;
+    public function getProducto($filtro): array;
+    public function getAlmacen($filtro): array;
+
 }
