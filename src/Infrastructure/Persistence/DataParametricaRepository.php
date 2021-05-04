@@ -187,7 +187,8 @@ class DataParametricaRepository implements ParametricaRepository {
                     r.id,
                     r.codigo,
                     r.nombre,
-                    r.direccion
+                    r.direccion,
+                    r.telefono
                     FROM regional r
                     WHERE r.activo = 1 
                           AND (LOWER(r.codigo) LIKE :filter OR LOWER(r.nombre) LIKE :filter)";
