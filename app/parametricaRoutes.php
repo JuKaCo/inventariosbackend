@@ -29,6 +29,9 @@ return function (App $app) {
 
         $group->get('/regional', ParametricaAction::class.':genParamRegional');
 
+        $group->get('/programa', ParametricaAction::class.':genParamPrograma');
+
+
     });
     //proveedor rutas 
     $app->group('/api/v1/proveedor', function(Group $group){

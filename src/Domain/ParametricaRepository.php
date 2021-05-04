@@ -11,4 +11,5 @@ interface ParametricaRepository
     public function getLinadime($filtro): array;
     public function getProveedor($filtro): array;
     public function getRegional($filtro): array;
+    public function getPrograma($filtro): array;
 }
