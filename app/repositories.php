@@ -15,6 +15,7 @@ use App\Domain\NotificacionRepository;
 use App\Domain\RegionalRepository;
 use App\Domain\ProgramaRepository;
 use App\Domain\AlmacenRepository;
+use App\Domain\CompraRepository;
 use App\Infrastructure\Persistence\User\InMemoryUserRepository;
 use App\Infrastructure\Persistence\DataMenuRepository;
 use App\Infrastructure\Persistence\DataParametricaRepository;
@@ -29,6 +30,7 @@ use App\Infrastructure\Persistence\DataNotificacionRepository;
 use App\Infrastructure\Persistence\DataRegionalRepository;
 use App\Infrastructure\Persistence\DataProgramaRepository;
 use App\Infrastructure\Persistence\DataAlmacenRepository;
+use App\Infrastructure\Persistence\DataCompraRepository;
 
 use DI\ContainerBuilder;
 
@@ -48,6 +50,7 @@ return function (ContainerBuilder $containerBuilder) {
         NotificacionRepository::class => \DI\autowire(DataNotificacionRepository::class),
         RegionalRepository::class => \DI\autowire(DataRegionalRepository::class),
         ProgramaRepository::class => \DI\autowire(DataProgramaRepository::class),
-        AlmacenRepository::class => \DI\autowire(DataAlmacenRepository::class)
+        AlmacenRepository::class => \DI\autowire(DataAlmacenRepository::class),
+        CompraRepository::class => \DI\autowire(DataCompraRepository::class)
     ]);
 };

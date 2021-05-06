@@ -9,6 +9,7 @@ use App\Application\Actions\Action\ProductoAction;
 use App\Application\Actions\Action\RegionalAction;
 use App\Application\Actions\Action\ProgramaAction;
 use App\Application\Actions\Action\AlmacenAction;
+use App\Application\Actions\Action\CompraAction;
 
 return function (App $app) {
 
@@ -43,6 +44,14 @@ return function (App $app) {
         $group->post('/crear',AlmacenAction::class.':crea_Almacen');
         $group->delete('/cambiarestado/{id_almacen}',AlmacenAction::class.':cambiaestado_Almacen');
         $group->get('/listar',AlmacenAction::class.':lista_Almacen');
+    });
+    //compras rutas
+    $app->group('/api/v1/compra', function(Group $group){
+        $group->get('/obtener/{id_compra}',CompraAction::class.':obtiene_Compra');
+        $group->put('/editar/{id_compra}',CompraAction::class.':edita_Compra');
+        $group->post('/crear',CompraAction::class.':crea_Compra');
+        $group->delete('/cambiarestado/{id_compra}',CompraAction::class.':cambiaestado_Compra');
+        $group->get('/listar',CompraAction::class.':lista_Compra');
     });
 
 };

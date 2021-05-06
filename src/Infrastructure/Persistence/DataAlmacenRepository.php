@@ -188,7 +188,6 @@ class DataAlmacenRepository implements AlmacenRepository {
             $resp = array('success'=>false,'message'=>'0 fila afectada');
         }
         return ($resp);
-
     }
 
     public function createAlmacen($data_almacen,$uuid): array {
