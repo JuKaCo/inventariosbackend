@@ -88,6 +88,26 @@ class CompraAction extends Action {
         }
     }
 
+    public function modifica_Compra(Request $request, Response $response, $args): Response {
+        $this->request = $request;
+        $this->response = $response;
+        $this->args = $args;
+        $id_compra = $args['id_compra'];
+        $data_compra =  $request->getParsedBody();
+
+        $token=getenv('TOKEN_DATOS');
+        $token=json_decode($token,true);
+        $uuid=($token['sub']);
+
+        $res=$this->compraRepository->modifyCompra($id_compra,$data_compra,$uuid);
+
+        if($res['success']==false){
+            return $this->respondWithData(null,$res['message'],202,false);
+        }else{
+            return $this->respondWithData($res['data_compra'],$res['message'],200,true);
+        }
+    }
+
     public function cambiaestado_Compra(Request $request, Response $response, $args): Response {
         $this->request = $request;
         $this->response = $response;

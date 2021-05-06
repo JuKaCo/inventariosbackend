@@ -140,6 +140,91 @@ class DataCompraRepository implements CompraRepository {
         return $resp;
     }
 
+    public function modifyCompra($id_compra,$data_compra,$uuid): array {
+        $success=true;
+        $resp=array();
+        if(isset($data_compra['codigo'])){
+            $sql = "SELECT *
+                    FROM compra
+                    WHERE codigo=:codigo AND id!=:id_compra";
+            $res = ($this->db)->prepare($sql);
+            $res->bindParam(':codigo', $data_compra['codigo'], PDO::PARAM_STR);
+            $res->bindParam(':id_compra', $id_compra, PDO::PARAM_STR);
+            $res->execute();
+            if($res->rowCount()>0){
+                //$resp = array('success'=>false,'message'=>'Error, el codigo de la compra ya existe en otro registro');
+                $success=false;
+                $resp += ['codigo' => 'error, ya existe registro'];
+            }else{
+                $sql = "UPDATE compra 
+                        SET codigo=:codigo,
+                        f_mod=now(), 
+                        u_mod=:u_mod
+                        WHERE id=:id_compra;";
+                $res = ($this->db)->prepare($sql);
+                $res->bindParam(':id_compra', $id_compra, PDO::PARAM_STR);
+                $res->bindParam(':codigo', $data_compra['codigo'], PDO::PARAM_STR);
+                $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
+                $res->execute();
+                $resp += ['codigo' => 'dato actualizado'];
+            }
+        }
+        if(isset($data_compra['nombre'])){
+            $sql = "UPDATE compra 
+                        SET nombre=:nombre,
+                        f_mod=now(), 
+                        u_mod=:u_mod
+                        WHERE id=:id_compra;";
+                $res = ($this->db)->prepare($sql);
+                $res->bindParam(':id_compra', $id_compra, PDO::PARAM_STR);
+                $res->bindParam(':nombre', $data_compra['nombre'], PDO::PARAM_STR);
+                $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
+                $res->execute();
+                $resp += ['nombre' => 'dato actualizado'];
+        }
+        if(isset($data_compra['gestion'])){
+            $sql = "UPDATE compra 
+                        SET gestion=:gestion,
+                        f_mod=now(), 
+                        u_mod=:u_mod
+                        WHERE id=:id_compra;";
+                $res = ($this->db)->prepare($sql);
+                $res->bindParam(':id_compra', $id_compra, PDO::PARAM_STR);
+                $res->bindParam(':gestion', $data_compra['gestion'], PDO::PARAM_STR);
+                $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
+                $res->execute();
+                $resp += ['gestion' => 'dato actualizado'];
+        }
+        if(isset($data_compra['descripcion'])){
+            $sql = "UPDATE compra 
+                        SET descripcion=:descripcion,
+                        f_mod=now(), 
+                        u_mod=:u_mod
+                        WHERE id=:id_compra;";
+                $res = ($this->db)->prepare($sql);
+                $res->bindParam(':id_compra', $id_compra, PDO::PARAM_STR);
+                $res->bindParam(':descripcion', $data_compra['descripcion'], PDO::PARAM_STR);
+                $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
+                $res->execute();
+                $resp += ['descripcion' => 'dato actualizado'];
+        }
+        if(isset($data_compra['estado'])){
+            $sql = "UPDATE compra 
+                        SET estado=:estado,
+                        f_mod=now(), 
+                        u_mod=:u_mod
+                        WHERE id=:id_compra;";
+                $res = ($this->db)->prepare($sql);
+                $res->bindParam(':id_compra', $id_compra, PDO::PARAM_STR);
+                $res->bindParam(':estado', $data_compra['estado'], PDO::PARAM_STR);
+                $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
+                $res->execute();
+                $resp += ['estado' => 'dato actualizado'];
+        }
+        $resp = array('success'=>$success,'message'=>'datos actualizados','data_compra'=>$resp);
+        return $resp;
+    }
+
     public function changestatusCompra($id_compra,$uuid): array {
         $sql = "UPDATE compra 
                 SET activo=0,

@@ -52,6 +52,7 @@ return function (App $app) {
         $group->post('/crear',CompraAction::class.':crea_Compra');
         $group->delete('/cambiarestado/{id_compra}',CompraAction::class.':cambiaestado_Compra');
         $group->get('/listar',CompraAction::class.':lista_Compra');
+        $group->patch('/modificar/{id_compra}',CompraAction::class.':modifica_Compra');
     });
 
 };
