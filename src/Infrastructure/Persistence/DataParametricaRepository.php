@@ -6,6 +6,7 @@ namespace App\Infrastructure\Persistence;
 
 use App\Application\Actions\RepositoryConection\ConectBiometrico;
 use App\Application\Actions\RepositoryConection\Conect;
+use App\Application\Actions\RepositoryConection\Conectkeycloak;
 use App\Domain\ParametricaRepository;
 use \PDO;
 
@@ -15,6 +16,7 @@ class DataParametricaRepository implements ParametricaRepository {
      * @var $db conection db
      */
     private $db;
+    private $dbKeycloak;
 
     /**
      * DataMenuRepository constructor.
@@ -204,6 +206,8 @@ class DataParametricaRepository implements ParametricaRepository {
     }
 
     public function getPrograma($filtro): array {
+
+        
         $filtro = '%' . $filtro . '%';
         try {
             $sql = "SELECT
@@ -324,6 +328,34 @@ class DataParametricaRepository implements ParametricaRepository {
                 array_push($arrayres,$result);
             }
             return $arrayres;
+        } catch (Exception $e) {
+            return array('error' => true);
+        }
+        return array();
+    }
+
+    public function getUsuario($filtro): array {
+        $con = new Conectkeycloak();
+        $this->dbKeycloak = $con->getConection();
+
+        $filtro = '%' . $filtro . '%';
+        try {
+            $sql = "SELECT
+                    ur.ID as id_usuario, 
+                    ur.FIRST_NAME as nombres, 
+                    ur.LAST_NAME as apellidos,
+                    ua.VALUE as cargo
+                    FROM USER_ENTITY ur, USER_ATTRIBUTE ua
+                    WHERE ur.ENABLED = 1
+                          AND ur.REALM_ID = 'web'
+                          AND ur.ID = ua.USER_ID
+                          AND ua.NAME = 'cargo_usuario'
+                          AND (LOWER(ur.FIRST_NAME) LIKE :filter OR LOWER(ur.LAST_NAME) LIKE :filter OR LOWER(ua.VALUE) LIKE :filter )";
+            $res = ($this->dbKeycloak)->prepare($sql);
+            $res->bindParam(':filter', $filtro, PDO::PARAM_STR);
+            $res->execute();
+            $res = $res->fetchAll(PDO::FETCH_ASSOC);
+            return $res;
         } catch (Exception $e) {
             return array('error' => true);
         }
