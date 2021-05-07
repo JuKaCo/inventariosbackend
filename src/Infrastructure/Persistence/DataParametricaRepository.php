@@ -361,4 +361,30 @@ class DataParametricaRepository implements ParametricaRepository {
         }
         return array();
     }
+
+    public function getCompra($filtro): array {
+        $filtro = '%' . $filtro . '%';
+        try {
+            $sql = "SELECT com.id,
+                           com.codigo,
+                           com.nombre,
+                           com.gestion,
+                           com.descripcion,
+                           com.estado
+                    FROM compra com 
+                    WHERE com.activo=1
+                          AND com.estado = 'VERIFICADO'
+                          AND (LOWER(com.codigo) LIKE LOWER(:filter) 
+                            OR LOWER(com.nombre) LIKE LOWER(:filter) 
+                            OR LOWER(com.descripcion) LIKE LOWER(:filter))";
+            $res = ($this->db)->prepare($sql);
+            $res->bindParam(':filter', $filtro, PDO::PARAM_STR);
+            $res->execute();
+            $res = $res->fetchAll(PDO::FETCH_ASSOC);
+            return $res;
+        } catch (Exception $e) {
+            return array('error' => true);
+        }
+        return array();
+    }
 }

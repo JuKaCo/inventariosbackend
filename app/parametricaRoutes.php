@@ -36,6 +36,8 @@ return function (App $app) {
 
         $group->get('/usuario', ParametricaAction::class.':genParamUsuario');
 
+        $group->get('/compra', ParametricaAction::class.':genParamCompra');
+
 
     });
     //proveedor rutas 

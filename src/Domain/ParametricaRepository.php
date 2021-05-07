@@ -15,5 +15,6 @@ interface ParametricaRepository
     public function getProducto($filtro): array;
     public function getAlmacen($filtro): array;
     public function getUsuario($filtro): array;
+    public function getCompra($filtro0): array;
 
 }
