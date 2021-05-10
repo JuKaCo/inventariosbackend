@@ -387,4 +387,262 @@ class DataProductoRepository implements ProductoRepository {
         }
         return $resp;
     }
+
+    public function modifyProducto($id_producto,$data_producto,$uuid): array {
+        $success=true;
+        $resp=array();
+
+        if(isset($data_producto['codigo'])){
+            $sql = "SELECT *
+                    FROM producto
+                    WHERE codigo=:codigo AND id!=:id_pro$id_producto";
+            $res = ($this->db)->prepare($sql);
+            $res->bindParam(':codigo', $data_producto['codigo'], PDO::PARAM_STR);
+            $res->bindParam(':id_producto', $id_producto, PDO::PARAM_STR);
+            $res->execute();
+            if($res->rowCount()>0){
+                $success=false;
+                $resp += ['codigo' => 'error, ya existe registro'];
+            }else{
+                $sql = "UPDATE producto 
+                        SET codigo=:codigo,
+                        f_mod=now(), 
+                        u_mod=:u_mod
+                        WHERE id=:id_pro$id_producto;";
+                $res = ($this->db)->prepare($sql);
+                $res->bindParam(':id_pro$id_producto', $id_producto, PDO::PARAM_STR);
+                $res->bindParam(':codigo', $data_producto['codigo'], PDO::PARAM_STR);
+                $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
+                $res->execute();
+                $resp += ['codigo' => 'dato actualizado'];
+            }
+
+            if(isset($data_producto['nombre_comercial'])){
+                $sql = "UPDATE producto 
+                            SET nombre_comercial=:nombre_comercial,
+                            f_mod=now(), 
+                            u_mod=:u_mod
+                            WHERE id=:id_producto;";
+                    $res = ($this->db)->prepare($sql);
+                    $res->bindParam(':id_producto', $id_producto, PDO::PARAM_STR);
+                    $res->bindParam(':nombre_comercial', $data_producto['nombre_comercial'], PDO::PARAM_STR);
+                    $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
+                    $res->execute();
+                    $resp += ['nombre_comercial' => 'dato actualizado'];
+            }
+
+            if(isset($data_producto['codigo_liname'])){
+                $sql = "UPDATE producto 
+                            SET codigo_liname=:codigo_liname,
+                            f_mod=now(), 
+                            u_mod=:u_mod
+                            WHERE id=:id_producto;";
+                    $res = ($this->db)->prepare($sql);
+                    $res->bindParam(':id_producto', $id_producto, PDO::PARAM_STR);
+                    $res->bindParam(':codigo_liname', $data_producto['codigo_liname'], PDO::PARAM_STR);
+                    $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
+                    $res->execute();
+                    $resp += ['codigo_liname' => 'dato actualizado'];
+            }
+
+            if(isset($data_producto['codigo_linadime'])){
+                $sql = "UPDATE producto 
+                            SET codigo_linadime=:codigo_linadime,
+                            f_mod=now(), 
+                            u_mod=:u_mod
+                            WHERE id=:id_producto;";
+                    $res = ($this->db)->prepare($sql);
+                    $res->bindParam(':id_producto', $id_producto, PDO::PARAM_STR);
+                    $res->bindParam(':codigo_linadime', $data_producto['codigo_linadime'], PDO::PARAM_STR);
+                    $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
+                    $res->execute();
+                    $resp += ['codigo_linadime' => 'dato actualizado'];
+            }
+
+            if(isset($data_producto['referencia'])){
+                $sql = "UPDATE producto 
+                            SET referencia=:referencia,
+                            f_mod=now(), 
+                            u_mod=:u_mod
+                            WHERE id=:id_producto;";
+                    $res = ($this->db)->prepare($sql);
+                    $res->bindParam(':id_producto', $id_producto, PDO::PARAM_STR);
+                    $res->bindParam(':referencia', $data_producto['referencia'], PDO::PARAM_STR);
+                    $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
+                    $res->execute();
+                    $resp += ['referencia' => 'dato actualizado'];
+            }
+
+            if(isset($data_producto['medicamento'])){
+                $sql = "UPDATE producto 
+                            SET medicamento=:medicamento,
+                            f_mod=now(), 
+                            u_mod=:u_mod
+                            WHERE id=:id_producto;";
+                    $res = ($this->db)->prepare($sql);
+                    $res->bindParam(':id_producto', $id_producto, PDO::PARAM_STR);
+                    $res->bindParam(':medicamento', $data_producto['medicamento'], PDO::PARAM_STR);
+                    $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
+                    $res->execute();
+                    $resp += ['medicamento' => 'dato actualizado'];
+            }
+
+            if(isset($data_producto['form_farm'])){
+                $sql = "UPDATE producto 
+                            SET form_farm=:form_farm,
+                            f_mod=now(), 
+                            u_mod=:u_mod
+                            WHERE id=:id_producto;";
+                    $res = ($this->db)->prepare($sql);
+                    $res->bindParam(':id_producto', $id_producto, PDO::PARAM_STR);
+                    $res->bindParam(':form_farm', $data_producto['form_farm'], PDO::PARAM_STR);
+                    $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
+                    $res->execute();
+                    $resp += ['form_farm' => 'dato actualizado'];
+            }
+
+            if(isset($data_producto['concen'])){
+                $sql = "UPDATE producto 
+                            SET concen=:concen,
+                            f_mod=now(), 
+                            u_mod=:u_mod
+                            WHERE id=:id_producto;";
+                    $res = ($this->db)->prepare($sql);
+                    $res->bindParam(':id_producto', $id_producto, PDO::PARAM_STR);
+                    $res->bindParam(':concen', $data_producto['concen'], PDO::PARAM_STR);
+                    $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
+                    $res->execute();
+                    $resp += ['concen' => 'dato actualizado'];
+            }
+
+            if(isset($data_producto['atq'])){
+                $sql = "UPDATE producto 
+                            SET atq=:atq,
+                            f_mod=now(), 
+                            u_mod=:u_mod
+                            WHERE id=:id_producto;";
+                    $res = ($this->db)->prepare($sql);
+                    $res->bindParam(':id_producto', $id_producto, PDO::PARAM_STR);
+                    $res->bindParam(':atq', $data_producto['atq'], PDO::PARAM_STR);
+                    $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
+                    $res->execute();
+                    $resp += ['atq' => 'dato actualizado'];
+            }
+
+            if(isset($data_producto['precio_ref'])){
+                $sql = "UPDATE producto 
+                            SET precio_ref=:precio_ref,
+                            f_mod=now(), 
+                            u_mod=:u_mod
+                            WHERE id=:id_producto;";
+                    $res = ($this->db)->prepare($sql);
+                    $res->bindParam(':id_producto', $id_producto, PDO::PARAM_STR);
+                    $res->bindParam(':precio_ref', $data_producto['precio_ref'], PDO::PARAM_STR);
+                    $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
+                    $res->execute();
+                    $resp += ['precio_ref' => 'dato actualizado'];
+            }
+
+            if(isset($data_producto['aclara_parti'])){
+                $sql = "UPDATE producto 
+                            SET aclara_parti=:aclara_parti,
+                            f_mod=now(), 
+                            u_mod=:u_mod
+                            WHERE id=:id_producto;";
+                    $res = ($this->db)->prepare($sql);
+                    $res->bindParam(':id_producto', $id_producto, PDO::PARAM_STR);
+                    $res->bindParam(':aclara_parti', $data_producto['aclara_parti'], PDO::PARAM_STR);
+                    $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
+                    $res->execute();
+                    $resp += ['aclara_parti' => 'dato actualizado'];
+            }
+
+            if(isset($data_producto['dispositivo'])){
+                $sql = "UPDATE producto 
+                            SET dispositivo=:dispositivo,
+                            f_mod=now(), 
+                            u_mod=:u_mod
+                            WHERE id=:id_producto;";
+                    $res = ($this->db)->prepare($sql);
+                    $res->bindParam(':id_producto', $id_producto, PDO::PARAM_STR);
+                    $res->bindParam(':dispositivo', $data_producto['dispositivo'], PDO::PARAM_STR);
+                    $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
+                    $res->execute();
+                    $resp += ['dispositivo' => 'dato actualizado'];
+            }
+
+            if(isset($data_producto['especificacion_tec'])){
+                $sql = "UPDATE producto 
+                            SET especificacion_tec=:especificacion_tec,
+                            f_mod=now(), 
+                            u_mod=:u_mod
+                            WHERE id=:id_producto;";
+                    $res = ($this->db)->prepare($sql);
+                    $res->bindParam(':id_producto', $id_producto, PDO::PARAM_STR);
+                    $res->bindParam(':especificacion_tec', $data_producto['especificacion_tec'], PDO::PARAM_STR);
+                    $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
+                    $res->execute();
+                    $resp += ['especificacion_tec' => 'dato actualizado'];
+            }
+
+            if(isset($data_producto['presentacion'])){
+                $sql = "UPDATE producto 
+                            SET presentacion=:presentacion,
+                            f_mod=now(), 
+                            u_mod=:u_mod
+                            WHERE id=:id_producto;";
+                    $res = ($this->db)->prepare($sql);
+                    $res->bindParam(':id_producto', $id_producto, PDO::PARAM_STR);
+                    $res->bindParam(':presentacion', $data_producto['presentacion'], PDO::PARAM_STR);
+                    $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
+                    $res->execute();
+                    $resp += ['presentacion' => 'dato actualizado'];
+            }
+
+            if(isset($data_producto['nivel_uso_i'])){
+                $sql = "UPDATE producto 
+                            SET nivel_uso_i=:nivel_uso_i,
+                            f_mod=now(), 
+                            u_mod=:u_mod
+                            WHERE id=:id_producto;";
+                    $res = ($this->db)->prepare($sql);
+                    $res->bindParam(':id_producto', $id_producto, PDO::PARAM_STR);
+                    $res->bindParam(':nivel_uso_i', $data_producto['nivel_uso_i'], PDO::PARAM_STR);
+                    $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
+                    $res->execute();
+                    $resp += ['nivel_uso_i' => 'dato actualizado'];
+            }
+        }
+
+        if(isset($data_producto['nivel_uso_ii'])){
+            $sql = "UPDATE producto 
+                        SET nivel_uso_ii=:nivel_uso_ii,
+                        f_mod=now(), 
+                        u_mod=:u_mod
+                        WHERE id=:id_producto;";
+                $res = ($this->db)->prepare($sql);
+                $res->bindParam(':id_producto', $id_producto, PDO::PARAM_STR);
+                $res->bindParam(':nivel_uso_ii', $data_producto['nivel_uso_ii'], PDO::PARAM_STR);
+                $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
+                $res->execute();
+                $resp += ['nivel_uso_ii' => 'dato actualizado'];
+        }
+
+        if(isset($data_producto['nivel_uso_iii'])){
+            $sql = "UPDATE producto 
+                        SET nivel_uso_iii=:nivel_uso_iii,
+                        f_mod=now(), 
+                        u_mod=:u_mod
+                        WHERE id=:id_producto;";
+                $res = ($this->db)->prepare($sql);
+                $res->bindParam(':id_producto', $id_producto, PDO::PARAM_STR);
+                $res->bindParam(':nivel_uso_iii', $data_producto['nivel_uso_iii'], PDO::PARAM_STR);
+                $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
+                $res->execute();
+                $resp += ['nivel_uso_iii' => 'dato actualizado'];
+        }
+
+        $resp = array('success'=>$success,'message'=>'datos actualizados','data_producto'=>$resp);
+        return $resp;
+    }
 }

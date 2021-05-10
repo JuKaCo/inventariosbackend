@@ -10,4 +10,5 @@ interface ProductoRepository
     public function createProducto($data_producto,$uuid): array;
     public function changestatusProducto($id_producto,$uuid): array;
     public function listProducto($query): array;
+    public function modifyProducto($id_producto,$data_producto,$uuid): array;
 }

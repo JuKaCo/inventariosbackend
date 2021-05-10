@@ -20,6 +20,7 @@ return function (App $app) {
         $group->post('/crear',ProductoAction::class.':crea_Producto');
         $group->delete('/cambiarestado/{id_producto}',ProductoAction::class.':cambiaestado_Producto');
         $group->get('/listar',ProductoAction::class.':lista_Producto');
+        // $group->patch('/modificar/{id_compra}',ProductoAction::class.':modifica_producto');
     });
     //regional rutas
     $app->group('/api/v1/regional', function(Group $group){
