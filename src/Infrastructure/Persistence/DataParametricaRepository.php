@@ -281,7 +281,13 @@ class DataParametricaRepository implements ParametricaRepository {
     }
 
 
-    public function getAlmacen($filtro, $id_regional): array {
+    public function getAlmacen($query): array {
+        if(!isset($query['id_regional'])){
+            return array('success'=>false,'message'=>'Datos invalidos');
+        }
+        $filtro=$query['filtro'];
+        $id_regional = $query['id_regional'];
+
         $filtro = '%' . $filtro . '%';
         try {
             $sql = "SELECT alm.*
