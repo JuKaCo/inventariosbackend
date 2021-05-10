@@ -53,7 +53,6 @@ class DataProductoRepository implements ProductoRepository {
                                 'id_linadime'=>$res['id_linadime'],
                                 'cod_linadime'=>$res['cod_linadime'],
                             ),
-                            'reg_san'=>$res['reg_san'],
                             'referencia'=>$res['referencia'],
                             'medicamento'=>$res['medicamento'],
                             'form_farm'=>$res['form_farm'],
@@ -92,7 +91,7 @@ class DataProductoRepository implements ProductoRepository {
                 FROM (producto pr LEFT JOIN param_liname pl ON pr.codigo_liname=pl.id) 
                 LEFT JOIN param_linadime pld ON pr.codigo_linadime=pld.id
                 WHERE pr.activo=1 AND (
-            LOWER(pr.codigo) LIKE LOWER(:filtro) OR LOWER(pr.nombre_comercial) LIKE LOWER(:filtro) OR LOWER(pr.reg_san) LIKE LOWER(:filtro) OR
+            LOWER(pr.codigo) LIKE LOWER(:filtro) OR LOWER(pr.nombre_comercial) LIKE LOWER(:filtro) OR
             LOWER(pr.referencia) LIKE LOWER(:filtro) OR LOWER(pr.medicamento) LIKE LOWER(:filtro) OR LOWER(pr.form_farm) LIKE LOWER(:filtro) OR
             LOWER(pr.concen) LIKE LOWER(:filtro) OR LOWER(pr.atq) LIKE LOWER(:filtro) OR LOWER(pr.precio_ref) LIKE LOWER(:filtro) OR
             LOWER(pr.aclara_parti) LIKE LOWER(:filtro) OR LOWER(pr.dispositivo) LIKE LOWER(:filtro) OR LOWER(pr.especificacion_tec) LIKE LOWER(:filtro) OR
@@ -105,7 +104,7 @@ class DataProductoRepository implements ProductoRepository {
                 FROM (producto pr LEFT JOIN param_liname pl ON pr.codigo_liname=pl.id) 
                 LEFT JOIN param_linadime pld ON pr.codigo_linadime=pld.id
                 WHERE pr.activo=1 AND (
-            LOWER(pr.codigo) LIKE LOWER(:filtro) OR LOWER(pr.nombre_comercial) LIKE LOWER(:filtro) OR LOWER(pr.reg_san) LIKE LOWER(:filtro) OR
+            LOWER(pr.codigo) LIKE LOWER(:filtro) OR LOWER(pr.nombre_comercial) LIKE LOWER(:filtro) OR
             LOWER(pr.referencia) LIKE LOWER(:filtro) OR LOWER(pr.medicamento) LIKE LOWER(:filtro) OR LOWER(pr.form_farm) LIKE LOWER(:filtro) OR
             LOWER(pr.concen) LIKE LOWER(:filtro) OR LOWER(pr.atq) LIKE LOWER(:filtro) OR LOWER(pr.precio_ref) LIKE LOWER(:filtro) OR
             LOWER(pr.aclara_parti) LIKE LOWER(:filtro) OR LOWER(pr.dispositivo) LIKE LOWER(:filtro) OR LOWER(pr.especificacion_tec) LIKE LOWER(:filtro) OR
@@ -132,7 +131,6 @@ class DataProductoRepository implements ProductoRepository {
                                     'id_linadime'=>$res['id_linadime'],
                                     'cod_linadime'=>$res['cod_linadime'],
                                 ),
-                                'reg_san'=>$res['reg_san'],
                                 'referencia'=>$res['referencia'],
                                 'medicamento'=>$res['medicamento'],
                                 'form_farm'=>$res['form_farm'],
@@ -161,36 +159,35 @@ class DataProductoRepository implements ProductoRepository {
 
     public function editProducto($id_producto,$data_producto,$uuid): array {
         if(!(isset($id_producto)&&isset($data_producto['codigo'])&&isset($data_producto['nombre_comercial'])&&isset($data_producto['codigo_liname'])
-        &&isset($data_producto['codigo_linadime'])&&isset($data_producto['reg_san'])&&isset($data_producto['referencia'])
+        &&isset($data_producto['codigo_linadime'])&&isset($data_producto['referencia'])
         &&isset($data_producto['medicamento'])&&isset($data_producto['form_farm'])&&isset($data_producto['concen'])
         &&isset($data_producto['atq'])&&isset($data_producto['precio_ref'])&&isset($data_producto['aclara_parti'])
         &&isset($data_producto['dispositivo'])&&isset($data_producto['especificacion_tec'])&&isset($data_producto['presentacion']))){
             return array('success'=>false,'message'=>'Datos invalidos');
         }
-        if($data_producto['reg_san']==""){
+        /*if($data_producto['reg_san']==""){
             $data_producto['reg_san']==null;
             $aux_query=" ";
         }else{
             $aux_query = "OR reg_san LIKE '".$data_producto['reg_san']."'";
-        }
+        }*/
         $sql = "SELECT *
                 FROM producto
-                WHERE (codigo LIKE :codigo OR nombre_comercial LIKE :nombre_comercial ".$aux_query.") AND id!=:id_producto";
+                WHERE (codigo LIKE :codigo OR nombre_comercial LIKE :nombre_comercial ) AND id!=:id_producto";
             $res = ($this->db)->prepare($sql);
             $res->bindParam(':codigo', $data_producto['codigo'], PDO::PARAM_STR);
             $res->bindParam(':id_producto', $id_producto, PDO::PARAM_STR);
-            $res->bindParam(':nombre_comercial', $data_producto['codinombre_comercialgo'], PDO::PARAM_STR);
+            $res->bindParam(':nombre_comercial', $data_producto['nombre_comercial'], PDO::PARAM_STR);
             //$res->bindParam(':reg_san', $data_producto['reg_san'], PDO::PARAM_STR);
             $res->execute();
         if($res->rowCount()>0){
-            $resp = array('success'=>false,'message'=>'Error, el nombre comercial, codigo o registro sanitario del producto ya existe en otro registro');
+            $resp = array('success'=>false,'message'=>'Error, el nombre comercial o codigo del producto ya existe en otro registro');
         }else{
             $sql = "UPDATE producto 
                     SET codigo=:codigo,
                     nombre_comercial=:nombre_comercial,
                     codigo_liname=:codigo_liname,
                     codigo_linadime=:codigo_linadime,
-                    reg_san=:reg_san,
                     referencia=:referencia,
                     medicamento=:medicamento,
                     form_farm=:form_farm,
@@ -213,7 +210,6 @@ class DataProductoRepository implements ProductoRepository {
             $res->bindParam(':nombre_comercial', $data_producto['nombre_comercial'], PDO::PARAM_STR);
             $res->bindParam(':codigo_liname', $data_producto['codigo_liname']['id_liname'], PDO::PARAM_INT);
             $res->bindParam(':codigo_linadime', $data_producto['codigo_linadime']['id_linadime'], PDO::PARAM_INT);
-            $res->bindParam(':reg_san', $data_producto['reg_san'], PDO::PARAM_STR);
             $res->bindParam(':referencia', $data_producto['referencia'], PDO::PARAM_STR);
             $res->bindParam(':medicamento', $data_producto['medicamento'], PDO::PARAM_STR);
             $res->bindParam(':form_farm', $data_producto['form_farm'], PDO::PARAM_STR);
@@ -232,7 +228,6 @@ class DataProductoRepository implements ProductoRepository {
             //$res = $res->fetchAll(PDO::FETCH_ASSOC);
             if($data_producto['codigo_liname']['id_liname']==null){$data_producto['codigo_liname']=json_decode ("{}");}
             if($data_producto['codigo_linadime']['id_linadime']==null){$data_producto['codigo_linadime']=json_decode ("{}");} 
-            if($data_producto['reg_san']==""){$data_producto['reg_san']=null;}
             $resp = array('success'=>true,'message'=>'producto actualizado','data_producto'=>$data_producto);
         }
         return $resp;
@@ -260,28 +255,28 @@ class DataProductoRepository implements ProductoRepository {
 
     public function createProducto($data_producto,$uuid): array {
         if(!(isset($data_producto['codigo'])&&isset($data_producto['nombre_comercial'])&&isset($data_producto['codigo_liname'])
-        &&isset($data_producto['codigo_linadime'])&&isset($data_producto['reg_san'])&&isset($data_producto['referencia'])
+        &&isset($data_producto['codigo_linadime'])&&isset($data_producto['referencia'])
         &&isset($data_producto['medicamento'])&&isset($data_producto['form_farm'])&&isset($data_producto['concen'])
         &&isset($data_producto['atq'])&&isset($data_producto['precio_ref'])&&isset($data_producto['aclara_parti'])
         &&isset($data_producto['dispositivo'])&&isset($data_producto['especificacion_tec'])&&isset($data_producto['presentacion']))){
             return array('success'=>false,'message'=>'Datos invalidos');
         }
-        if($data_producto['reg_san']==""){
+        /*if($data_producto['reg_san']==""){
             $data_producto['reg_san']==null;
             $aux_query=" ";
         }else{
             $aux_query = "OR reg_san LIKE '".$data_producto['reg_san']."'";
-        }
+        }*/
         $sql = "SELECT *
                 FROM producto
-                WHERE codigo LIKE :codigo OR nombre_comercial LIKE :nombre_comercial ".$aux_query.";";
+                WHERE codigo LIKE :codigo OR nombre_comercial LIKE :nombre_comercial ;";
         $res = ($this->db)->prepare($sql);
         $res->bindParam(':codigo', $data_producto['codigo'], PDO::PARAM_STR);
         $res->bindParam(':nombre_comercial', $data_producto['nombre_comercial'], PDO::PARAM_STR);
         //$res->bindParam(':reg_san', $data_producto['reg_san'], PDO::PARAM_STR);
         $res->execute();
         if($res->rowCount()==1){
-            $resp = array('success'=>false,'message'=>'Error, ya existe un producto con el mismo codigo, nombre comercial o registro sanitario');
+            $resp = array('success'=>false,'message'=>'Error, ya existe un producto con el mismo codigo o nombre comercial');
         }else{
             $sql = "INSERT INTO producto (
                     id,
@@ -289,7 +284,6 @@ class DataProductoRepository implements ProductoRepository {
                     nombre_comercial,
                     codigo_liname,
                     codigo_linadime,
-                    reg_san,
                     referencia,
                     medicamento,
                     form_farm,
@@ -312,7 +306,6 @@ class DataProductoRepository implements ProductoRepository {
                     :nombre_comercial,
                     :codigo_liname,
                     :codigo_linadime,
-                    :reg_san,
                     :referencia,
                     :medicamento,
                     :form_farm,
@@ -335,7 +328,6 @@ class DataProductoRepository implements ProductoRepository {
             $res->bindParam(':nombre_comercial', $data_producto['nombre_comercial'], PDO::PARAM_STR);
             $res->bindParam(':codigo_liname', $data_producto['codigo_liname']['id_liname'], PDO::PARAM_INT);
             $res->bindParam(':codigo_linadime', $data_producto['codigo_linadime']['id_linadime'], PDO::PARAM_INT);
-            $res->bindParam(':reg_san', $data_producto['reg_san'], PDO::PARAM_STR);
             $res->bindParam(':referencia', $data_producto['referencia'], PDO::PARAM_STR);
             $res->bindParam(':medicamento', $data_producto['medicamento'], PDO::PARAM_STR);
             $res->bindParam(':form_farm', $data_producto['form_farm'], PDO::PARAM_STR);
@@ -365,7 +357,6 @@ class DataProductoRepository implements ProductoRepository {
                             'nombre_comercial'=>$res['nombre_comercial'],
                             'codigo_liname'=>$data_producto['codigo_liname'],
                             'codigo_linadime'=>$data_producto['codigo_linadime'],
-                            'reg_san'=>$res['reg_san'],
                             'referencia'=>$res['referencia'],
                             'medicamento'=>$res['medicamento'],
                             'form_farm'=>$res['form_farm'],
@@ -381,8 +372,7 @@ class DataProductoRepository implements ProductoRepository {
                             'nivel_uso_iii'=>$res['nivel_uso_iii'],
                             'activo'=>$res['activo']);
             if($data_producto['codigo_liname']['id_liname']==null){$result['codigo_liname']=json_decode ("{}");}
-            if($data_producto['codigo_linadime']['id_linadime']==null){$result['codigo_linadime']=json_decode ("{}");}
-            if($data_producto['reg_san']==null){$result['reg_san']=null;}         
+            if($data_producto['codigo_linadime']['id_linadime']==null){$result['codigo_linadime']=json_decode ("{}");}  
             $resp = array('success'=>true,'message'=>'producto registrado exitosamente','data_producto'=>$result);
         }
         return $resp;
