@@ -10,6 +10,7 @@ use App\Application\Actions\Action\RegionalAction;
 use App\Application\Actions\Action\ProgramaAction;
 use App\Application\Actions\Action\AlmacenAction;
 use App\Application\Actions\Action\CompraAction;
+use App\Application\Actions\Action\ItemAction;
 
 return function (App $app) {
 
@@ -54,5 +55,14 @@ return function (App $app) {
         $group->get('/listar',CompraAction::class.':lista_Compra');
         $group->patch('/modificar/{id_compra}',CompraAction::class.':modifica_Compra');
     });
-
+    //item rutas
+    $app->group('/api/v1/item', function(Group $group){
+        $group->get('/obtener/{id_item}',ItemAction::class.':obtiene_Item');
+        $group->put('/editar/{id_item}',ItemAction::class.':edita_Item');
+        $group->post('/crear',ItemAction::class.':crea_Item');
+        $group->delete('/cambiarestado/{id_item}',ItemAction::class.':cambiaestado_Item');
+        $group->get('/listar',ItemAction::class.':lista_Item');
+        $group->patch('/modificar/{id_item}',ItemAction::class.':modifica_Item');
+        $group->post('/calcular',ItemAction::class.':calcula_Precio_Item');
+    });
 };
