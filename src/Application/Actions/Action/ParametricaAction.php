@@ -171,7 +171,8 @@ class ParametricaAction  extends Action {
         $this->args = $args;
         $query=$request->getQueryParams();
         $filtro=$query['filtro'];
-        $data = $this->parametricaRepository->getAlmacen($filtro);
+        $id_regional = $query['id_regional'];
+        $data = $this->parametricaRepository->getAlmacen($filtro, $id_regional);
         if (isset($data['error'])) {
             return $this->respondWithData(array(), 'Error', 500, false);
         }

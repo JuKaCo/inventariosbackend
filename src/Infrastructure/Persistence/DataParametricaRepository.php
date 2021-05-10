@@ -281,27 +281,19 @@ class DataParametricaRepository implements ParametricaRepository {
     }
 
 
-    public function getAlmacen($filtro): array {
+    public function getAlmacen($filtro, $id_regional): array {
         $filtro = '%' . $filtro . '%';
         try {
-            $sql = "SELECT alm.*, 
-                           reg.id as id_regional, 
-                           reg.codigo as codigo_regional, 
-                           reg.nombre as nombre_regional, 
-                           reg.direccion as direccion_regional, 
-                           reg.telefono as telefono_regional,
-                           prog.id as id_programa,
-                           prog.codigo as codigo_programa,
-                           prog.nombre as nombre_programa
-                    FROM almacen alm, regional reg, programa prog
+            $sql = "SELECT alm.*
+                    FROM almacen alm
                     WHERE alm.activo = 1 
-                          AND alm.id_regional=reg.id 
-                          AND alm.id_programa=prog.id
+                          AND alm.id_regional=:id_regional
                           AND (LOWER(alm.nombre) LIKE LOWER(:filter) 
                           OR LOWER(alm.direccion) LIKE LOWER(:filter)
                           OR LOWER(alm.codigo) LIKE LOWER(:filter))";
             $res = ($this->db)->prepare($sql);
             $res->bindParam(':filter', $filtro, PDO::PARAM_STR);
+            $res->bindParam(':id_regional', $id_regional, PDO::PARAM_STR);
             $res->execute();
             $res = $res->fetchAll(PDO::FETCH_ASSOC);
 
@@ -310,21 +302,8 @@ class DataParametricaRepository implements ParametricaRepository {
                 $result = array('id'=>$item['id'],
                                 'codigo'=>$item['codigo'],
                                 'nombre'=>$item['nombre'],
-                                'regional'=>array(
-                                    'id'=>$item['id_regional'],
-                                    'codigo'=>$item['codigo_regional'],
-                                    'nombre'=>$item['nombre_regional'],
-                                    'direccion'=>$item['direccion_regional'],
-                                    'telefono'=>$item['telefono_regional']
-                                ),
-                                'programa'=>array(
-                                    'id'=>$item['id_programa'],
-                                    'codigo'=>$item['codigo_programa'],
-                                    'nombre'=>$item['nombre_programa']
-                                ),
                                 'direccion'=>$item['direccion'],
-                                'telefono'=>$item['telefono'],
-                                'activo'=>$item['activo']);
+                                'telefono'=>$item['telefono']);
                 array_push($arrayres,$result);
             }
             return $arrayres;
