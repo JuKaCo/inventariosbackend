@@ -3,15 +3,8 @@ declare(strict_types=1);
 
 namespace App\Domain;
 
-interface LinadimeRepository
+interface ReportesRepository
 {
-    public function setValidUpload($archivo,$body): array;
+    public function reporteIngresoNotaIngreso($data): void;
     
-    public function setCargarUpload($archivo,$body,$id_usuario): array;
-    
-    public function getListLinadime($params):array;
-    
-    public function setActivaInactiva($uuid,$estado,$id_usuario):array;
-    
-    public function gerArchive($uuid):array;
 }
