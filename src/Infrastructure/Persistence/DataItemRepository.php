@@ -352,11 +352,11 @@ class DataItemRepository implements ItemRepository {
         return $resp;
     }
 
-    public function calculatePriceItem($data_precio){
+    public function calculatePriceItem($data_item):array{
 
-        $price = $data_precio['precio_unidad_fob'];
-        $factor = $data_precio['factor'];	
-        $qty = $data_precio['cantidad'];
+        $price = $data_item['precio_unidad_fob'];
+        $factor = $data_item['factor'];	
+        $qty = $data_item['cantidad'];
         
         $iva=14.94;	
         $costo_alma = 0;	

@@ -157,9 +157,9 @@ class ItemAction extends Action {
         $this->request = $request;
         $this->response = $response;
         $this->args = $args;
-        $data_precio =  $request->getParsedBody();
+        $data_item =  $request->getParsedBody();
         
-        $res=$this->itemRepository->calculatePriceItem($data_precio);
+        $res=$this->itemRepository->calculatePriceItem($data_item);
 
         if($res['success']==false){
             return $this->respondWithData(null,$res['message'],202,false);
