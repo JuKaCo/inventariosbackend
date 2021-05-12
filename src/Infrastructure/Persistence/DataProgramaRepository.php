@@ -8,6 +8,7 @@ use App\Application\Actions\RepositoryConection\Conect;
 use App\Domain\ProgramaRepository;
 use App\Infrastructure\Persistence\DataCorrelativoRepository;
 use \PDO;
+use AbmmHasan\Uuid;
 
 class DataProgramaRepository implements ProgramaRepository {
 

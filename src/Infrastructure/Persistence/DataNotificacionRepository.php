@@ -7,6 +7,7 @@ namespace App\Infrastructure\Persistence;
 use App\Application\Actions\RepositoryConection\Conect;
 use App\Domain\NotificacionRepository;
 use \PDO;
+use AbmmHasan\Uuid;
 
 class DataNotificacionRepository implements NotificacionRepository {
 

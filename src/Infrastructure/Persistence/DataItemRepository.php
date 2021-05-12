@@ -10,6 +10,7 @@ use App\Infrastructure\Persistence\DataCorrelativoRepository;
 use App\Infrastructure\Persistence\DataProductoRepository;
 use App\Infrastructure\Persistence\DataParametricaRepository;
 use \PDO;
+use AbmmHasan\Uuid;
 
 class DataItemRepository implements ItemRepository {
 

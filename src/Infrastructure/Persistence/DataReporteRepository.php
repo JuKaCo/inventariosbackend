@@ -9,6 +9,7 @@ use App\Infrastructure\Persistence\DataDatosGeneralesRepository;
 use App\Domain\ReporteRepository;
 use \TCPDF;
 use \PDO;
+use AbmmHasan\Uuid;
 
 class DataReporteRepository implements ReporteRepository {
 

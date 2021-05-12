@@ -11,6 +11,7 @@ use \PDO;
 use \DateTime;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use AbmmHasan\Uuid;
 
 class DataRrhhRepository implements RrhhRepository {
 

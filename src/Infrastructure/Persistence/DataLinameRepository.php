@@ -14,6 +14,7 @@ use App\Domain\DatosGeneralesRepository;
 use App\Infrastructure\Persistence\DataDatosGeneralesRepository;
 use App\Infrastructure\Persistence\DataCorrelativoRepository;
 use \PDO;
+use AbmmHasan\Uuid;
 
 class DataLinameRepository implements LinameRepository {
 

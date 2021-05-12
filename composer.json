@@ -15,6 +15,7 @@
     "require": {
         "php": "^8.0.0",
         "ext-json": "*",
+        "abmmhasan/uuid": "^1.0",
         "firebase/php-jwt": "^5.2",
         "monolog/monolog": "^1.24",
         "php-di/php-di": "^6.0",
