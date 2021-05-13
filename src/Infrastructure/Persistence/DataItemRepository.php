@@ -152,7 +152,8 @@ class DataItemRepository implements ItemRepository {
             $concat=array('resultados'=>$arrayres,'total'=>$total);
             $resp = array('success'=>true,'message'=>'Exito','data_item'=>$concat);
         }else{
-            $resp = array('success'=>false,'message'=>'No se encontraron registros');
+            $concat=array('resultados'=>array(),'total'=>0);
+            $resp = array('success'=>true,'message'=>'No se encontraron registros','data_item'=>$concat);
         }
         return $resp;
     }
