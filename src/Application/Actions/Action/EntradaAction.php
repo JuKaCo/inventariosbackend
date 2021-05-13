@@ -51,7 +51,7 @@ class EntradaAction extends Action {
         $res=$this->entradaRepository->listEntrada($query);
 
         if($res['success']==false){
-            return $this->respondWithData($res['data_entrada'],$res['message'],202,true);
+            return $this->respondWithData(null,$res['message'],202,true);
         }else{
             return $this->respondWithData($res['data_entrada'],$res['message'],200,true);
         }
