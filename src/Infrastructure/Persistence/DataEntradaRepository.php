@@ -118,7 +118,9 @@ class DataEntradaRepository implements EntradaRepository {
                             'nota'=>$res['nota'],
                             'comision'=>json_decode($res['comision']),
                             'estado'=>$res['estado'],
-                            'activo'=>$res['activo']);
+                            'activo'=>$res['activo'],
+                            'fecha'=>date('d/m/Y',strtotime($res['f_crea'])),
+                            'total'=>$this->calculatotalEntrada($res['id']));
             if($result['id_regional']['id']==null){$result['id_regional']=json_decode("{}");}
             if($result['id_almacen']['id']==null){$result['id_almacen']=json_decode("{}");}
             if($result['tipo_entrada']['codigo']==null){$result['tipo_entrada']=json_decode("{}");}
@@ -259,7 +261,9 @@ class DataEntradaRepository implements EntradaRepository {
                                 'nota'=>$res['nota'],
                                 'comision'=>json_decode($res['comision']),
                                 'estado'=>$res['estado'],
-                                'activo'=>$res['activo']);
+                                'activo'=>$res['activo'],
+                                'fecha'=>date('d/m/Y',strtotime($res['f_crea'])),
+                                'total'=>$this->calculatotalEntrada($res['id']));
                 if($result['id_regional']['id']==null){$result['id_regional']=json_decode("{}");}
                 if($result['id_almacen']['id']==null){$result['id_almacen']=json_decode("{}");}
                 if($result['tipo_entrada']['codigo']==null){$result['tipo_entrada']=json_decode("{}");}
@@ -718,5 +722,24 @@ class DataEntradaRepository implements EntradaRepository {
         }
         $resp = array('success'=>'true','message'=>'datos actualizados','data_entrada'=>$resp);
         return $resp;
+    }
+
+    public function calculatotalEntrada($id_entrada){
+        $sql = "SELECT precio_total
+                FROM item
+                WHERE id_entrada_salida = :id_entrada";
+        $res = ($this->db)->prepare($sql);
+        $res->bindParam(':id_entrada', $id_entrada, PDO::PARAM_STR);
+        $res->execute();
+        if($res->rowCount()>0){
+            $restodo = $res->fetchAll(PDO::FETCH_ASSOC);
+            $total = 0;
+            foreach ($restodo as $res){
+                $total = $total + $res['precio_total'];
+            }
+            return round($total,2);
+        }else{
+            return 0;
+        }
     }
 }
