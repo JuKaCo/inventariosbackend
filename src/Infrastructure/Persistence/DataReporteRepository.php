@@ -6,11 +6,12 @@ namespace App\Infrastructure\Persistence;
 
 use App\Application\Actions\RepositoryConection\Conect;
 use App\Infrastructure\Persistence\DataDatosGeneralesRepository;
-use App\Domain\ReportesRepository;
+use App\Domain\ReporteRepository;
 use \TCPDF;
 use \PDO;
+use AbmmHasan\Uuid;
 
-class DataReportesRepository implements ReportesRepository {
+class DataReporteRepository implements ReporteRepository {
 
     /**
      * @var $db conection db

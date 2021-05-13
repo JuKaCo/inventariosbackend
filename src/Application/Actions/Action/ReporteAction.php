@@ -5,14 +5,13 @@ declare(strict_types=1);
 namespace App\Application\Actions\Action;
 
 use App\Application\Actions\Action;
-use App\Domain\LinadimeRepository;
 use Psr\Log\LoggerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\UploadedFileInterface;
-use App\Domain\ReportesRepository;
+use App\Domain\ReporteRepository;
 
-class ReportesAction extends Action {
+class ReporteAction extends Action {
 
     protected $repository;
 
@@ -20,14 +19,14 @@ class ReportesAction extends Action {
      * @param LoggerInterface $logger
      * @param $repository  ?
      */
-    public function __construct(LoggerInterface $logger, ReportesRepository $rep) {
+    public function __construct(LoggerInterface $logger, ReporteRepository $rep) {
         parent::__construct($logger);
         $this->repository = $rep;
     }
 
     public function action(): Response {
         $users = array();
-        $this->logger->info("ReportesAction");
+        $this->logger->info("ReporteAction");
         return $this->respondWithData($users);
     }
 

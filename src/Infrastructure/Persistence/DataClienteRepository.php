@@ -7,6 +7,7 @@ namespace App\Infrastructure\Persistence;
 use App\Application\Actions\RepositoryConection\Conect;
 use App\Domain\ClienteRepository;
 use \PDO;
+use AbmmHasan\Uuid;
 
 class DataClienteRepository implements ClienteRepository {
 

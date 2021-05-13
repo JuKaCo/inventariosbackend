@@ -7,6 +7,11 @@ namespace App\Infrastructure\Persistence;
 use App\Application\Actions\RepositoryConection\Conect;
 use App\Domain\ProductoRepository;
 use \PDO;
+use AbmmHasan\Uuid;
+//https://github.com/abmmhasan/UUID
+//asi se usa
+//Uuid::v1();
+//Uuid::v4();
 
 class DataProductoRepository implements ProductoRepository {
 

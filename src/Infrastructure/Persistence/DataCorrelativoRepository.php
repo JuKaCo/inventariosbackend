@@ -7,6 +7,7 @@ namespace App\Infrastructure\Persistence;
 use App\Application\Actions\RepositoryConection\Conect;
 use App\Domain\CorrelativoRepository;
 use \PDO;
+use AbmmHasan\Uuid;
 
 class DataCorrelativoRepository implements CorrelativoRepository {
 

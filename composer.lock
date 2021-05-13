@@ -4,8 +4,48 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d3afcc17ffb69c4c2cd1764ea1f68f87",
+    "content-hash": "10daaff29823bbeb483806de87c4807c",
     "packages": [
+        {
+            "name": "abmmhasan/uuid",
+            "version": "1.0.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/abmmhasan/UUID.git",
+                "reference": "42f6ef6bf04ffd963227f595c34087f48096c351"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/abmmhasan/UUID/zipball/42f6ef6bf04ffd963227f595c34087f48096c351",
+                "reference": "42f6ef6bf04ffd963227f595c34087f48096c351",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.1"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "AbmmHasan\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "abmmhasan",
+                    "email": "abmmhasan346@gmail.com"
+                }
+            ],
+            "description": "UUID (v1, v3-v5) Generator (RFC4122)",
+            "support": {
+                "issues": "https://github.com/abmmhasan/UUID/issues",
+                "source": "https://github.com/abmmhasan/UUID/tree/1.0.3"
+            },
+            "time": "2020-11-10T02:53:18+00:00"
+        },
         {
             "name": "ezyang/htmlpurifier",
             "version": "v4.13.0",

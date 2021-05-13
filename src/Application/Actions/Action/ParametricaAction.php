@@ -10,6 +10,7 @@ use App\Domain\LinameRepository;
 use Psr\Log\LoggerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use AbmmHasan\Uuid;
 
 class ParametricaAction  extends Action {
     
@@ -41,6 +42,7 @@ class ParametricaAction  extends Action {
         if ($data == null) {
             return $this->respondWithData(array(), 'No se encontro datos', 202, false);
         }
+
         return $this->respondWithData($data);
     }
 

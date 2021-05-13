@@ -9,6 +9,7 @@ use App\Application\Actions\RepositoryConection\Conect;
 use App\Application\Actions\RepositoryConection\Conectkeycloak;
 use App\Domain\ParametricaRepository;
 use \PDO;
+use AbmmHasan\Uuid;
 
 class DataParametricaRepository implements ParametricaRepository {
 
