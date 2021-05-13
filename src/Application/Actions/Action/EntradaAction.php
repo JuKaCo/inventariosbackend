@@ -175,4 +175,24 @@ class EntradaAction extends Action {
             return $this->respondWithData($res['data_entrada'],$res['message'],200,true);
         }
     }
+
+    public function modifica_Entrada(Request $request, Response $response, $args): Response {
+        $this->request = $request;
+        $this->response = $response;
+        $this->args = $args;
+        $id_entrada = $args['id_entrada'];
+        $data_entrada =  $request->getParsedBody();
+
+        $token=getenv('TOKEN_DATOS');
+        $token=json_decode($token,true);
+        $uuid=($token['sub']);
+
+        $res=$this->entradaRepository->modifyEntrada($id_entrada,$data_entrada,$uuid);
+
+        if($res['success']==false){
+            return $this->respondWithData(null,$res['message'],202,false);
+        }else{
+            return $this->respondWithData($res['data_entrada'],$res['message'],200,true);
+        }
+    }
 }
