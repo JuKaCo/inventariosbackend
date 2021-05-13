@@ -11,6 +11,7 @@ use App\Application\Actions\Action\ProgramaAction;
 use App\Application\Actions\Action\AlmacenAction;
 use App\Application\Actions\Action\CompraAction;
 use App\Application\Actions\Action\ItemAction;
+use App\Application\Actions\Action\EntradaAction;
 
 return function (App $app) {
 
@@ -65,5 +66,15 @@ return function (App $app) {
         $group->get('/listar',ItemAction::class.':lista_Item');
         $group->patch('/modificar/{id_item}',ItemAction::class.':modifica_Item');
         $group->post('/calcular',ItemAction::class.':calcula_Precio_Item');
+    });
+    //entrada rutas
+    $app->group('/api/v1/entrada', function(Group $group){
+        $group->get('/obtener/{id_entrada}',EntradaAction::class.':obtiene_Entrada');
+        $group->put('/editar/{id_entrada}',EntradaAction::class.':edita_Entrada');
+        $group->post('/crear',EntradaAction::class.':crea_Entrada');
+        $group->delete('/cambiarestado/{id_entrada}',EntradaAction::class.':cambiaestado_Entrada');
+        $group->get('/listar',EntradaAction::class.':lista_Entrada');
+        $group->patch('/modificar/{id_entrada}',EntradaAction::class.':modifica_Entrada');
+        $group->post('/calcular',EntradaAction::class.':calcula_Precio_Entrada');
     });
 };

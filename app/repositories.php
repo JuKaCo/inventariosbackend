@@ -60,5 +60,6 @@ return function (ContainerBuilder $containerBuilder) {
         CompraRepository::class => \DI\autowire(DataCompraRepository::class),
         ItemRepository::class => \DI\autowire(DataItemRepository::class),
         ReportesRepository::class=> \DI\autowire(DataReportesRepository::class),
+        EntradaRepository::class=> \DI\autowire(DataEntradaRepository::class),
     ]);
 };
