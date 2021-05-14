@@ -12,6 +12,7 @@ use App\Application\Actions\Action\AlmacenAction;
 use App\Application\Actions\Action\CompraAction;
 use App\Application\Actions\Action\ItemAction;
 use App\Application\Actions\Action\EntradaAction;
+use App\Application\Actions\Action\KardexAction;
 
 return function (App $app) {
 
@@ -63,7 +64,7 @@ return function (App $app) {
         $group->put('/editar/{id_item}',ItemAction::class.':edita_Item');
         $group->post('/crear',ItemAction::class.':crea_Item');
         $group->delete('/cambiarestado/{id_item}',ItemAction::class.':cambiaestado_Item');
-        $group->get('/listar',ItemAction::class.':lista_Item');
+        $group->get('/listar/{id_entrada_salida}',ItemAction::class.':lista_Item');
         $group->patch('/modificar/{id_item}',ItemAction::class.':modifica_Item');
         $group->post('/calcular',ItemAction::class.':calcula_Precio_Item');
     });
@@ -76,5 +77,15 @@ return function (App $app) {
         $group->get('/listar',EntradaAction::class.':lista_Entrada');
         $group->patch('/modificar/{id_entrada}',EntradaAction::class.':modifica_Entrada');
         $group->post('/calcular',EntradaAction::class.':calcula_Precio_Entrada');
+    });
+    //kardex rutas
+    $app->group('/api/v1/kardex', function(Group $group){
+        $group->get('/obtener/{id_kardex}',KardexAction::class.':obtiene_Kardex');
+        $group->put('/editar/{id_kardex}',KardexAction::class.':edita_Kardex');
+        $group->post('/crear',KardexAction::class.':crea_Kardex');
+        $group->delete('/cambiarestado/{id_kardex}',KardexAction::class.':cambiaestado_Kardex');
+        $group->get('/listar',KardexAction::class.':lista_Kardex');
+        $group->patch('/modificar/{id_kardex}',KardexAction::class.':modifica_Kardex');
+        $group->post('/calcular',KardexAction::class.':calcula_Precio_Kardex');
     });
 };

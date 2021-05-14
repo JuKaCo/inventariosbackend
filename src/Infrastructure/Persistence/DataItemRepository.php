@@ -85,7 +85,7 @@ class DataItemRepository implements ItemRepository {
         return $resp;
     }
 
-    public function listItem($query): array {
+    public function listItem($query,$id_entrada_salida): array {
         if(!(isset($query['filtro'])&&isset($query['limite'])&&isset($query['indice']))){
             return array('success'=>false,'message'=>'Datos invalidos');
         }
@@ -96,22 +96,24 @@ class DataItemRepository implements ItemRepository {
         $filter="%".strtolower($filtro)."%";
         $sql = "SELECT i.id
                 FROM item i LEFT JOIN param_general pg ON (i.factor=pg.codigo AND pg.cod_grupo LIKE 'param_factor_precio')
-                WHERE i.activo=1 AND 
+                WHERE i.activo=1 AND i.id_entrada_salida=:id_entrada_salida AND
                 (LOWER(i.id) LIKE LOWER(:filter) OR LOWER(i.id_producto) LIKE LOWER(:filter) OR LOWER(i.id_entrada_salida) LIKE LOWER(:filter) OR LOWER(i.tipo_in_out) LIKE LOWER(:filter) 
                 OR LOWER(i.codigo_prod) LIKE LOWER(:filter) OR LOWER(i.nombre_prod) LIKE LOWER(:filter) OR LOWER(i.registro_sanitario) LIKE LOWER(:filter) OR LOWER(i.lote) LIKE LOWER(:filter) OR DATE_FORMAT(i.fecha_exp,'%d/%m/%Y') LIKE :filter)";
         $res = ($this->db)->prepare($sql);
         $res->bindParam(':filter', $filter, PDO::PARAM_STR);
+        $res->bindParam(':id_entrada_salida', $id_entrada_salida, PDO::PARAM_STR);
         $res->execute();
         $total=$res->rowCount();
         $sql = "SELECT i.*, pg.id_param, pg.cod_grupo, pg.codigo, pg.valor
                 FROM item i LEFT JOIN param_general pg ON (i.factor=pg.codigo AND pg.cod_grupo LIKE 'param_factor_precio')
-                WHERE i.activo=1 AND 
+                WHERE i.activo=1 AND i.id_entrada_salida=:id_entrada_salida AND
                 (LOWER(i.id) LIKE LOWER(:filter) OR LOWER(i.id_producto) LIKE LOWER(:filter) OR LOWER(i.id_entrada_salida) LIKE LOWER(:filter) OR LOWER(i.tipo_in_out) LIKE LOWER(:filter) 
                 OR LOWER(i.codigo_prod) LIKE LOWER(:filter) OR LOWER(i.nombre_prod) LIKE LOWER(:filter) OR LOWER(i.registro_sanitario) LIKE LOWER(:filter) OR LOWER(i.lote) LIKE LOWER(:filter) OR DATE_FORMAT(i.fecha_exp,'%d/%m/%Y') LIKE :filter)
                 ORDER BY i.f_crea DESC
                 LIMIT :indice, :limite;";
         $res = ($this->db)->prepare($sql);
         $res->bindParam(':filter', $filter, PDO::PARAM_STR);
+        $res->bindParam(':id_entrada_salida', $id_entrada_salida, PDO::PARAM_STR);
         $res->bindParam(':limite', $limite, PDO::PARAM_INT);
         $res->bindParam(':indice', $indice, PDO::PARAM_INT);
         $res->execute();

@@ -47,8 +47,8 @@ class ItemAction extends Action {
         $this->response = $response;
         $this->args = $args;
         $query=$request->getQueryParams();
-
-        $res=$this->itemRepository->listItem($query);
+        $id_entrada_salida = $args['id_entrada_salida'];
+        $res=$this->itemRepository->listItem($query, $id_entrada_salida);
 
         if($res['success']==false){
             return $this->respondWithData(null,$res['message'],202,true);
