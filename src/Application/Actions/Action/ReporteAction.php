@@ -35,12 +35,15 @@ class ReporteAction extends Action {
         $this->response = $response;
         $this->args = $args;
         //$params=$args;
-        $query = $request->getQueryParams();
-        $data = array();
-        header('access-control-allow-origin: *');
-        $this->repository->reporteIngresoNotaIngreso($data);
+        $id_entrada = $args['id'];
+
+        //header('access-control-allow-origin: *');
+
+
+        $res=$this->repository->reporteIngresoNotaIngreso($id_entrada);
+        //return $this->respondWithData($res,'exito',200,true);
+        //$this->repository->reporteIngresoNotaIngreso($data);
         $response->getBody()->write("");
-        return $response;
     }
 
 }
