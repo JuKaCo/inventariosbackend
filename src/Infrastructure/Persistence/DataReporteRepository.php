@@ -12,6 +12,7 @@ use App\Infrastructure\Persistence\DataItemRepository;
 use \TCPDF;
 use \PDO;
 use AbmmHasan\Uuid;
+use \NumberFormatter;
 
 class DataReporteRepository implements ReporteRepository {
 
@@ -37,6 +38,9 @@ class DataReporteRepository implements ReporteRepository {
     }
 
     public function reporteIngresoNotaIngreso($id_entrada): array {
+        //$nformater = new NumberFormatter("es-MX", NumberFormatter::SPELLOUT);
+        //$numeroEnLetras = $nformater->format(2021);
+        //print $numeroEnLetras;
         $error = false;
         try {
             $entrada = $this->dataEntradaRepository->getEntrada($id_entrada);
@@ -47,7 +51,8 @@ class DataReporteRepository implements ReporteRepository {
                 if ($item['success'] == true) {
                     $datosItem = $item['data_item']['resultados'];
                     /* Inicio PDF */
-                    $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+                    $pdf = new TCPDF(PDF_PAGE_ORIENTATION, 'mm', array('279', '216'), true, 'UTF-8', false);
+                    
                     $pdf->SetCreator(PDF_CREATOR);
                     $pdf->SetAuthor('CEASS');
                     $pdf->SetTitle('Nota de ingreso almacen');
@@ -62,7 +67,7 @@ class DataReporteRepository implements ReporteRepository {
 
                     $pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
 
-                    $pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
+                    $pdf->SetMargins(8.1, 3, 2);
                     $pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
                     $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
 
@@ -84,6 +89,7 @@ class DataReporteRepository implements ReporteRepository {
                     $i = 0;
                     $total = 0;
                     $fecha = date("d/m/Y");
+                    $nformater = new NumberFormatter("es-MX", NumberFormatter::SPELLOUT);
                     foreach ($datosItem as $item) {
                         // para tabla de valores
                         $espec_tecn = isset($item->id_producto->especificacion_tec)?$item->id_producto->especificacion_tec:'';
@@ -107,6 +113,10 @@ class DataReporteRepository implements ReporteRepository {
                             </tr>
                         ";
                     }
+                    $parteEnteraTotal = floor($total);
+                    $parteDecimal = round($total - $parteEnteraTotal, 2);
+                    $parteDecimalVerificado = $parteDecimal == 0? '00' : substr(strval($parteDecimal), 2);
+                    $numeroEnLetras = strtoupper($nformater->format($parteEnteraTotal));
                     $html = <<<EOD
                             <!DOCTYPE html>
                             <html lang="es">
@@ -120,23 +130,31 @@ class DataReporteRepository implements ReporteRepository {
                                             font-size: 15px;
                                         }
                                         .tabla {
-                                            font-size: 12px;
+                                            font-size: 10px;
                                             aling-self: center;
+                                        }
+                                        .tabla > table {
+                                            border-spacing: 5px;
                                         }
                                         .datatable{
                                             border: 1px solid #000000;
-                                            font-size: 10px;
+                                            font-size: 8px;
                                             margin: 15px;
                                             text-align: center;
+                                            border-collapse: collapse;
+                                            padding: 5px;
+                                            align-self: center;
                                         }
                                         .datatable > td{
                                             border: 1px solid #000000;
                                             border-collapse: collapse;
+                                            align-self: center !important;
                                         }
                                         .datatable > th{
                                             border: 1px solid #000000;
                                             border-collapse: collapse;
-                                            font-weight:bold; 
+                                            font-weight:bold;
+                                            align-self: center !important;
                                         }
                                     </style>
                                 </head>
@@ -167,7 +185,7 @@ class DataReporteRepository implements ReporteRepository {
                                                 <tr>
                                                     <td style="font-weight:bold;">Proveedor:</td>
                                                     <td>{$datosEntrada['id_proveedor']['nombre']}</td>
-                                                    <td style="font-weight:bold;">CITE Contrato u Orden Compra:</td>
+                                                    <td style="font-weight:bold;">CITE Contrato:</td>
                                                     <td>{$datosEntrada['cite_contrato_compra']}</td>
                                                 </tr>
                                                 <tr>
@@ -179,27 +197,27 @@ class DataReporteRepository implements ReporteRepository {
                                                 </tr>
                                             </table>
                                         </div>
-                                        <div>
+                                        <div style="with=100%">
                                             <table class="datatable">
                                                 <tr>
-                                                    <th>No.</th>
+                                                    <th style="width: 4%;">No</th>
                                                     <th>Codigo</th>
                                                     <th>Nombre</th>
-                                                    <th>Forma Farmaceutica o Presentacion</th>
-                                                    <th>Especificación Técnica o Concentración</th>
-                                                    <th>Lote ó Modelo</th>
-                                                    <th>Fecha Expiracion</th>
-                                                    <th>Cantidad [u]</th>
-                                                    <th>Costo unitario Almacenes (Bs)</th>
-                                                    <th>Costo total Almacenes (Bs)</th>
-                                                    <th>Precio unitario neto (Bs)</th>
-                                                    <th>Precio venta (Bs)</th>
+                                                    <th style="width: 11%">Forma <br> Farmaceutica <br> o Presentacion</th>
+                                                    <th style="width: 10.6%">Especificación <br>Técnica o <br>Concentración</th>
+                                                    <th>Lote ó <br>Modelo</th>
+                                                    <th>Fecha <br>Expiracion</th>
+                                                    <th>Cantidad <br>[u]</th>
+                                                    <th>Costo<br> unitario<br> Almacenes (Bs)</th>
+                                                    <th>Costo total<br> Almacenes<br> (Bs)</th>
+                                                    <th>Precio<br> unitario<br> neto <br>(Bs)</th>
+                                                    <th>Precio <br>venta <br>(Bs)</th>
                                                 </tr>
                                                 $filas
 
                                                 <tr>
-                                                    <td colspan="8">
-                                                        SEISCIENTOS CUARENTA Y SIETE MIL QUINIENTOS OCHO 00/100 BOLIVIANOS
+                                                    <td colspan="8" style="font-weight:bold; font-size: 9px; text-align: left; ">
+                                                        $numeroEnLetras $parteDecimalVerificado/100 BOLIVIANOS
                                                     </td>
                                                     <td>
                                                         Total
@@ -211,7 +229,7 @@ class DataReporteRepository implements ReporteRepository {
                                                     <td></td>
                                                 </tr>
                                             </table>
-                                            <small>Fecha: $fecha</small>
+                                            <small style="font-size: 9px;">Fecha: $fecha</small>
                                             <br>
 
                                             <small><b>Observaciones</b></small>
@@ -244,7 +262,7 @@ class DataReporteRepository implements ReporteRepository {
                 $error = true;
             }
             if ($error == true) {
-                return array('sucess' => false);
+                return array('sin_datos' => true);
             }
         } catch (Exception $e) {
             return array('error' => true);

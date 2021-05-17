@@ -41,8 +41,12 @@ class ReporteAction extends Action {
 
 
         $res=$this->repository->reporteIngresoNotaIngreso($id_entrada);
-        //return $this->respondWithData($res,'exito',200,true);
-        //$this->repository->reporteIngresoNotaIngreso($data);
+        if (isset($res['error'])) {
+            return $this->respondWithData(array(), 'Error', 500, false);
+        }
+        if (isset($res['sin_datos'])) {
+            return $this->respondWithData(array(), 'No se encontro', 404, false);
+        }
         $response->getBody()->write("");
         return $response;
     }
