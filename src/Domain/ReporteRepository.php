@@ -5,6 +5,6 @@ namespace App\Domain;
 
 interface ReporteRepository
 {
-    public function reporteIngresoNotaIngreso($data): void;
+    public function reporteIngresoNotaIngreso($data): array;
     
 }

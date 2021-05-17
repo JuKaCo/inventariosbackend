@@ -390,7 +390,7 @@ class DataProductoRepository implements ProductoRepository {
         if(isset($data_producto['codigo'])){
             $sql = "SELECT *
                     FROM producto
-                    WHERE codigo=:codigo AND id!=:id_pro$id_producto";
+                    WHERE codigo=:codigo AND id!=:id_producto";
             $res = ($this->db)->prepare($sql);
             $res->bindParam(':codigo', $data_producto['codigo'], PDO::PARAM_STR);
             $res->bindParam(':id_producto', $id_producto, PDO::PARAM_STR);
