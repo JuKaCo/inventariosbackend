@@ -34,11 +34,15 @@ class MenuAction extends Action {
         $this->response = $response;
         $this->args = $args;
         //get token 
-        $token=getenv('TOKEN_DATOS');
-        $token=json_decode($token,true);
-        $roles=($token['realm_access'])['roles'];
-        $res=$this->menuRepository->getMenu($roles);
-
+        $JWT = new \App\Application\Middleware\JWTdata($request);
+        $token = $JWT->getToken();
+        if (!$token['success']) {
+            return $this->respondWithData(array(), 'Datos de token invalidos', 403);
+        }
+        $token = $token['data'];
+        $roles = $token->realm_access->roles;
+        $res = $this->menuRepository->getMenu($roles);
+        
         return $this->respondWithData($res);
     }
 

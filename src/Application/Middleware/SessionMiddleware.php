@@ -33,9 +33,13 @@ class SessionMiddleware implements Middleware {
       "iss": "http://192.168.1.232:8080/auth/realms/web",
       "aud": "account",
      * ----ID_USUARIO-------------------------------------------------------
-     * $token=getenv('TOKEN_DATOS');
-     * $token=json_decode($token,true);
-     * $id_usuario=$token['sub'];
+     * $JWT = new \App\Application\Middleware\JWTdata($request);
+     * $token = $JWT->getToken();
+     * if (!$token['success']) {
+     * return $this->respondWithData(array(), 'Datos de token invalidos', 403);
+     * }
+     * $token = $token['data'];
+     * $id_usuario=$token->sub;
      * 
       "sub": "5e80d6ca-0455-4e2a-a1bf-eaaa543e901b",
       "typ": "Bearer",
@@ -47,9 +51,13 @@ class SessionMiddleware implements Middleware {
       ],
       "realm_access": {
      * ----ROLES_ACCESO-----------------------------------------------------
-     * $token=getenv('TOKEN_DATOS');
-     * $token=json_decode($token,true);
-     * $roles=($token['realm_access'])['roles'];
+     * $JWT = new \App\Application\Middleware\JWTdata($request);
+     * $token = $JWT->getToken();
+     * if (!$token['success']) {
+     * return $this->respondWithData(array(), 'Datos de token invalidos', 403);
+     * }
+     * $token = $token['data'];
+     * $roles = $token->realm_access->roles;
      * 
       "roles": [
       "offline_access",
@@ -70,11 +78,15 @@ class SessionMiddleware implements Middleware {
       "scope": "openid offline_access email profile",
       "email_verified": false,
      * ----DATOS_GENERALES-------------------------------------------------
-     * $token=getenv('TOKEN_DATOS');
-     * $token=json_decode($token,true);
-     * $name=$token['name'];
-     * $cargo_usuario=$token['cargo_usuario'];
-     * $preferred_username=$token['preferred_username'];
+     * $JWT = new \App\Application\Middleware\JWTdata($request);
+     * $token = $JWT->getToken();
+     * if (!$token['success']) {
+     * return $this->respondWithData(array(), 'Datos de token invalidos', 403);
+     * }
+     * $token = $token['data'];
+     * $name=$token->name;
+     * $cargo_usuario=$token->cargo_usuario;
+     * $preferred_username=$token->preferred_username;
      * 
       "name": "Roger Nav",
       "cargo_usuario": "Encargado de almacen",
