@@ -52,22 +52,21 @@ class DataReporteRepository implements ReporteRepository {
                     /* Inicio PDF */
                     $pdf = new TCPDF(PDF_PAGE_ORIENTATION, 'mm', array('279', '216'), true, 'UTF-8', false);
                     
-                    $pdf->SetCreator(PDF_CREATOR);
+                    $pdf->SetCreator('');
                     $pdf->SetAuthor('CEASS');
                     $pdf->SetTitle('Nota de ingreso almacen');
                     $pdf->SetSubject('Nota de ingreso almacen');
                     $pdf->SetKeywords('Almacen, Ingreso, CEASS');
 
+                    $pdf->setPrintHeader(false);
 
                     $pdf->setFooterData(array(0, 64, 0), array(0, 64, 128));
 
-                    $pdf->setHeaderFont(Array(PDF_FONT_NAME_MAIN, '', PDF_FONT_SIZE_MAIN));
                     $pdf->setFooterFont(Array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));
 
-                    $pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
+                    $pdf->SetMargins(8, -5, 8);
 
-                    $pdf->SetMargins(8.1, 3, 2);
-                    $pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
+                    $pdf->SetHeaderMargin(0);
                     $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
 
                     $pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
@@ -79,10 +78,9 @@ class DataReporteRepository implements ReporteRepository {
                     $pdf->SetFont('dejavusans', '', 14, '', true);
                     $pdf->AddPage();
 
+                    
                     //$pdf->setTextShadow(array('enabled' => true, 'depth_w' => 0.2, 'depth_h' => 0.2, 'color' => array(196, 196, 196), 'opacity' => 1, 'blend_mode' => 'Normal'));
                     $fuenteFin = isset($datosEntrada->tipo_financiamiento->valor) ? $datosEntrada->tipo_financiamiento->valor : 'Sin datos';
-
-
 
                     $filas = "";
                     $i = 0;
@@ -157,11 +155,18 @@ class DataReporteRepository implements ReporteRepository {
                                             font-weight:bold;
                                             align-self: center !important;
                                         }
+                                        .table3 {
+                                            width: 100%;
+                                            
+                                        }
+                                        .table3 > td {
+                                          
+                                        }
                                     </style>
                                 </head>
                                 <body> 
                                     <div class="container">
-                                        <p><img src="@{$img_base64_encoded}"></p>
+                                        <p><img src="@{$img_base64_encoded}" width="180px"></p>
                                         <p class="titulo"> NOTA DE INGRESO ALMACEN {$datosEntrada['codigo']} </p>
                                         <div class="tabla">
                                             <table>
@@ -233,13 +238,35 @@ class DataReporteRepository implements ReporteRepository {
                                             <small style="font-size: 9px;">Fecha: $fecha</small>
                                             <br>
 
-                                            <small><b>Observaciones</b></small>
+                                            <small style="font-size: 10px; font-weight:bold;">Observaciones</small>
                                         <br>
-                                            <table>
-                                                <tr>
-                                                    <td><small>Recepcionado Por:</small></td>
-                                                    <td><small>Entregado Por:</small></td>
-                                                    <td><small>Supervisado Por:</small></td>
+                                            <table class="table3">
+                                                <tr style="width:100%">
+                                                    <td style="border: 1px solid #000000; width: 32%">
+                                                            <small style="margin-top: 0px; padding-top:0px; font-weight:bold; font-size: 9px;">Recepcionado Por:</small>
+                                                            <br>
+                                                            <small style="margin-botton:0px; padding-botton:0px;">
+                                                            .......................................................
+                                                            </small>
+                                                    </td>
+                                                    <td  style="width: 1%"></td>
+                                                    <td style="border: 1px solid #000000; width: 32%">
+                                                            <small style="margin-top: 0px; padding-top:0px; font-weight:bold; font-size: 9px;">Entregado Por:</small>
+                                                            <br>
+                                                            <small style="margin-botton:0px; padding-botton:0px;">
+                                                            .......................................................
+                                                            </small>
+                                                    </td>
+                                                    <td  style="width: 1%"></td>
+                                                    <td style="border: 1px solid #000000; width: 32% ">
+                                                            <small style="margin-top: 0px; padding-top:0px; font-weight:bold; font-size: 9px; ">
+                                                                Supervisado Por:
+                                                            </small>
+                                                            <br>
+                                                            <small style="margin-botton:0px; padding-botton:0px;">
+                                                            .......................................................
+                                                            </small>
+                                                    </td>
                                                 </tr>
                                             </table>
                                         </div>
