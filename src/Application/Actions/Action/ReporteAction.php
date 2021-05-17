@@ -37,13 +37,14 @@ class ReporteAction extends Action {
         //$params=$args;
         $id_entrada = $args['id'];
 
-        //header('access-control-allow-origin: *');
+        header('access-control-allow-origin: *');
 
 
         $res=$this->repository->reporteIngresoNotaIngreso($id_entrada);
         //return $this->respondWithData($res,'exito',200,true);
         //$this->repository->reporteIngresoNotaIngreso($data);
         $response->getBody()->write("");
+        return $response;
     }
 
 }
