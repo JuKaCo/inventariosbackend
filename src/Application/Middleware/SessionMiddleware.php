@@ -120,29 +120,17 @@ class SessionMiddleware implements Middleware {
                         $response->getBody()->write($payload);
                         return $response->withHeader('Content-Type', 'application/json')->withStatus(403);
                     }
-
-                    $Autorization = explode(" ", $Autorization);
-                    $Autorization = $Autorization[1];
-                    $key = $_ENV['KEYCLOAK_PK_PUBLIC'];
-                    $publicKey = <<<EOD
-                            -----BEGIN PUBLIC KEY-----
-                            {$key}
-                            -----END PUBLIC KEY-----
-                            EOD;
-
-                    $jwt = new \Firebase\JWT\JWT;
-                    $jwt::$leeway = 256;
-                    $decoded = JWT::decode($Autorization, $publicKey, array('RS256'));
-                    //*Setea datos del token en formato String JSON
-                    //@putenv TOKEN_DATOS
-                    putenv("TOKEN_DATOS=" . json_encode((array) $decoded));
-
+                    $JWT = new \App\Application\Middleware\JWTdata($request);
+                    $token = $JWT->getToken();
+                    if (!$token['success']) {
+                        return $this->respondWithData(array(), 'Datos de token invalidos', 403);
+                    }
+                    $token = $token['data'];
                     /*                     * ******Validando Rutas******* */
 
                     // obteniendo los roles
-                    $token = getenv('TOKEN_DATOS');
-                    $token = json_decode($token, true);
-                    $roles = ($token['realm_access'])['roles'];
+                    $roles = $token->realm_access->roles;
+
                     //Importando el repositorio
                     $rutas = new DataRutaRepository();
                     //obteniendo el path del request
