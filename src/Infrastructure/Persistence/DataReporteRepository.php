@@ -9,6 +9,7 @@ use App\Infrastructure\Persistence\DataDatosGeneralesRepository;
 use App\Domain\ReporteRepository;
 use App\Infrastructure\Persistence\DataEntradaRepository;
 use App\Infrastructure\Persistence\DataItemRepository;
+use App\Infrastructure\Persistence\MYPDF\MYPDF;
 use \TCPDF;
 use \PDO;
 use AbmmHasan\Uuid;
@@ -35,7 +36,7 @@ class DataReporteRepository implements ReporteRepository {
         $this->dataEntradaRepository = new DataEntradaRepository;
         $this->dataItemRepository = new DataItemRepository;
     }
-
+    
     public function reporteIngresoNotaIngreso($id_entrada): array {
         //$nformater = new NumberFormatter("es-MX", NumberFormatter::SPELLOUT);
         //$numeroEnLetras = $nformater->format(2021);
@@ -50,7 +51,8 @@ class DataReporteRepository implements ReporteRepository {
                 if ($item['success'] == true) {
                     $datosItem = $item['data_item']['resultados'];
                     /* Inicio PDF */
-                    $pdf = new TCPDF(PDF_PAGE_ORIENTATION, 'mm', array('279', '216'), true, 'UTF-8', false);
+                    $pdf = new MYPDF(PDF_PAGE_ORIENTATION, 'mm', array('279', '216'), true, 'UTF-8', false);
+                    $pdf->datos($datosEntrada['id']);
                     
                     $pdf->SetCreator('');
                     $pdf->SetAuthor('CEASS');
@@ -60,11 +62,11 @@ class DataReporteRepository implements ReporteRepository {
 
                     $pdf->setPrintHeader(false);
 
-                    $pdf->setFooterData(array(0, 64, 0), array(0, 64, 128));
+                    // $pdf->setFooterData(array(0, 64, 0), array(0, 64, 128));
 
-                    $pdf->setFooterFont(Array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));
+                    // $pdf->setFooterFont(Array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));
 
-                    $pdf->SetMargins(8, -5, 8);
+                    $pdf->SetMargins(8, 0, 8);
 
                     $pdf->SetHeaderMargin(0);
                     $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
@@ -77,8 +79,6 @@ class DataReporteRepository implements ReporteRepository {
                     $pdf->setFontSubsetting(true);
                     $pdf->SetFont('dejavusans', '', 14, '', true);
                     $pdf->AddPage();
-
-                    
                     //$pdf->setTextShadow(array('enabled' => true, 'depth_w' => 0.2, 'depth_h' => 0.2, 'color' => array(196, 196, 196), 'opacity' => 1, 'blend_mode' => 'Normal'));
                     $fuenteFin = isset($datosEntrada->tipo_financiamiento->valor) ? $datosEntrada->tipo_financiamiento->valor : 'Sin datos';
 
@@ -87,6 +87,8 @@ class DataReporteRepository implements ReporteRepository {
                     $total = 0;
                     $fecha = date("d/m/Y");
                     $nformater = new NumberFormatter("es-MX", NumberFormatter::SPELLOUT);
+
+                    
                     foreach ($datosItem as $item) {
                         // para tabla de valores
                         $espec_tecn = isset($item->id_producto->especificacion_tec) ? $item->id_producto->especificacion_tec : '';
@@ -123,6 +125,10 @@ class DataReporteRepository implements ReporteRepository {
                                     <meta charset="UTF-8">
                                     <title>Document</title>
                                     <style>
+                                        .container {
+                                            align-items:center;
+                                            align-content:center;
+                                        }
                                         .titulo { 
                                             text-align: center; 
                                             font-weight:bold; 
@@ -131,6 +137,9 @@ class DataReporteRepository implements ReporteRepository {
                                         .tabla {
                                             font-size: 10px;
                                             aling-self: center;
+                                            align-items:center;
+                                            align-content:center;
+                                            width: 100%;
                                         }
                                         .tabla > table {
                                             border-spacing: 5px;
@@ -157,7 +166,7 @@ class DataReporteRepository implements ReporteRepository {
                                         }
                                         .table3 {
                                             width: 100%;
-                                            
+                                            align-self: center;
                                         }
                                         .table3 > td {
                                           
@@ -166,14 +175,20 @@ class DataReporteRepository implements ReporteRepository {
                                 </head>
                                 <body> 
                                     <div class="container">
-                                        <p><img src="@{$img_base64_encoded}" width="180px"></p>
+                                        <table style="width: 80%;">
+                                            <tr>
+                                                <td><img src="@{$img_base64_encoded}" width="180px"></td>
+                                                <!--<td style="text-align: rigth;"><img src="@{$img_base64_encoded}" width="180px"></td>-->
+                                            </tr>
+                                        </table>
+                                        
                                         <p class="titulo"> NOTA DE INGRESO ALMACEN {$datosEntrada['codigo']} </p>
                                         <div class="tabla">
                                             <table>
                                                 <tr>
-                                                    <td style="font-weight:bold;">Regional:</td>
+                                                    <td style="font-weight:bold; width: 80px;">Regional:</td>
                                                     <td>{$datosEntrada['id_regional']['nombre']}</td>
-                                                    <td style="font-weight:bold;">A favor de:</td>
+                                                    <td style="font-weight:bold;  width: 90px;">A favor de:</td>
                                                     <td>CEASS</td>
                                                 </tr>
                                                 <tr>
@@ -277,13 +292,11 @@ class DataReporteRepository implements ReporteRepository {
                             EOD;
 
 
-                    //$pdf->writeHTML($img, true, false, true, false, '');
-                    //$pdf->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
-                     $pdf->writeHTML($html, true, 0, true, 0);
-
+                    $pdf->writeHTML($html, true, 0, true, 0);
+                    /* Creado QR */
+                    $uri_valid = $_ENV['VALID_URL'];
+                    $pdf->write2DBarcode($uri_valid.'nota_ingreso/'.$datosEntrada['id'], 'QRCODE,L', 170, 5, 0, 25, array(), 'N');
                     $pdf->Output();
-
-
                     /* Fin PDF */
                     //return $datosItem;
                 } else {
