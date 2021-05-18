@@ -75,9 +75,13 @@ class AlmacenAction extends Action {
         $id_almacen = $args['id_almacen'];
         $data_almacen =  $request->getParsedBody();
 
-        $token=getenv('TOKEN_DATOS');
-        $token=json_decode($token,true);
-        $uuid=($token['sub']);
+        $JWT = new \App\Application\Middleware\JWTdata($request);
+        $token = $JWT->getToken();
+        if (!$token['success']) {
+            return $this->respondWithData(array(), 'Datos de token invalidos', 403,false);
+        }
+        $token = $token['data'];
+        $uuid=$token->sub;
 
         $res=$this->almacenRepository->editAlmacen($id_almacen,$data_almacen,$uuid);
 
@@ -93,9 +97,13 @@ class AlmacenAction extends Action {
         $this->response = $response;
         $this->args = $args;
         $id_almacen = $args['id_almacen'];
-        $token=getenv('TOKEN_DATOS');
-        $token=json_decode($token,true);
-        $uuid=($token['sub']);
+        $JWT = new \App\Application\Middleware\JWTdata($request);
+        $token = $JWT->getToken();
+        if (!$token['success']) {
+            return $this->respondWithData(array(), 'Datos de token invalidos', 403,false);
+        }
+        $token = $token['data'];
+        $uuid=$token->sub;
         $res=$this->almacenRepository->changestatusAlmacen($id_almacen,$uuid);
         if($res['success']==false){
             return $this->respondWithData(null,$res['message'],202,true);
@@ -120,9 +128,13 @@ class AlmacenAction extends Action {
         $this->args = $args;
         $data_almacen =  $request->getParsedBody();
 
-        $token=getenv('TOKEN_DATOS');
-        $token=json_decode($token,true);
-        $uuid=($token['sub']);
+        $JWT = new \App\Application\Middleware\JWTdata($request);
+        $token = $JWT->getToken();
+        if (!$token['success']) {
+            return $this->respondWithData(array(), 'Datos de token invalidos', 403,false);
+        }
+        $token = $token['data'];
+        $uuid=$token->sub;
         
         $res=$this->almacenRepository->createAlmacen($data_almacen,$uuid);
 

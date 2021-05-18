@@ -75,9 +75,13 @@ class RegionalAction extends Action {
         $id_regional = $args['id_regional'];
         $data_regional =  $request->getParsedBody();
 
-        $token=getenv('TOKEN_DATOS');
-        $token=json_decode($token,true);
-        $uuid=($token['sub']);
+        $JWT = new \App\Application\Middleware\JWTdata($request);
+        $token = $JWT->getToken();
+        if (!$token['success']) {
+            return $this->respondWithData(array(), 'Datos de token invalidos', 403,false);
+        }
+        $token = $token['data'];
+        $uuid=$token->sub;
 
         $res=$this->regionalRepository->editRegional($id_regional,$data_regional,$uuid);
 
@@ -93,9 +97,13 @@ class RegionalAction extends Action {
         $this->response = $response;
         $this->args = $args;
         $id_regional = $args['id_regional'];
-        $token=getenv('TOKEN_DATOS');
-        $token=json_decode($token,true);
-        $uuid=($token['sub']);
+        $JWT = new \App\Application\Middleware\JWTdata($request);
+        $token = $JWT->getToken();
+        if (!$token['success']) {
+            return $this->respondWithData(array(), 'Datos de token invalidos', 403,false);
+        }
+        $token = $token['data'];
+        $uuid=$token->sub;
         $res=$this->regionalRepository->changestatusRegional($id_regional,$uuid);
         if($res['success']==false){
             return $this->respondWithData(null,$res['message'],202,true);
@@ -120,9 +128,13 @@ class RegionalAction extends Action {
         $this->args = $args;
         $data_regional =  $request->getParsedBody();
 
-        $token=getenv('TOKEN_DATOS');
-        $token=json_decode($token,true);
-        $uuid=($token['sub']);
+        $JWT = new \App\Application\Middleware\JWTdata($request);
+        $token = $JWT->getToken();
+        if (!$token['success']) {
+            return $this->respondWithData(array(), 'Datos de token invalidos', 403,false);
+        }
+        $token = $token['data'];
+        $uuid=$token->sub;
         
         $res=$this->regionalRepository->createRegional($data_regional,$uuid);
 

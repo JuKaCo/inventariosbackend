@@ -75,9 +75,13 @@ class CompraAction extends Action {
         $id_compra = $args['id_compra'];
         $data_compra =  $request->getParsedBody();
 
-        $token=getenv('TOKEN_DATOS');
-        $token=json_decode($token,true);
-        $uuid=($token['sub']);
+        $JWT = new \App\Application\Middleware\JWTdata($request);
+        $token = $JWT->getToken();
+        if (!$token['success']) {
+            return $this->respondWithData(array(), 'Datos de token invalidos', 403,false);
+        }
+        $token = $token['data'];
+        $uuid=$token->sub;
 
         $res=$this->compraRepository->editCompra($id_compra,$data_compra,$uuid);
 
@@ -95,9 +99,13 @@ class CompraAction extends Action {
         $id_compra = $args['id_compra'];
         $data_compra =  $request->getParsedBody();
 
-        $token=getenv('TOKEN_DATOS');
-        $token=json_decode($token,true);
-        $uuid=($token['sub']);
+        $JWT = new \App\Application\Middleware\JWTdata($request);
+        $token = $JWT->getToken();
+        if (!$token['success']) {
+            return $this->respondWithData(array(), 'Datos de token invalidos', 403,false);
+        }
+        $token = $token['data'];
+        $uuid=$token->sub;
 
         $res=$this->compraRepository->modifyCompra($id_compra,$data_compra,$uuid);
 
@@ -113,9 +121,13 @@ class CompraAction extends Action {
         $this->response = $response;
         $this->args = $args;
         $id_compra = $args['id_compra'];
-        $token=getenv('TOKEN_DATOS');
-        $token=json_decode($token,true);
-        $uuid=($token['sub']);
+        $JWT = new \App\Application\Middleware\JWTdata($request);
+        $token = $JWT->getToken();
+        if (!$token['success']) {
+            return $this->respondWithData(array(), 'Datos de token invalidos', 403,false);
+        }
+        $token = $token['data'];
+        $uuid=$token->sub;
         $res=$this->compraRepository->changestatusCompra($id_compra,$uuid);
         if($res['success']==false){
             return $this->respondWithData(null,$res['message'],202,true);
@@ -140,9 +152,13 @@ class CompraAction extends Action {
         $this->args = $args;
         $data_compra =  $request->getParsedBody();
 
-        $token=getenv('TOKEN_DATOS');
-        $token=json_decode($token,true);
-        $uuid=($token['sub']);
+        $JWT = new \App\Application\Middleware\JWTdata($request);
+        $token = $JWT->getToken();
+        if (!$token['success']) {
+            return $this->respondWithData(array(), 'Datos de token invalidos', 403,false);
+        }
+        $token = $token['data'];
+        $uuid=$token->sub;
         
         $res=$this->compraRepository->createCompra($data_compra,$uuid);
 

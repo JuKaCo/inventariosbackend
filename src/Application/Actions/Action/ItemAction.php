@@ -75,9 +75,13 @@ class ItemAction extends Action {
         $id_item = $args['id_item'];
         $data_item =  $request->getParsedBody();
 
-        $token=getenv('TOKEN_DATOS');
-        $token=json_decode($token,true);
-        $uuid=($token['sub']);
+        $JWT = new \App\Application\Middleware\JWTdata($request);
+        $token = $JWT->getToken();
+        if (!$token['success']) {
+            return $this->respondWithData(array(), 'Datos de token invalidos', 403,false);
+        }
+        $token = $token['data'];
+        $uuid=$token->sub;
 
         $res=$this->itemRepository->editItem($id_item,$data_item,$uuid);
 
@@ -95,9 +99,13 @@ class ItemAction extends Action {
         $id_item = $args['id_item'];
         $data_item =  $request->getParsedBody();
 
-        $token=getenv('TOKEN_DATOS');
-        $token=json_decode($token,true);
-        $uuid=($token['sub']);
+        $JWT = new \App\Application\Middleware\JWTdata($request);
+        $token = $JWT->getToken();
+        if (!$token['success']) {
+            return $this->respondWithData(array(), 'Datos de token invalidos', 403,false);
+        }
+        $token = $token['data'];
+        $uuid=$token->sub;
 
         $res=$this->itemRepository->modifyItem($id_item,$data_item,$uuid);
 
@@ -113,9 +121,13 @@ class ItemAction extends Action {
         $this->response = $response;
         $this->args = $args;
         $id_item = $args['id_item'];
-        $token=getenv('TOKEN_DATOS');
-        $token=json_decode($token,true);
-        $uuid=($token['sub']);
+        $JWT = new \App\Application\Middleware\JWTdata($request);
+        $token = $JWT->getToken();
+        if (!$token['success']) {
+            return $this->respondWithData(array(), 'Datos de token invalidos', 403,false);
+        }
+        $token = $token['data'];
+        $uuid=$token->sub;
         $res=$this->itemRepository->changestatusItem($id_item,$uuid);
         if($res['success']==false){
             return $this->respondWithData(null,$res['message'],202,true);
@@ -140,9 +152,13 @@ class ItemAction extends Action {
         $this->args = $args;
         $data_item =  $request->getParsedBody();
 
-        $token=getenv('TOKEN_DATOS');
-        $token=json_decode($token,true);
-        $uuid=($token['sub']);
+        $JWT = new \App\Application\Middleware\JWTdata($request);
+        $token = $JWT->getToken();
+        if (!$token['success']) {
+            return $this->respondWithData(array(), 'Datos de token invalidos', 403,false);
+        }
+        $token = $token['data'];
+        $uuid=$token->sub;
         
         $res=$this->itemRepository->createItem($data_item,$uuid);
 

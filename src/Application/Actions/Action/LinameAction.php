@@ -55,9 +55,13 @@ class LinameAction extends Action {
         $body = $this->request->getParsedBody();
 
         //get token id usuario
-        $token = getenv('TOKEN_DATOS');
-        $token = json_decode($token, true);
-        $id_usuario = $token['sub'];
+        $JWT = new \App\Application\Middleware\JWTdata($request);
+        $token = $JWT->getToken();
+        if (!$token['success']) {
+            return $this->respondWithData(array(), 'Datos de token invalidos', 403,false);
+        }
+        $token = $token['data'];
+        $id_usuario=$token->sub;
 
         $res = $this->linameRepository->setCargarUpload($archivo, $body, $id_usuario);
         if (isset($res['error'])) {
@@ -83,9 +87,13 @@ class LinameAction extends Action {
         $this->args = $args;
         //$params=$args;
         //get token id usuario
-        $token = getenv('TOKEN_DATOS');
-        $token = json_decode($token, true);
-        $id_usuario = $token['sub'];
+        $JWT = new \App\Application\Middleware\JWTdata($request);
+        $token = $JWT->getToken();
+        if (!$token['success']) {
+            return $this->respondWithData(array(), 'Datos de token invalidos', 403,false);
+        }
+        $token = $token['data'];
+        $id_usuario=$token->sub;
 
         $estado = $args['estado'];
         $uuid = $args['uuid'];

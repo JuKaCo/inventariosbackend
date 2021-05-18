@@ -34,9 +34,13 @@ class NotificacionAction extends Action {
         $this->response = $response;
         $this->args = $args;
         //get token  -> id_usuario
-        $token=getenv('TOKEN_DATOS');
-        $token=json_decode($token,true);
-        $id_usuario=$token['sub'];
+        $JWT = new \App\Application\Middleware\JWTdata($request);
+        $token = $JWT->getToken();
+        if (!$token['success']) {
+            return $this->respondWithData(array(), 'Datos de token invalidos', 403,false);
+        }
+        $token = $token['data'];
+        $id_usuario=$token->sub;
 
         $res=$this->notificacionRepository->getNotificacionSimple($id_usuario);
 
@@ -53,9 +57,13 @@ class NotificacionAction extends Action {
         $this->response = $response;
         $this->args = $args;
         //get token  -> id_usuario
-        $token=getenv('TOKEN_DATOS');
-        $token=json_decode($token,true);
-        $id_usuario=$token['sub'];
+        $JWT = new \App\Application\Middleware\JWTdata($request);
+        $token = $JWT->getToken();
+        if (!$token['success']) {
+            return $this->respondWithData(array(), 'Datos de token invalidos', 403,false);
+        }
+        $token = $token['data'];
+        $id_usuario=$token->sub;
         $query=$request->getQueryParams();
         $res=$this->notificacionRepository->getNotificacion($id_usuario, $query);
 
@@ -72,9 +80,13 @@ class NotificacionAction extends Action {
         $this->args = $args;
         $id_notificacion = $args['id_notificacion'];
         //get token  -> id_usuario
-        $token=getenv('TOKEN_DATOS');
-        $token=json_decode($token,true);
-        $id_usuario=$token['sub'];
+        $JWT = new \App\Application\Middleware\JWTdata($request);
+        $token = $JWT->getToken();
+        if (!$token['success']) {
+            return $this->respondWithData(array(), 'Datos de token invalidos', 403,false);
+        }
+        $token = $token['data'];
+        $id_usuario=$token->sub;
 
         $res=$this->notificacionRepository->getNotificacionId($id_usuario, $id_notificacion);
 
@@ -87,9 +99,13 @@ class NotificacionAction extends Action {
         $this->args = $args;
         $data_notificacion =  $request->getParsedBody();
         //get token  -> id_usuario
-        $token=getenv('TOKEN_DATOS');
-        $token=json_decode($token,true);
-        $id_usuario=$token['sub'];
+        $JWT = new \App\Application\Middleware\JWTdata($request);
+        $token = $JWT->getToken();
+        if (!$token['success']) {
+            return $this->respondWithData(array(), 'Datos de token invalidos', 403,false);
+        }
+        $token = $token['data'];
+        $id_usuario=$token->sub;
 
         $res=$this->notificacionRepository->createNotificacion($id_usuario, $data_notificacion);
 
@@ -108,9 +124,13 @@ class NotificacionAction extends Action {
         $this->args = $args;
         $id_notificacion = $args['id_notificacion'];
         //get token  -> id_usuario
-        $token=getenv('TOKEN_DATOS');
-        $token=json_decode($token,true);
-        $id_usuario=$token['sub'];
+        $JWT = new \App\Application\Middleware\JWTdata($request);
+        $token = $JWT->getToken();
+        if (!$token['success']) {
+            return $this->respondWithData(array(), 'Datos de token invalidos', 403,false);
+        }
+        $token = $token['data'];
+        $id_usuario=$token->sub;
 
         $res=$this->notificacionRepository->inactivaNotificacion($id_usuario, $id_notificacion);
 
@@ -127,9 +147,13 @@ class NotificacionAction extends Action {
         $this->args = $args;
         $id_notificacion = $args['id_notificacion'];
         //get token  -> id_usuario
-        $token=getenv('TOKEN_DATOS');
-        $token=json_decode($token,true);
-        $id_usuario=$token['sub'];
+        $JWT = new \App\Application\Middleware\JWTdata($request);
+        $token = $JWT->getToken();
+        if (!$token['success']) {
+            return $this->respondWithData(array(), 'Datos de token invalidos', 403,false);
+        }
+        $token = $token['data'];
+        $id_usuario=$token->sub;
 
         $res=$this->notificacionRepository->confirmaNotificacion($id_usuario, $id_notificacion);
 

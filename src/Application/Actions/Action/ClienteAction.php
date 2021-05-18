@@ -75,9 +75,13 @@ class ClienteAction extends Action {
         $id_cliente = $args['id_cliente'];
         $data_cliente =  $request->getParsedBody();
 
-        $token=getenv('TOKEN_DATOS');
-        $token=json_decode($token,true);
-        $uuid=($token['sub']);
+        $JWT = new \App\Application\Middleware\JWTdata($request);
+        $token = $JWT->getToken();
+        if (!$token['success']) {
+            return $this->respondWithData(array(), 'Datos de token invalidos', 403,false);
+        }
+        $token = $token['data'];
+        $uuid=$token->sub;
 
         $res=$this->clienteRepository->editCliente($id_cliente,$data_cliente,$uuid);
 
@@ -93,9 +97,13 @@ class ClienteAction extends Action {
         $this->response = $response;
         $this->args = $args;
         $id_cliente = $args['id_cliente'];
-        $token=getenv('TOKEN_DATOS');
-        $token=json_decode($token,true);
-        $uuid=($token['sub']);
+        $JWT = new \App\Application\Middleware\JWTdata($request);
+        $token = $JWT->getToken();
+        if (!$token['success']) {
+            return $this->respondWithData(array(), 'Datos de token invalidos', 403,false);
+        }
+        $token = $token['data'];
+        $uuid=$token->sub;
         $res=$this->clienteRepository->changestatusCliente($id_cliente,$uuid);
         if($res['success']==false){
             return $this->respondWithData(null,$res['message'],202,true);
@@ -163,9 +171,13 @@ class ClienteAction extends Action {
         $this->args = $args;
         $data_cliente =  $request->getParsedBody();
 
-        $token=getenv('TOKEN_DATOS');
-        $token=json_decode($token,true);
-        $uuid=($token['sub']);
+        $JWT = new \App\Application\Middleware\JWTdata($request);
+        $token = $JWT->getToken();
+        if (!$token['success']) {
+            return $this->respondWithData(array(), 'Datos de token invalidos', 403,false);
+        }
+        $token = $token['data'];
+        $uuid=$token->sub;
         
         $res=$this->clienteRepository->createCliente($data_cliente,$uuid);
 
