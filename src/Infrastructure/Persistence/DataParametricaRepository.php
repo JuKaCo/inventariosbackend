@@ -65,6 +65,51 @@ class DataParametricaRepository implements ParametricaRepository {
         }
     }
 
+    public function getCodParametrica($cod_grupo, $id_padre, $codigo = '') {
+        try {
+            //$codigo = '%' . strtolower($codigo) . '%';
+            if($id_padre==0){
+                $sql = "SELECT 
+                    id_param,
+                    cod_grupo,
+                    codigo,
+                    valor
+                    FROM param_general
+                    WHERE cod_grupo=:cod_grupo AND (LOWER(codigo) = LOWER(:codigo) OR LOWER(id_param) = LOWER(:codigo))
+                    ORDER BY id_param";
+                $res = ($this->db)->prepare($sql);
+                $res->bindParam(':codigo', $codigo, PDO::PARAM_STR);
+                $res->bindParam(':cod_grupo', $cod_grupo, PDO::PARAM_STR);
+            }else{
+                $sql = "SELECT 
+                    id_param,
+                    cod_grupo,
+                    codigo,
+                    valor
+                    FROM param_general
+                    WHERE cod_grupo=:cod_grupo AND id_padre=:id_padre AND LOWER(codigo) = LOWER(:codigo)
+                    ORDER BY id_param";
+                $res = ($this->db)->prepare($sql);
+                $res->bindParam(':codigo', $codigo, PDO::PARAM_STR);
+                $res->bindParam(':cod_grupo', $cod_grupo, PDO::PARAM_STR);
+                $res->bindParam(':id_padre', $id_padre, PDO::PARAM_INT);
+            }
+            $res->execute();
+            if($res->rowCount()==0){
+                return array('id_param'=>null,
+                            'cod_grupo'=>null,
+                            'codigo'=>null,
+                            'valor'=>null);
+            }else{
+                $res = $res->fetchAll(PDO::FETCH_ASSOC);
+                return $res[0];
+            }
+            
+        } catch (Exception $e) {
+            return array('error' => true);
+        }
+    }
+
     public function getTerminalBiometrico(): array {
         $con = new ConectBiometrico();
         $this->db = $con->getConection();

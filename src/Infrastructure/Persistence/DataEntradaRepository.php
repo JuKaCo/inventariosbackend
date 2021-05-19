@@ -7,6 +7,11 @@ namespace App\Infrastructure\Persistence;
 use App\Application\Actions\RepositoryConection\Conect;
 use App\Domain\EntradaRepository;
 use App\Infrastructure\Persistence\DataCorrelativoRepository;
+use App\Infrastructure\Persistence\DataRegionalRepository;
+use App\Infrastructure\Persistence\DataAlmacenRepository;
+use App\Infrastructure\Persistence\DataProveedorRepository;
+use App\Infrastructure\Persistence\DataCompraRepository;
+use App\Infrastructure\Persistence\DataParametricaRepository;
 use \PDO;
 
 class DataEntradaRepository implements EntradaRepository {
@@ -30,19 +35,16 @@ class DataEntradaRepository implements EntradaRepository {
         $con = new Conect();
         $this->db = $con->getConection();
         $this->dataCorrelativoRepository = new DataCorrelativoRepository;
+        $this->dataRegionalRepository = new DataRegionalRepository;
+        $this->dataAlmacenRepository = new DataAlmacenRepository;
+        $this->dataProveedorRepository = new DataProveedorRepository;
+        $this->dataCompraRepository = new DataCompraRepository;
+        $this->dataParametricaRepository = new DataParametricaRepository;
     }
 
     public function getEntrada($id_entrada): array {
 
-        $sql = "SELECT en.*, 
-                reg.id as reg_id, reg.codigo as reg_codigo, reg.nombre as reg_nombre, reg.direccion as reg_direccion, reg.telefono as reg_telefono,
-                alm.id as alm_id, alm.codigo as alm_codigo, alm.nombre as alm_nombre, alm.direccion as alm_direccion, alm.telefono as alm_telefono,
-                te.id_param as te_id_param, te.cod_grupo as te_cod_grupo, te.codigo as te_codigo, te.valor as te_valor,
-                pr.id as pr_id, pr.codigo as pr_codigo, pr.nombre as pr_nombre, pr.direccion as pr_direccion,
-                co.id as co_id, co.codigo as co_codigo, co.nombre as co_nombre, co.gestion as co_gestion, co.descripcion as co_descripcion, co.estado as co_estado,
-                ta.id_param as ta_id_param, ta.cod_grupo as ta_cod_grupo, ta.codigo as ta_codigo, ta.valor as ta_valor,
-                tf.id_param as tf_id_param, tf.cod_grupo as tf_cod_grupo, tf.codigo as tf_codigo, tf.valor as tf_valor,
-                mc.id_param as mc_id_param, mc.cod_grupo as mc_cod_grupo, mc.codigo as mc_codigo, mc.valor as mc_valor
+        $sql = "SELECT en.*
                 FROM (((((((entrada en LEFT JOIN regional reg ON en.id_regional=reg.id) 
                 LEFT JOIN almacen alm ON en.id_almacen=alm.id)
                 LEFT JOIN param_general te ON (en.tipo_entrada=te.codigo AND te.cod_grupo LIKE 'param_tipo_entrada'))
@@ -58,62 +60,26 @@ class DataEntradaRepository implements EntradaRepository {
         if($res->rowCount()>0){
             $res = $res->fetchAll(PDO::FETCH_ASSOC);
             $res = $res[0];
+            $data_regional = $this->dataRegionalRepository->getRegional($res['id_regional']);
+            $data_almacen = $this->dataAlmacenRepository->getAlmacen($res['id_almacen']);
+            $data_proveedor = $this->dataProveedorRepository->getProveedor($res['id_proveedor']);
+            $data_compra = $this->dataCompraRepository->getCompra($res['id_compra']);
+            $data_tipo_entrada = $this->dataParametricaRepository->getCodParametrica('param_tipo_entrada',0,$res['tipo_entrada']);
+            $data_tipo_adquisicion = $this->dataParametricaRepository->getCodParametrica('param_tipo_adquisicion',0,$res['tipo_adquisicion']);
+            $data_tipo_financiamiento = $this->dataParametricaRepository->getCodParametrica('param_tipo_financiamiento',0,$res['tipo_financiamiento']);
+            $data_tipo_contratacion = $this->dataParametricaRepository->getCodParametrica('param_modalidad_contr',0,$res['modalidad_contratacion']);
             $result = array('id'=>$res['id'],
                             'codigo'=>$res['codigo'],
-                            'id_regional'=>array(
-                                'id'=>$res['reg_id'],
-                                'codigo'=>$res['reg_codigo'],
-                                'nombre'=>$res['reg_nombre'],
-                                'direccion'=>$res['reg_direccion'],
-                                'telefono'=>$res['reg_telefono']
-                            ),
-                            'id_almacen'=>array(
-                                'id'=>$res['alm_id'],
-                                'codigo'=>$res['alm_codigo'],
-                                'nombre'=>$res['alm_nombre'],
-                                'direccion'=>$res['alm_direccion'],
-                                'telefono'=>$res['alm_telefono']
-                            ),
-                            'tipo_entrada'=>array(
-                                'id_param'=>$res['te_id_param'],
-                                'cod_grupo'=>$res['te_cod_grupo'],
-                                'codigo'=>$res['te_codigo'],
-                                'valor'=>$res['te_valor']
-                            ),
-                            'id_proveedor'=>array(
-                                'id'=>$res['pr_id'],
-                                'codigo'=>$res['pr_codigo'],
-                                'nombre'=>$res['pr_nombre'],
-                                'direccion'=>$res['pr_direccion']
-                            ),
-                            'id_compra'=>array(
-                                'id'=>$res['co_id'],
-                                'codigo'=>$res['co_codigo'],
-                                'nombre'=>$res['co_nombre'],
-                                'gestion'=>$res['co_gestion'],
-                                'descripcion'=>$res['co_descripcion'],
-                                'estado'=>$res['co_estado']
-                            ),
-                            'tipo_adquisicion'=>array(
-                                'id_param'=>$res['ta_id_param'],
-                                'cod_grupo'=>$res['ta_cod_grupo'],
-                                'codigo'=>$res['ta_codigo'],
-                                'valor'=>$res['ta_valor']
-                            ),
-                            'tipo_financiamiento'=>array(
-                                'id_param'=>$res['tf_id_param'],
-                                'cod_grupo'=>$res['tf_cod_grupo'],
-                                'codigo'=>$res['tf_codigo'],
-                                'valor'=>$res['tf_valor']
-                            ),
+                            'id_regional'=>$data_regional['data_regional'],
+                            'id_almacen'=>$data_almacen['data_almacen'],
+                            'tipo_entrada'=>$data_tipo_entrada,
+                            'id_proveedor'=>$data_proveedor['data_proveedor'],
+                            'id_compra'=>$data_compra['data_compra'],
+                            'tipo_adquisicion'=>$data_tipo_adquisicion,
+                            'tipo_financiamiento'=>$data_tipo_financiamiento,
                             'factura_comercial'=>$res['factura_comercial'],
                             'c_31'=>$res['c_31'],
-                            'modalidad_contratacion'=>array(
-                                'id_param'=>$res['mc_id_param'],
-                                'cod_grupo'=>$res['mc_cod_grupo'],
-                                'codigo'=>$res['mc_codigo'],
-                                'valor'=>$res['mc_valor']
-                            ),
+                            'modalidad_contratacion'=>$data_tipo_contratacion,
                             'cite_contrato_compra'=>$res['cite_contrato_compra'],
                             'nota'=>$res['nota'],
                             'comision'=>json_decode($res['comision']),
@@ -121,6 +87,7 @@ class DataEntradaRepository implements EntradaRepository {
                             'activo'=>$res['activo'],
                             'fecha'=>date('d/m/Y',strtotime($res['f_crea'])),
                             'total'=>$this->calculatotalEntrada($res['id']));
+
             if($result['id_regional']['id']==null){$result['id_regional']=json_decode("{}");}
             if($result['id_almacen']['id']==null){$result['id_almacen']=json_decode("{}");}
             if($result['tipo_entrada']['codigo']==null){$result['tipo_entrada']=json_decode("{}");}
@@ -166,15 +133,7 @@ class DataEntradaRepository implements EntradaRepository {
         $res->bindParam(':filtro', $filter, PDO::PARAM_STR);
         $res->execute();
         $total=$res->rowCount();
-        $sql = "SELECT en.*, 
-                reg.id as reg_id, reg.codigo as reg_codigo, reg.nombre as reg_nombre, reg.direccion as reg_direccion, reg.telefono as reg_telefono,
-                alm.id as alm_id, alm.codigo as alm_codigo, alm.nombre as alm_nombre, alm.direccion as alm_direccion, alm.telefono as alm_telefono,
-                te.id_param as te_id_param, te.cod_grupo as te_cod_grupo, te.codigo as te_codigo, te.valor as te_valor,
-                pr.id as pr_id, pr.codigo as pr_codigo, pr.nombre as pr_nombre, pr.direccion as pr_direccion,
-                co.id as co_id, co.codigo as co_codigo, co.nombre as co_nombre, co.gestion as co_gestion, co.descripcion as co_descripcion, co.estado as co_estado,
-                ta.id_param as ta_id_param, ta.cod_grupo as ta_cod_grupo, ta.codigo as ta_codigo, ta.valor as ta_valor,
-                tf.id_param as tf_id_param, tf.cod_grupo as tf_cod_grupo, tf.codigo as tf_codigo, tf.valor as tf_valor,
-                mc.id_param as mc_id_param, mc.cod_grupo as mc_cod_grupo, mc.codigo as mc_codigo, mc.valor as mc_valor
+        $sql = "SELECT en.*
                 FROM (((((((entrada en LEFT JOIN regional reg ON en.id_regional=reg.id) 
                 LEFT JOIN almacen alm ON en.id_almacen=alm.id)
                 LEFT JOIN param_general te ON (en.tipo_entrada=te.codigo AND te.cod_grupo LIKE 'param_tipo_entrada'))
@@ -201,62 +160,26 @@ class DataEntradaRepository implements EntradaRepository {
             $restodo = $res->fetchAll(PDO::FETCH_ASSOC);
             $arrayres = array();
             foreach ($restodo as $res){
+                $data_regional = $this->dataRegionalRepository->getRegional($res['id_regional']);
+                $data_almacen = $this->dataAlmacenRepository->getAlmacen($res['id_almacen']);
+                $data_proveedor = $this->dataProveedorRepository->getProveedor($res['id_proveedor']);
+                $data_compra = $this->dataCompraRepository->getCompra($res['id_compra']);
+                $data_tipo_entrada = $this->dataParametricaRepository->getCodParametrica('param_tipo_entrada',0,$res['tipo_entrada']);
+                $data_tipo_adquisicion = $this->dataParametricaRepository->getCodParametrica('param_tipo_adquisicion',0,$res['tipo_adquisicion']);
+                $data_tipo_financiamiento = $this->dataParametricaRepository->getCodParametrica('param_tipo_financiamiento',0,$res['tipo_financiamiento']);
+                $data_tipo_contratacion = $this->dataParametricaRepository->getCodParametrica('param_modalidad_contr',0,$res['modalidad_contratacion']);
                 $result = array('id'=>$res['id'],
                                 'codigo'=>$res['codigo'],
-                                'id_regional'=>array(
-                                    'id'=>$res['reg_id'],
-                                    'codigo'=>$res['reg_codigo'],
-                                    'nombre'=>$res['reg_nombre'],
-                                    'direccion'=>$res['reg_direccion'],
-                                    'telefono'=>$res['reg_telefono']
-                                ),
-                                'id_almacen'=>array(
-                                    'id'=>$res['alm_id'],
-                                    'codigo'=>$res['alm_codigo'],
-                                    'nombre'=>$res['alm_nombre'],
-                                    'direccion'=>$res['alm_direccion'],
-                                    'telefono'=>$res['alm_telefono']
-                                ),
-                                'tipo_entrada'=>array(
-                                    'id_param'=>$res['te_id_param'],
-                                    'cod_grupo'=>$res['te_cod_grupo'],
-                                    'codigo'=>$res['te_codigo'],
-                                    'valor'=>$res['te_valor']
-                                ),
-                                'id_proveedor'=>array(
-                                    'id'=>$res['pr_id'],
-                                    'codigo'=>$res['pr_codigo'],
-                                    'nombre'=>$res['pr_nombre'],
-                                    'direccion'=>$res['pr_direccion']
-                                ),
-                                'id_compra'=>array(
-                                    'id'=>$res['co_id'],
-                                    'codigo'=>$res['co_codigo'],
-                                    'nombre'=>$res['co_nombre'],
-                                    'gestion'=>$res['co_gestion'],
-                                    'descripcion'=>$res['co_descripcion'],
-                                    'estado'=>$res['co_estado']
-                                ),
-                                'tipo_adquisicion'=>array(
-                                    'id_param'=>$res['ta_id_param'],
-                                    'cod_grupo'=>$res['ta_cod_grupo'],
-                                    'codigo'=>$res['ta_codigo'],
-                                    'valor'=>$res['ta_valor']
-                                ),
-                                'tipo_financiamiento'=>array(
-                                    'id_param'=>$res['tf_id_param'],
-                                    'cod_grupo'=>$res['tf_cod_grupo'],
-                                    'codigo'=>$res['tf_codigo'],
-                                    'valor'=>$res['tf_valor']
-                                ),
+                                'id_regional'=>$data_regional['data_regional'],
+                                'id_almacen'=>$data_almacen['data_almacen'],
+                                'tipo_entrada'=>$data_tipo_entrada,
+                                'id_proveedor'=>$data_proveedor['data_proveedor'],
+                                'id_compra'=>$data_compra['data_compra'],
+                                'tipo_adquisicion'=>$data_tipo_adquisicion,
+                                'tipo_financiamiento'=>$data_tipo_financiamiento,
                                 'factura_comercial'=>$res['factura_comercial'],
                                 'c_31'=>$res['c_31'],
-                                'modalidad_contratacion'=>array(
-                                    'id_param'=>$res['mc_id_param'],
-                                    'cod_grupo'=>$res['mc_cod_grupo'],
-                                    'codigo'=>$res['mc_codigo'],
-                                    'valor'=>$res['mc_valor']
-                                ),
+                                'modalidad_contratacion'=>$data_tipo_contratacion,
                                 'cite_contrato_compra'=>$res['cite_contrato_compra'],
                                 'nota'=>$res['nota'],
                                 'comision'=>json_decode($res['comision']),
@@ -291,12 +214,7 @@ class DataEntradaRepository implements EntradaRepository {
         &&isset($data_entrada['dispositivo'])&&isset($data_entrada['especificacion_tec'])&&isset($data_entrada['presentacion']))){
             return array('success'=>false,'message'=>'Datos invalidos');
         }
-        /*if($data_entrada['reg_san']==""){
-            $data_entrada['reg_san']==null;
-            $aux_query=" ";
-        }else{
-            $aux_query = "OR reg_san LIKE '".$data_entrada['reg_san']."'";
-        }*/
+
         $sql = "SELECT *
                 FROM entrada
                 WHERE (codigo LIKE :codigo OR nombre_comercial LIKE :nombre_comercial ) AND id!=:id_entrada";

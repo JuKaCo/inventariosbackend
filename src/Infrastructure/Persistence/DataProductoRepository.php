@@ -6,6 +6,7 @@ namespace App\Infrastructure\Persistence;
 
 use App\Application\Actions\RepositoryConection\Conect;
 use App\Domain\ProductoRepository;
+use App\Infrastructure\Persistence\DataParametricaRepository;
 use \PDO;
 use AbmmHasan\Uuid;
 //https://github.com/abmmhasan/UUID
@@ -32,6 +33,7 @@ class DataProductoRepository implements ProductoRepository {
     public function __construct() {
         $con = new Conect();
         $this->db = $con->getConection();
+        $this->dataParametricaRepository = new DataParametricaRepository;
     }
 
     public function getProducto($id_producto): array {
@@ -46,7 +48,8 @@ class DataProductoRepository implements ProductoRepository {
         if($res->rowCount()>0){
             $res = $res->fetchAll(PDO::FETCH_ASSOC);
             $res = $res[0];
-
+            $data_tipo_controlado = $this->dataParametricaRepository->getCodParametrica('param_controlado',0,$res['tipo_controlado']);
+            $data_categoria_prod = $this->dataParametricaRepository->getCodParametrica('param_cat_prod',0,$res['categoria_prod']);
             $result = array('id'=>$res['id'],
                             'codigo'=>$res['codigo'],
                             'nombre_comercial'=>$res['nombre_comercial'],
@@ -58,7 +61,9 @@ class DataProductoRepository implements ProductoRepository {
                                 'id_linadime'=>$res['id_linadime'],
                                 'cod_linadime'=>$res['cod_linadime'],
                             ),
+                            'tipo_controlado'=>$data_tipo_controlado,
                             'referencia'=>$res['referencia'],
+                            'categoria_prod'=>$data_categoria_prod,
                             'medicamento'=>$res['medicamento'],
                             'form_farm'=>$res['form_farm'],
                             'concen'=>$res['concen'],
@@ -74,6 +79,8 @@ class DataProductoRepository implements ProductoRepository {
                             'activo'=>$res['activo']);
             if($result['codigo_liname']['id_liname']==null){ $result['codigo_liname']=json_decode ("{}");}
             if($result['codigo_linadime']['id_linadime']==null){$result['codigo_linadime']=json_decode ("{}");}  
+            if($result['tipo_controlado']['codigo']==null){$result['tipo_controlado']=json_decode ("{}");}
+            if($result['categoria_prod']['codigo']==null){$result['categoria_prod']=json_decode ("{}");}
             
             $resp = array('success'=>true,'message'=>'Exito','data_producto'=>$result);
         }else{
@@ -93,27 +100,31 @@ class DataProductoRepository implements ProductoRepository {
         $filter="%".strtolower($filtro)."%";
 
         $sql = "SELECT pr.id
-                FROM (producto pr LEFT JOIN param_liname pl ON pr.codigo_liname=pl.id) 
-                LEFT JOIN param_linadime pld ON pr.codigo_linadime=pld.id
+                FROM (((producto pr LEFT JOIN param_liname pl ON pr.codigo_liname=pl.id) 
+                LEFT JOIN param_linadime pld ON pr.codigo_linadime=pld.id)
+                LEFT JOIN param_general pg1 ON pr.tipo_controlado=pg1.id_param)
+                LEFT JOIN param_general pg2 ON pr.categoria_prod=pg2.id_param
                 WHERE pr.activo=1 AND (
             LOWER(pr.codigo) LIKE LOWER(:filtro) OR LOWER(pr.nombre_comercial) LIKE LOWER(:filtro) OR
             LOWER(pr.referencia) LIKE LOWER(:filtro) OR LOWER(pr.medicamento) LIKE LOWER(:filtro) OR LOWER(pr.form_farm) LIKE LOWER(:filtro) OR
             LOWER(pr.concen) LIKE LOWER(:filtro) OR LOWER(pr.atq) LIKE LOWER(:filtro) OR LOWER(pr.precio_ref) LIKE LOWER(:filtro) OR
             LOWER(pr.aclara_parti) LIKE LOWER(:filtro) OR LOWER(pr.dispositivo) LIKE LOWER(:filtro) OR LOWER(pr.especificacion_tec) LIKE LOWER(:filtro) OR
-            LOWER(pr.presentacion) LIKE LOWER(:filtro) OR LOWER(pl.codigo) LIKE LOWER(:filtro) OR LOWER(pld.codigo) LIKE LOWER(:filtro))";
+            LOWER(pr.presentacion) LIKE LOWER(:filtro) OR LOWER(pl.codigo) LIKE LOWER(:filtro) OR LOWER(pld.codigo) LIKE LOWER(:filtro) OR LOWER(pg1.valor) LIKE LOWER(:filtro) OR LOWER(pg2.valor) LIKE LOWER(:filtro))";
         $res = ($this->db)->prepare($sql);
         $res->bindParam(':filtro', $filter, PDO::PARAM_STR);
         $res->execute();
         $total=$res->rowCount();
         $sql = "SELECT pr.*, pl.id as id_liname, pl.codigo as cod_liname, pld.id as id_linadime, pld.codigo as cod_linadime
-                FROM (producto pr LEFT JOIN param_liname pl ON pr.codigo_liname=pl.id) 
-                LEFT JOIN param_linadime pld ON pr.codigo_linadime=pld.id
+                FROM (((producto pr LEFT JOIN param_liname pl ON pr.codigo_liname=pl.id) 
+                LEFT JOIN param_linadime pld ON pr.codigo_linadime=pld.id)
+                LEFT JOIN param_general pg1 ON pr.tipo_controlado=pg1.id_param)
+                LEFT JOIN param_general pg2 ON pr.categoria_prod=pg2.id_param
                 WHERE pr.activo=1 AND (
             LOWER(pr.codigo) LIKE LOWER(:filtro) OR LOWER(pr.nombre_comercial) LIKE LOWER(:filtro) OR
             LOWER(pr.referencia) LIKE LOWER(:filtro) OR LOWER(pr.medicamento) LIKE LOWER(:filtro) OR LOWER(pr.form_farm) LIKE LOWER(:filtro) OR
             LOWER(pr.concen) LIKE LOWER(:filtro) OR LOWER(pr.atq) LIKE LOWER(:filtro) OR LOWER(pr.precio_ref) LIKE LOWER(:filtro) OR
             LOWER(pr.aclara_parti) LIKE LOWER(:filtro) OR LOWER(pr.dispositivo) LIKE LOWER(:filtro) OR LOWER(pr.especificacion_tec) LIKE LOWER(:filtro) OR
-            LOWER(pr.presentacion) LIKE LOWER(:filtro) OR LOWER(pl.codigo) LIKE LOWER(:filtro) OR LOWER(pld.codigo) LIKE LOWER(:filtro))
+            LOWER(pr.presentacion) LIKE LOWER(:filtro) OR LOWER(pl.codigo) LIKE LOWER(:filtro) OR LOWER(pld.codigo) LIKE LOWER(:filtro) OR LOWER(pg1.valor) LIKE LOWER(:filtro) OR LOWER(pg2.valor) LIKE LOWER(:filtro))
                 ORDER BY pr.f_crea DESC
                 LIMIT :indice, :limite;";
         $res = ($this->db)->prepare($sql);
@@ -125,6 +136,8 @@ class DataProductoRepository implements ProductoRepository {
             $restodo = $res->fetchAll(PDO::FETCH_ASSOC);
             $arrayres = array();
             foreach ($restodo as $res){
+                $data_tipo_controlado = $this->dataParametricaRepository->getCodParametrica('param_controlado',0,$res['tipo_controlado']);
+                $data_categoria_prod = $this->dataParametricaRepository->getCodParametrica('param_cat_prod',0,$res['categoria_prod']);
                 $result = array('id'=>$res['id'],
                                 'codigo'=>$res['codigo'],
                                 'nombre_comercial'=>$res['nombre_comercial'],
@@ -136,7 +149,9 @@ class DataProductoRepository implements ProductoRepository {
                                     'id_linadime'=>$res['id_linadime'],
                                     'cod_linadime'=>$res['cod_linadime'],
                                 ),
+                                'tipo_controlado'=>$data_tipo_controlado,
                                 'referencia'=>$res['referencia'],
+                                'categoria_prod'=>$data_categoria_prod,
                                 'medicamento'=>$res['medicamento'],
                                 'form_farm'=>$res['form_farm'],
                                 'concen'=>$res['concen'],
@@ -170,12 +185,6 @@ class DataProductoRepository implements ProductoRepository {
         &&isset($data_producto['dispositivo'])&&isset($data_producto['especificacion_tec'])&&isset($data_producto['presentacion']))){
             return array('success'=>false,'message'=>'Datos invalidos');
         }
-        /*if($data_producto['reg_san']==""){
-            $data_producto['reg_san']==null;
-            $aux_query=" ";
-        }else{
-            $aux_query = "OR reg_san LIKE '".$data_producto['reg_san']."'";
-        }*/
         $sql = "SELECT *
                 FROM producto
                 WHERE (codigo LIKE :codigo OR nombre_comercial LIKE :nombre_comercial ) AND id!=:id_producto";
@@ -193,7 +202,9 @@ class DataProductoRepository implements ProductoRepository {
                     nombre_comercial=:nombre_comercial,
                     codigo_liname=:codigo_liname,
                     codigo_linadime=:codigo_linadime,
+                    tipo_controlado=:tipo_controlado,
                     referencia=:referencia,
+                    categoria_prod=:categoria_prod,
                     medicamento=:medicamento,
                     form_farm=:form_farm,
                     concen=:concen,
@@ -215,7 +226,9 @@ class DataProductoRepository implements ProductoRepository {
             $res->bindParam(':nombre_comercial', $data_producto['nombre_comercial'], PDO::PARAM_STR);
             $res->bindParam(':codigo_liname', $data_producto['codigo_liname']['id_liname'], PDO::PARAM_INT);
             $res->bindParam(':codigo_linadime', $data_producto['codigo_linadime']['id_linadime'], PDO::PARAM_INT);
+            $res->bindParam(':tipo_controlado', $data_producto['tipo_controlado']['id_param'], PDO::PARAM_STR);
             $res->bindParam(':referencia', $data_producto['referencia'], PDO::PARAM_STR);
+            $res->bindParam(':categoria_prod', $data_producto['categoria_prod']['id_param'], PDO::PARAM_STR);
             $res->bindParam(':medicamento', $data_producto['medicamento'], PDO::PARAM_STR);
             $res->bindParam(':form_farm', $data_producto['form_farm'], PDO::PARAM_STR);
             $res->bindParam(':concen', $data_producto['concen'], PDO::PARAM_STR);
@@ -233,6 +246,8 @@ class DataProductoRepository implements ProductoRepository {
             //$res = $res->fetchAll(PDO::FETCH_ASSOC);
             if($data_producto['codigo_liname']['id_liname']==null){$data_producto['codigo_liname']=json_decode ("{}");}
             if($data_producto['codigo_linadime']['id_linadime']==null){$data_producto['codigo_linadime']=json_decode ("{}");} 
+            if($data_producto['tipo_controlado']['codigo']==null){$data_producto['tipo_controlado']=json_decode ("{}");} 
+            if($data_producto['categoria_prod']['codigo']==null){$data_producto['categoria_prod']=json_decode ("{}");} 
             $resp = array('success'=>true,'message'=>'producto actualizado','data_producto'=>$data_producto);
         }
         return $resp;
@@ -260,8 +275,8 @@ class DataProductoRepository implements ProductoRepository {
 
     public function createProducto($data_producto,$uuid): array {
         if(!(isset($data_producto['codigo'])&&isset($data_producto['nombre_comercial'])&&isset($data_producto['codigo_liname'])
-        &&isset($data_producto['codigo_linadime'])&&isset($data_producto['referencia'])
-        &&isset($data_producto['medicamento'])&&isset($data_producto['form_farm'])&&isset($data_producto['concen'])
+        &&isset($data_producto['codigo_linadime'])&&isset($data_producto['referencia'])&&isset($data_producto['tipo_controlado'])
+        &&isset($data_producto['medicamento'])&&isset($data_producto['form_farm'])&&isset($data_producto['concen'])&&isset($data_producto['categoria_prod'])
         &&isset($data_producto['atq'])&&isset($data_producto['precio_ref'])&&isset($data_producto['aclara_parti'])
         &&isset($data_producto['dispositivo'])&&isset($data_producto['especificacion_tec'])&&isset($data_producto['presentacion']))){
             return array('success'=>false,'message'=>'Datos invalidos');
@@ -289,7 +304,9 @@ class DataProductoRepository implements ProductoRepository {
                     nombre_comercial,
                     codigo_liname,
                     codigo_linadime,
+                    tipo_controlado,
                     referencia,
+                    categoria_prod,
                     medicamento,
                     form_farm,
                     concen,
@@ -311,7 +328,9 @@ class DataProductoRepository implements ProductoRepository {
                     :nombre_comercial,
                     :codigo_liname,
                     :codigo_linadime,
+                    :tipo_controlado,
                     :referencia,
+                    :categoria_prod,
                     :medicamento,
                     :form_farm,
                     :concen,
@@ -333,7 +352,9 @@ class DataProductoRepository implements ProductoRepository {
             $res->bindParam(':nombre_comercial', $data_producto['nombre_comercial'], PDO::PARAM_STR);
             $res->bindParam(':codigo_liname', $data_producto['codigo_liname']['id_liname'], PDO::PARAM_INT);
             $res->bindParam(':codigo_linadime', $data_producto['codigo_linadime']['id_linadime'], PDO::PARAM_INT);
+            $res->bindParam(':tipo_controlado', $data_producto['tipo_controlado']['id_param'], PDO::PARAM_STR);
             $res->bindParam(':referencia', $data_producto['referencia'], PDO::PARAM_STR);
+            $res->bindParam(':categoria_prod', $data_producto['categoria_prod']['id_param'], PDO::PARAM_STR);
             $res->bindParam(':medicamento', $data_producto['medicamento'], PDO::PARAM_STR);
             $res->bindParam(':form_farm', $data_producto['form_farm'], PDO::PARAM_STR);
             $res->bindParam(':concen', $data_producto['concen'], PDO::PARAM_STR);
@@ -357,12 +378,16 @@ class DataProductoRepository implements ProductoRepository {
             $res->execute();
             $res = $res->fetchAll(PDO::FETCH_ASSOC);
             $res = $res[0];
+            $data_tipo_controlado = $this->dataParametricaRepository->getCodParametrica('param_controlado',0,$res['tipo_controlado']);
+            $data_categoria_prod = $this->dataParametricaRepository->getCodParametrica('param_cat_prod',0,$res['categoria_prod']);
             $result = array('id'=>$res['id'],
                             'codigo'=>$res['codigo'],
                             'nombre_comercial'=>$res['nombre_comercial'],
                             'codigo_liname'=>$data_producto['codigo_liname'],
                             'codigo_linadime'=>$data_producto['codigo_linadime'],
+                            'tipo_controlado'=>$data_tipo_controlado,
                             'referencia'=>$res['referencia'],
+                            'categoria_prod'=>$data_categoria_prod,
                             'medicamento'=>$res['medicamento'],
                             'form_farm'=>$res['form_farm'],
                             'concen'=>$res['concen'],
@@ -403,7 +428,7 @@ class DataProductoRepository implements ProductoRepository {
                         SET codigo=:codigo,
                         f_mod=now(), 
                         u_mod=:u_mod
-                        WHERE id=:id_pro$id_producto;";
+                        WHERE id=:id_producto;";
                 $res = ($this->db)->prepare($sql);
                 $res->bindParam(':id_pro$id_producto', $id_producto, PDO::PARAM_STR);
                 $res->bindParam(':codigo', $data_producto['codigo'], PDO::PARAM_STR);

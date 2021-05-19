@@ -7,6 +7,8 @@ namespace App\Infrastructure\Persistence;
 use App\Application\Actions\RepositoryConection\Conect;
 use App\Domain\AlmacenRepository;
 use App\Infrastructure\Persistence\DataCorrelativoRepository;
+use App\Infrastructure\Persistence\DataregionalRepository;
+use App\Infrastructure\Persistence\DataProgramaRepository;
 use \PDO;
 use AbmmHasan\Uuid;
 
@@ -31,35 +33,27 @@ class DataAlmacenRepository implements AlmacenRepository {
         $con = new Conect();
         $this->db = $con->getConection();
         $this->dataCorrelativoRepository = new DataCorrelativoRepository;
+        $this->dataRegionalRepository = new DataRegionalRepository;
+        $this->dataProgramaRepository = new DataProgramaRepository;
     }
 
     public function getAlmacen($id_almacen): array {
-        $sql = "SELECT alm.*, 
-                reg.id as id_regional, reg.codigo as codigo_regional, reg.nombre as nombre_regional, reg.direccion as direccion_regional, reg.telefono as telefono_regional,
-                prog.id as id_programa, prog.codigo as codigo_programa, prog.nombre as nombre_programa
-                FROM almacen alm, regional reg, programa prog
-                WHERE alm.id=:id_almacen AND alm.activo=1 AND alm.id_regional=reg.id AND alm.id_programa=prog.id";
+        $sql = "SELECT alm.*
+                FROM almacen alm
+                WHERE alm.id=:id_almacen AND alm.activo=1";
         $res = ($this->db)->prepare($sql);
         $res->bindParam(':id_almacen', $id_almacen, PDO::PARAM_STR);
         $res->execute();
         if($res->rowCount()>0){
             $res = $res->fetchAll(PDO::FETCH_ASSOC);
             $res = $res[0];
+            $data_regional = $this->dataRegionalRepository->getRegional($res['id_regional']);
+            $data_programa = $this->dataProgramaRepository->getPrograma($res['id_programa']);
             $result = array('id'=>$res['id'],
                             'codigo'=>$res['codigo'],
                             'nombre'=>$res['nombre'],
-                            'regional'=>array(
-                                'id'=>$res['id_regional'],
-                                'codigo'=>$res['codigo_regional'],
-                                'nombre'=>$res['nombre_regional'],
-                                'direccion'=>$res['direccion_regional'],
-                                'telefono'=>$res['telefono_regional']
-                            ),
-                            'programa'=>array(
-                                'id'=>$res['id_programa'],
-                                'codigo'=>$res['codigo_programa'],
-                                'nombre'=>$res['nombre_programa']
-                            ),
+                            'regional'=>$data_regional['data_regional'],
+                            'programa'=>$data_programa['data_programa'],
                             'direccion'=>$res['direccion'],
                             'telefono'=>$res['telefono'],
                             'activo'=>$res['activo']);
@@ -80,20 +74,18 @@ class DataAlmacenRepository implements AlmacenRepository {
         $limite=$limite+$indice;
         $filter="%".strtolower($filtro)."%";
         $sql = "SELECT alm.*
-                FROM almacen alm, regional reg, programa prog
-                WHERE alm.activo=1 AND alm.id_regional=reg.id AND alm.id_programa=prog.id AND 
-                (LOWER(alm.nombre) LIKE LOWER(:filter) OR LOWER(alm.direccion) LIKE LOWER(:filter) OR LOWER(alm.codigo) LIKE LOWER(:filter) OR LOWER(reg.telefono) LIKE LOWER(:filter) OR DATE_FORMAT(reg.f_crea,'%d/%m/%Y') LIKE :filter OR LOWER(reg.nombre) LIKE LOWER(:filter) OR LOWER(prog.nombre) LIKE LOWER(:filter))";
+                FROM almacen alm
+                WHERE alm.activo=1 AND 
+                (LOWER(alm.nombre) LIKE LOWER(:filter) OR LOWER(alm.direccion) LIKE LOWER(:filter) OR LOWER(alm.codigo) LIKE LOWER(:filter) OR LOWER(alm.telefono) LIKE LOWER(:filter) OR DATE_FORMAT(alm.f_crea,'%d/%m/%Y') LIKE :filter)";
         $res = ($this->db)->prepare($sql);
         $res->bindParam(':filter', $filter, PDO::PARAM_STR);
         $res->execute();
         $total=$res->rowCount();
-        $sql = "SELECT alm.*, 
-                reg.id as id_regional, reg.codigo as codigo_regional, reg.nombre as nombre_regional, reg.direccion as direccion_regional, reg.telefono as telefono_regional,
-                prog.id as id_programa, prog.codigo as codigo_programa, prog.nombre as nombre_programa
-                FROM almacen alm, regional reg, programa prog
-                WHERE alm.activo=1 AND alm.id_regional=reg.id AND alm.id_programa=prog.id AND 
-                (LOWER(alm.nombre) LIKE LOWER(:filter) OR LOWER(alm.direccion) LIKE LOWER(:filter) OR LOWER(alm.codigo) LIKE LOWER(:filter) OR LOWER(reg.telefono) LIKE LOWER(:filter) OR DATE_FORMAT(reg.f_crea,'%d/%m/%Y') LIKE :filter OR LOWER(reg.nombre) LIKE LOWER(:filter) OR LOWER(prog.nombre) LIKE LOWER(:filter))
-                ORDER BY reg.f_crea DESC
+        $sql = "SELECT alm.*
+                FROM almacen alm
+                WHERE alm.activo=1 AND 
+                (LOWER(alm.nombre) LIKE LOWER(:filter) OR LOWER(alm.direccion) LIKE LOWER(:filter) OR LOWER(alm.codigo) LIKE LOWER(:filter) OR LOWER(alm.telefono) LIKE LOWER(:filter) OR DATE_FORMAT(alm.f_crea,'%d/%m/%Y') LIKE :filter)
+                ORDER BY alm.f_crea DESC
                 LIMIT :indice, :limite;";
         $res = ($this->db)->prepare($sql);
         $res->bindParam(':filter', $filter, PDO::PARAM_STR);
@@ -104,21 +96,13 @@ class DataAlmacenRepository implements AlmacenRepository {
             $res = $res->fetchAll(PDO::FETCH_ASSOC);
             $arrayres = array();
             foreach ($res as $item){
+                $data_regional = $this->dataRegionalRepository->getRegional($item['id_regional']);
+                $data_programa = $this->dataProgramaRepository->getPrograma($item['id_programa']);
                 $result = array('id'=>$item['id'],
                                 'codigo'=>$item['codigo'],
                                 'nombre'=>$item['nombre'],
-                                'regional'=>array(
-                                    'id'=>$item['id_regional'],
-                                    'codigo'=>$item['codigo_regional'],
-                                    'nombre'=>$item['nombre_regional'],
-                                    'direccion'=>$item['direccion_regional'],
-                                    'telefono'=>$item['telefono_regional']
-                                ),
-                                'programa'=>array(
-                                    'id'=>$item['id_programa'],
-                                    'codigo'=>$item['codigo_programa'],
-                                    'nombre'=>$item['nombre_programa']
-                                ),
+                                'regional'=>$data_regional['data_regional'],
+                                'programa'=>$data_programa['data_programa'],
                                 'direccion'=>$item['direccion'],
                                 'telefono'=>$item['telefono'],
                                 'activo'=>$item['activo']);
@@ -207,6 +191,7 @@ class DataAlmacenRepository implements AlmacenRepository {
             $correlativo = $this->dataCorrelativoRepository->genCorrelativo('ALM', '0', $uuid);
             $correlativo = $correlativo['correlativo'];
             $correlativo = 'ALM-' . $correlativo;
+            $uuid = Uuid::v4();
             $sql = "INSERT INTO almacen (
                     id,
                     codigo,
@@ -219,7 +204,7 @@ class DataAlmacenRepository implements AlmacenRepository {
                     f_crea,
                     u_crea
                     )VALUES(
-                    uuid(),
+                    :uuid,
                     :codigo,
                     :nombre,
                     :id_programa,
@@ -231,6 +216,7 @@ class DataAlmacenRepository implements AlmacenRepository {
                     :u_crea
                     );";
             $res = ($this->db)->prepare($sql);
+            $res->bindParam(':uuid', $uuid, PDO::PARAM_STR);
             $res->bindParam(':codigo', $correlativo, PDO::PARAM_STR);
             $res->bindParam(':nombre', $data_almacen['nombre'], PDO::PARAM_STR);
             $aux = $data_almacen['regional']['id'];
@@ -242,31 +228,21 @@ class DataAlmacenRepository implements AlmacenRepository {
             $res->bindParam(':u_crea', $uuid, PDO::PARAM_STR);
             $res->execute();
             $res = $res->fetchAll(PDO::FETCH_ASSOC);
-            $sql = "SELECT alm.*, 
-                            reg.id as id_regional, reg.codigo as codigo_regional, reg.nombre as nombre_regional, reg.direccion as direccion_regional, reg.telefono as telefono_regional,
-                            prog.id as id_programa, prog.codigo as codigo_programa, prog.nombre as nombre_programa
-                    FROM almacen alm, regional reg, programa prog
-                    WHERE alm.codigo=:codigo AND alm.activo=1 AND alm.id_regional=reg.id AND alm.id_programa=prog.id";
+            $sql = "SELECT alm.*
+                    FROM almacen alm
+                    WHERE alm.codigo=:codigo AND alm.activo=1";
             $res = ($this->db)->prepare($sql);
             $res->bindParam(':codigo', $correlativo, PDO::PARAM_STR);
             $res->execute();
             $res = $res->fetchAll(PDO::FETCH_ASSOC);
             $res = $res[0];
+            $data_regional = $this->dataRegionalRepository->getRegional($res['id_regional']);
+            $data_programa = $this->dataProgramaRepository->getPrograma($res['id_programa']);
             $result = array('id'=>$res['id'],
                             'codigo'=>$res['codigo'],
                             'nombre'=>$res['nombre'],
-                            'regional'=>array(
-                                'id'=>$res['id_regional'],
-                                'codigo'=>$res['codigo_regional'],
-                                'nombre'=>$res['nombre_regional'],
-                                'direccion'=>$res['direccion_regional'],
-                                'telefono'=>$res['telefono_regional']
-                            ),
-                            'programa'=>array(
-                                'id'=>$res['id_programa'],
-                                'codigo'=>$res['codigo_programa'],
-                                'nombre'=>$res['nombre_programa']
-                            ),
+                            'regional'=>$data_regional['data_regional'],
+                            'programa'=>$data_programa['data_programa'],
                             'direccion'=>$res['direccion'],
                             'telefono'=>$res['telefono'],
                             'activo'=>$res['activo']);
