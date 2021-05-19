@@ -371,4 +371,23 @@ class DataParametricaRepository implements ParametricaRepository {
         }
         return array();
     }
+
+    public function getConfiguracion($codigo): array {
+        try {
+            $sql = "SELECT id,
+                           codigo,
+                           descripcion,
+                           recurso
+                    FROM configuracion_general 
+                    WHERE codigo=:codigo";
+            $res = ($this->db)->prepare($sql);
+            $res->bindParam(':codigo', $codigo, PDO::PARAM_STR);
+            $res->execute();
+            $res = $res->fetchAll(PDO::FETCH_ASSOC);
+            return $res;
+        } catch (Exception $e) {
+            return array('error' => true);
+        }
+        return array();
+    }
 }
