@@ -51,4 +51,30 @@ class ReporteAction extends Action {
         return $response;
     }
 
+    public function getEntradaActaRecepcion(Request $request, Response $response, $args): Response {
+        $this->request = $request;
+        $this->response = $response;
+        $this->args = $args;
+        //$params=$args;
+        $id_entrada = $args['id'];
+
+        header('access-control-allow-origin: *');
+
+        $JWT = new \App\Application\Middleware\JWTdata($request);
+        $token = $JWT->getToken();
+        if (!$token['success']) {
+            return $this->respondWithData(array(), 'Datos de token invalidos', 403);
+        }
+        $token = $token['data'];
+        $res=$this->repository->reporteIngresoActaRecepcion($id_entrada, $token);
+        if (isset($res['error'])) {
+            return $this->respondWithData(array(), 'Error', 500, false);
+        }
+        if (isset($res['sin_datos'])) {
+            return $this->respondWithData(array(), 'No se encontro', 404, false);
+        }
+        $response->getBody()->write("");
+        return $response;
+    }
+
 }

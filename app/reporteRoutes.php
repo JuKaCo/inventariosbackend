@@ -10,6 +10,7 @@ return function (App $app) {
     $app->group('/api/v1/reporte/entrada', function (Group $group) {
 
         $group->get('/notaingreso/{id}', ReporteAction::class.':getEntradaNotaIngreso');
+        $group->get('/actarecepcion/{id}', ReporteAction::class.':getEntradaActaRecepcion');
         
     });
 };
