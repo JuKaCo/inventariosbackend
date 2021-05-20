@@ -191,7 +191,7 @@ class DataAlmacenRepository implements AlmacenRepository {
             $correlativo = $this->dataCorrelativoRepository->genCorrelativo('ALM', '0', $uuid);
             $correlativo = $correlativo['correlativo'];
             $correlativo = 'ALM-' . $correlativo;
-            $uuid = Uuid::v4();
+            $uuid_neo = Uuid::v4();
             $sql = "INSERT INTO almacen (
                     id,
                     codigo,
@@ -216,7 +216,7 @@ class DataAlmacenRepository implements AlmacenRepository {
                     :u_crea
                     );";
             $res = ($this->db)->prepare($sql);
-            $res->bindParam(':uuid', $uuid, PDO::PARAM_STR);
+            $res->bindParam(':uuid', $uuid_neo, PDO::PARAM_STR);
             $res->bindParam(':codigo', $correlativo, PDO::PARAM_STR);
             $res->bindParam(':nombre', $data_almacen['nombre'], PDO::PARAM_STR);
             $aux = $data_almacen['regional']['id'];

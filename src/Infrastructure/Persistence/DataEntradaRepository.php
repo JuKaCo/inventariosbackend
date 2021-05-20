@@ -13,6 +13,7 @@ use App\Infrastructure\Persistence\DataProveedorRepository;
 use App\Infrastructure\Persistence\DataCompraRepository;
 use App\Infrastructure\Persistence\DataParametricaRepository;
 use \PDO;
+use AbmmHasan\Uuid;
 
 class DataEntradaRepository implements EntradaRepository {
 
@@ -307,6 +308,7 @@ class DataEntradaRepository implements EntradaRepository {
         $correlativo = $this->dataCorrelativoRepository->genCorrelativo($data_entrada['id_almacen']['codigo'].'-IN', $data_entrada['tipo_entrada']['codigo'], $uuid);
         $correlativo = $correlativo['correlativo'];
         $correlativo = $data_entrada['id_almacen']['codigo'] . '-IN-' . $correlativo .'-'. $data_entrada['tipo_entrada']['codigo'];
+        $uuid_neo = Uuid::v4();
         $sql = "INSERT INTO entrada (
                 id,
                 codigo,
@@ -328,7 +330,7 @@ class DataEntradaRepository implements EntradaRepository {
                 f_crea,
                 u_crea
                 )VALUES(
-                uuid(),
+                :uuid,
                 :codigo,
                 :id_regional,
                 :id_almacen,
@@ -350,6 +352,7 @@ class DataEntradaRepository implements EntradaRepository {
                 );";
         $data_entrada['comision']=json_encode($data_entrada['comision']);
         $res = ($this->db)->prepare($sql);
+        $res->bindParam(':uuid', $uuid_neo, PDO::PARAM_STR);
         $res->bindParam(':codigo', $correlativo, PDO::PARAM_STR);
         $res->bindParam(':id_regional', $data_entrada['id_regional']['id'], PDO::PARAM_STR);
         $res->bindParam(':id_almacen', $data_entrada['id_almacen']['id'], PDO::PARAM_STR);
@@ -369,9 +372,9 @@ class DataEntradaRepository implements EntradaRepository {
         $res = $res->fetchAll(PDO::FETCH_ASSOC);
         $sql = "SELECT *
                 FROM entrada
-                WHERE codigo LIKE :codigo AND activo=1";
+                WHERE id LIKE :uuid AND activo=1";
         $res = ($this->db)->prepare($sql);
-        $res->bindParam(':codigo', $correlativo, PDO::PARAM_STR);
+        $res->bindParam(':uuid', $uuid_neo, PDO::PARAM_STR);
         $res->execute();
         $res = $res->fetchAll(PDO::FETCH_ASSOC);
         $res = $res[0];

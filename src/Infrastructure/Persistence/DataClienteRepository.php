@@ -348,6 +348,7 @@ class DataClienteRepository implements ClienteRepository {
         if($res->rowCount()==1){
             $resp = array('success'=>false,'message'=>'Error, ya existe un cliente con el mismo NIT o nombre');
         }else{
+            $uuid_neo = Uuid::v4();
             $sql = "INSERT INTO cliente (
                     id,
                     nombre,
@@ -367,7 +368,7 @@ class DataClienteRepository implements ClienteRepository {
                     f_crea,
                     u_crea
                     )VALUES(
-                    uuid(),
+                    :uuid,
                     :nombre,
                     :telefono,
                     :correo,
@@ -386,6 +387,7 @@ class DataClienteRepository implements ClienteRepository {
                     :u_crea
                     );";
             $res = ($this->db)->prepare($sql);
+            $res->bindParam(':uuid', $uuid_neo, PDO::PARAM_STR);
             $res->bindParam(':nombre', $data_cliente['nombre'], PDO::PARAM_STR);
             $res->bindParam(':telefono', $data_cliente['telefono'], PDO::PARAM_STR);
             $res->bindParam(':correo', $data_cliente['correo'], PDO::PARAM_STR);
@@ -404,9 +406,9 @@ class DataClienteRepository implements ClienteRepository {
             $res = $res->fetchAll(PDO::FETCH_ASSOC);
             $sql = "SELECT *
                     FROM cliente cl
-                    WHERE cl.nit=:nit AND cl.activo=1";
+                    WHERE cl.id=:uuid AND cl.activo=1";
             $res = ($this->db)->prepare($sql);
-            $res->bindParam(':nit', $data_cliente['nit'], PDO::PARAM_INT);
+            $res->bindParam(':uuid', $uuid_neo, PDO::PARAM_STR);
             $res->execute();
             $res = $res->fetchAll(PDO::FETCH_ASSOC);
             $res = $res[0];

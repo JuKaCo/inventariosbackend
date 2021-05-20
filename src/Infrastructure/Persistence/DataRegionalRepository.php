@@ -181,7 +181,7 @@ class DataRegionalRepository implements RegionalRepository {
             $correlativo = $this->dataCorrelativoRepository->genCorrelativo('REGIO', '0', $uuid);
             $correlativo = $correlativo['correlativo'];
             $correlativo = "REGIO-".$correlativo;
-            $uuid = Uuid::v4();
+            $uuid_neo = Uuid::v4();
             $sql = "INSERT INTO regional (
                     id,
                     codigo,
@@ -204,7 +204,7 @@ class DataRegionalRepository implements RegionalRepository {
                     :u_crea
                     );";
             $res = ($this->db)->prepare($sql);
-            $res->bindParam(':uuid', $uuid, PDO::PARAM_STR);
+            $res->bindParam(':uuid', $uuid_neo, PDO::PARAM_STR);
             $res->bindParam(':codigo', $correlativo, PDO::PARAM_STR);
             $res->bindParam(':nombre', $data_regional['nombre'], PDO::PARAM_STR);
             $aux = $data_regional['departamento']['id_param'];
@@ -216,9 +216,9 @@ class DataRegionalRepository implements RegionalRepository {
             $res = $res->fetchAll(PDO::FETCH_ASSOC);
             $sql = "SELECT reg.*, pg.id_param, pg.cod_grupo, pg.codigo as cod_param, pg.valor
                     FROM regional reg, param_general pg
-                    WHERE reg.codigo=:codigo AND reg.activo=1 AND reg.departamento=pg.id_param";
+                    WHERE reg.id=:uuid AND reg.activo=1 AND reg.departamento=pg.id_param";
             $res = ($this->db)->prepare($sql);
-            $res->bindParam(':codigo', $correlativo, PDO::PARAM_STR);
+            $res->bindParam(':uuid', $uuid_neo, PDO::PARAM_STR);
             $res->execute();
             $res = $res->fetchAll(PDO::FETCH_ASSOC);
             $res = $res[0];
