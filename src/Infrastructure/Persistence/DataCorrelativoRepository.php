@@ -50,6 +50,7 @@ class DataCorrelativoRepository implements CorrelativoRepository {
         }else{
             $correlativo=1;
         }
+        
         $sql = "INSERT INTO correlativo (
                 id,
                 codigo,

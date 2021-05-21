@@ -350,7 +350,7 @@ class DataItemRepository implements ItemRepository {
         $data_precio+=['factor'=>($data_item['factor']['codigo'])];
         $data_calculo=$this->calculatePriceItem($data_precio);
         $data_calculo=$data_calculo['data_calculo'];
-        $uuid=Uuid::v4();
+        $uuid_neo=Uuid::v4();
         $sql = "INSERT INTO item (
                 id,
                 id_producto,
@@ -395,7 +395,7 @@ class DataItemRepository implements ItemRepository {
                 :u_crea
                 );";
         $res = ($this->db)->prepare($sql);
-        $res->bindParam(':uuid', $uuid, PDO::PARAM_STR);
+        $res->bindParam(':uuid', $uuid_neo, PDO::PARAM_STR);
         $res->bindParam(':id_producto', $data_item['id_producto']['id'], PDO::PARAM_STR);
         $res->bindParam(':id_entrada_salida', $data_item['id_entrada_salida'], PDO::PARAM_STR);
         $res->bindParam(':tipo_in_out', $data_item['tipo_in_out'], PDO::PARAM_STR);
@@ -419,7 +419,7 @@ class DataItemRepository implements ItemRepository {
                 FROM item
                 WHERE id=:uuid AND activo=1";
         $res = ($this->db)->prepare($sql);
-        $res->bindParam(':uuid', $uuid, PDO::PARAM_STR);
+        $res->bindParam(':uuid', $uuid_neo, PDO::PARAM_STR);
         $res->execute();
         $res = $res->fetchAll(PDO::FETCH_ASSOC);
         $res = $res[0];

@@ -262,6 +262,7 @@ class DataCompraRepository implements CompraRepository {
             //$correlativo = $this->dataCorrelativoRepository->genCorrelativo('REGIO', '0', $uuid);
             //$correlativo = $correlativo['correlativo'];
             //$correlativo = "REGIO-".$correlativo;
+            $uuid_neo = Uuid::v4();
             $sql = "INSERT INTO compra (
                     id,
                     codigo,
@@ -284,6 +285,7 @@ class DataCompraRepository implements CompraRepository {
                     :u_crea
                     );";
             $res = ($this->db)->prepare($sql);
+            $res->bindParam(':uuid', $uuid_neo, PDO::PARAM_STR);
             $res->bindParam(':codigo', $data_compra['codigo'], PDO::PARAM_STR);
             $res->bindParam(':nombre', $data_compra['nombre'], PDO::PARAM_STR);
             $res->bindParam(':gestion', $data_compra['gestion'], PDO::PARAM_INT);
@@ -293,9 +295,9 @@ class DataCompraRepository implements CompraRepository {
             $res = $res->fetchAll(PDO::FETCH_ASSOC);
             $sql = "SELECT com.*
                     FROM compra com
-                    WHERE com.codigo=:codigo AND com.activo=1";
+                    WHERE com.id=:uuid AND com.activo=1";
             $res = ($this->db)->prepare($sql);
-            $res->bindParam(':codigo', $data_compra['codigo'], PDO::PARAM_STR);
+            $res->bindParam(':uuid', $uuid_neo, PDO::PARAM_STR);
             $res->execute();
             $res = $res->fetchAll(PDO::FETCH_ASSOC);
             $res = $res[0];

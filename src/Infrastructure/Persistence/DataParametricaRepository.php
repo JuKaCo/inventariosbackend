@@ -373,6 +373,7 @@ class DataParametricaRepository implements ParametricaRepository {
                     ur.ID as id_usuario, 
                     ur.FIRST_NAME as nombres, 
                     ur.LAST_NAME as apellidos,
+                    CONCAT(ur.FIRST_NAME, ' ', ur.LAST_NAME) as nombre_completo, 
                     ua.VALUE as cargo
                     FROM USER_ENTITY ur, USER_ATTRIBUTE ua
                     WHERE ur.ENABLED = 1
@@ -408,6 +409,25 @@ class DataParametricaRepository implements ParametricaRepository {
                             OR LOWER(com.descripcion) LIKE LOWER(:filter))";
             $res = ($this->db)->prepare($sql);
             $res->bindParam(':filter', $filtro, PDO::PARAM_STR);
+            $res->execute();
+            $res = $res->fetchAll(PDO::FETCH_ASSOC);
+            return $res;
+        } catch (Exception $e) {
+            return array('error' => true);
+        }
+        return array();
+    }
+
+    public function getConfiguracion($codigo): array {
+        try {
+            $sql = "SELECT id,
+                           codigo,
+                           descripcion,
+                           recurso
+                    FROM configuracion_general 
+                    WHERE codigo=:codigo";
+            $res = ($this->db)->prepare($sql);
+            $res->bindParam(':codigo', $codigo, PDO::PARAM_STR);
             $res->execute();
             $res = $res->fetchAll(PDO::FETCH_ASSOC);
             return $res;

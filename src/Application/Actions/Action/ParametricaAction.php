@@ -215,4 +215,19 @@ class ParametricaAction  extends Action {
         }
         return $this->respondWithData($data);
     }
+
+
+    public function genParamConfiguracion(Request $request, Response $response, $args): Response {
+        $this->response = $response;
+        $this->args = $args;
+        $codigo = $args['codigo'];
+        $data = $this->parametricaRepository->getConfiguracion($codigo);
+        if (isset($data['error'])) {
+            return $this->respondWithData(array(), 'Error', 500, false);
+        }
+        if ($data == null) {
+            return $this->respondWithData(array(), 'No se encontro datos', 202, false);
+        }
+        return $this->respondWithData($data[0], 'Exitoso', 200, true);
+    }
 }

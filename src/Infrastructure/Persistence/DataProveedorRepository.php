@@ -183,6 +183,7 @@ class DataProveedorRepository implements ProveedorRepository {
         if($res->rowCount()==1){
             $resp = array('success'=>false,'message'=>'Error, el codigo proveedor ya existe');
         }else{
+            $uuid_neo=Uuid::v4();
             $sql = "INSERT INTO proveedor (
                     id,
                     codigo,
@@ -194,7 +195,7 @@ class DataProveedorRepository implements ProveedorRepository {
                     f_crea,
                     u_crea
                     )VALUES(
-                    uuid(),
+                    :uuid,
                     :codigo,
                     :nombre,
                     :pais,
@@ -205,6 +206,7 @@ class DataProveedorRepository implements ProveedorRepository {
                     :u_crea
                     );";
             $res = ($this->db)->prepare($sql);
+            $res->bindParam(':uuid', $uuid_neo, PDO::PARAM_STR);
             $res->bindParam(':codigo', $data_proveedor['codigo'], PDO::PARAM_STR);
             $res->bindParam(':nombre', $data_proveedor['nombre'], PDO::PARAM_STR);
             $aux = $data_proveedor['pais']['id_param'];
@@ -216,9 +218,9 @@ class DataProveedorRepository implements ProveedorRepository {
             $res = $res->fetchAll(PDO::FETCH_ASSOC);
             $sql = "SELECT pr.*, pg.id_param, pg.cod_grupo, pg.codigo as cod_param, pg.valor
                     FROM proveedor pr, param_general pg
-                    WHERE pr.codigo=:codigo AND pr.activo=1 AND pr.pais=pg.id_param";
+                    WHERE pr.id=:uuid AND pr.activo=1 AND pr.pais=pg.id_param";
             $res = ($this->db)->prepare($sql);
-            $res->bindParam(':codigo', $data_proveedor['codigo'], PDO::PARAM_STR);
+            $res->bindParam(':uuid', $uuid_neo, PDO::PARAM_STR);
             $res->execute();
             $res = $res->fetchAll(PDO::FETCH_ASSOC);
             $res = $res[0];

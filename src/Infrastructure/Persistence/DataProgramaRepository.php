@@ -168,6 +168,7 @@ class DataProgramaRepository implements ProgramaRepository {
             $correlativo = $this->dataCorrelativoRepository->genCorrelativo('PROG', '0', $uuid);
             $correlativo = $correlativo['correlativo'];
             $correlativo = 'PROG-' . $correlativo;
+            $uuid_neo=Uuid::v4();
             $sql = "INSERT INTO programa (
                     id,
                     codigo,
@@ -177,7 +178,7 @@ class DataProgramaRepository implements ProgramaRepository {
                     f_crea,
                     u_crea
                     )VALUES(
-                    uuid(),
+                    :uuid,
                     :codigo,
                     :nombre,
                     :referencia,
@@ -186,6 +187,7 @@ class DataProgramaRepository implements ProgramaRepository {
                     :u_crea
                     );";
             $res = ($this->db)->prepare($sql);
+            $res->bindParam(':uuid', $uuid_neo, PDO::PARAM_STR);
             $res->bindParam(':codigo', $correlativo, PDO::PARAM_STR);
             $res->bindParam(':nombre', $data_programa['nombre'], PDO::PARAM_STR);
             $res->bindParam(':referencia', $data_programa['referencia'], PDO::PARAM_STR);
@@ -194,9 +196,9 @@ class DataProgramaRepository implements ProgramaRepository {
             $res = $res->fetchAll(PDO::FETCH_ASSOC);
             $sql = "SELECT *
                     FROM programa
-                    WHERE codigo=:codigo AND activo=1";
+                    WHERE id=:uuid AND activo=1";
             $res = ($this->db)->prepare($sql);
-            $res->bindParam(':codigo', $correlativo, PDO::PARAM_STR);
+            $res->bindParam(':uuid', $uuid_neo, PDO::PARAM_STR);
             $res->execute();
             $res = $res->fetchAll(PDO::FETCH_ASSOC);
             $res = $res[0];

@@ -298,6 +298,7 @@ class DataProductoRepository implements ProductoRepository {
         if($res->rowCount()==1){
             $resp = array('success'=>false,'message'=>'Error, ya existe un producto con el mismo codigo o nombre comercial');
         }else{
+            $uuid_neo=Uuid::v4();
             $sql = "INSERT INTO producto (
                     id,
                     codigo,
@@ -323,7 +324,7 @@ class DataProductoRepository implements ProductoRepository {
                     f_crea,
                     u_crea
                     )VALUES(
-                    uuid(),
+                    :uuid,
                     :codigo,
                     :nombre_comercial,
                     :codigo_liname,
@@ -348,6 +349,7 @@ class DataProductoRepository implements ProductoRepository {
                     :u_crea
                     );";
             $res = ($this->db)->prepare($sql);
+            $res->bindParam(':uuid', $uuid_neo, PDO::PARAM_STR);
             $res->bindParam(':codigo', $data_producto['codigo'], PDO::PARAM_STR);
             $res->bindParam(':nombre_comercial', $data_producto['nombre_comercial'], PDO::PARAM_STR);
             $res->bindParam(':codigo_liname', $data_producto['codigo_liname']['id_liname'], PDO::PARAM_INT);
@@ -372,9 +374,9 @@ class DataProductoRepository implements ProductoRepository {
             $res = $res->fetchAll(PDO::FETCH_ASSOC);
             $sql = "SELECT *
                     FROM producto pr
-                    WHERE pr.codigo LIKE :codigo AND pr.activo=1";
+                    WHERE pr.id LIKE :uuid AND pr.activo=1";
             $res = ($this->db)->prepare($sql);
-            $res->bindParam(':codigo', $data_producto['codigo'], PDO::PARAM_STR);
+            $res->bindParam(':uuid', $uuid_neo, PDO::PARAM_STR);
             $res->execute();
             $res = $res->fetchAll(PDO::FETCH_ASSOC);
             $res = $res[0];
