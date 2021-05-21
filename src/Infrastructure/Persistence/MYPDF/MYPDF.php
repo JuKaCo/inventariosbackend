@@ -31,7 +31,7 @@ class MYPDF extends TCPDF {
         $this->writeHTMLCell(100, 20, '', '', $footertext2, 0, 0, false,true, "R", true);
 
     }
-    public function datos($id,): void {
+    public function datos($id): void {
         $this->id = $id;
     }
 }

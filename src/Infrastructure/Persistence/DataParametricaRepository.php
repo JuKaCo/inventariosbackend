@@ -373,6 +373,7 @@ class DataParametricaRepository implements ParametricaRepository {
                     ur.ID as id_usuario, 
                     ur.FIRST_NAME as nombres, 
                     ur.LAST_NAME as apellidos,
+                    CONCAT(ur.FIRST_NAME, ' ', ur.LAST_NAME) as nombre_completo, 
                     ua.VALUE as cargo
                     FROM USER_ENTITY ur, USER_ATTRIBUTE ua
                     WHERE ur.ENABLED = 1
