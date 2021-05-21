@@ -19,6 +19,10 @@ use App\Domain\CompraRepository;
 use App\Domain\ItemRepository;
 use App\Domain\EntradaRepository;
 use App\Domain\ReporteRepository;
+use App\Domain\KardexRepository;
+use App\Domain\ItemSecRepository;
+use App\Domain\CotizacionRepository;
+use App\Domain\VentaRepository;
 use App\Infrastructure\Persistence\User\InMemoryUserRepository;
 use App\Infrastructure\Persistence\DataMenuRepository;
 use App\Infrastructure\Persistence\DataParametricaRepository;
@@ -37,6 +41,10 @@ use App\Infrastructure\Persistence\DataCompraRepository;
 use App\Infrastructure\Persistence\DataItemRepository;
 use App\Infrastructure\Persistence\DataEntradaRepository;
 use App\Infrastructure\Persistence\DataReporteRepository;
+use App\Infrastructure\Persistence\DataKardexRepository;
+use App\Infrastructure\Persistence\DataCotizacionRepository;
+use App\Infrastructure\Persistence\DataItemSecRepository;
+use App\Infrastructure\Persistence\DataVentaRepository;
 
 use DI\ContainerBuilder;
 
@@ -64,6 +72,10 @@ return function (ContainerBuilder $containerBuilder) {
         EntradaRepository::class=> \DI\autowire(DataEntradaRepository::class),
 
         ReporteRepository::class=> \DI\autowire(DataReporteRepository::class),
+        KardexRepository::class=> \DI\autowire(DataKardexRepository::class),
+        ItemSecRepository::class=> \DI\autowire(DataCotizacionRepository::class),
+        CotizacionRepository::class=> \DI\autowire(DataItemSecRepository::class),
+        VentaRepository::class=> \DI\autowire(DataVentaRepository::class),
 
     ]);
 };

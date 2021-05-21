@@ -12,6 +12,8 @@ use App\Infrastructure\Persistence\DataAlmacenRepository;
 use App\Infrastructure\Persistence\DataProveedorRepository;
 use App\Infrastructure\Persistence\DataCompraRepository;
 use App\Infrastructure\Persistence\DataParametricaRepository;
+use App\Infrastructure\Persistence\DataItemRepository;
+use App\Infrastructure\Persistence\DataKardexRepository;
 use \PDO;
 use AbmmHasan\Uuid;
 
@@ -41,6 +43,8 @@ class DataEntradaRepository implements EntradaRepository {
         $this->dataProveedorRepository = new DataProveedorRepository;
         $this->dataCompraRepository = new DataCompraRepository;
         $this->dataParametricaRepository = new DataParametricaRepository;
+        $this->dataItemRepository = new DataItemRepository;
+        $this->dataKardexRepository = new DataKardexRepository;
     }
 
     public function getEntrada($id_entrada): array {
@@ -637,6 +641,41 @@ class DataEntradaRepository implements EntradaRepository {
             $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
             $res->execute();
             $resp += ['estado' => 'dato actualizado'];
+            if($data_entrada['estado']=='COMPLETADO'){
+                $query=array(
+                    'filtro'=>'',
+                    'limite'=>100000000000,
+                    'indice'=>0
+                );
+                $data_items = $this->dataItemRepository->listItem($query,$id_entrada);
+
+                $data_items = $data_items['data_item']['resultados'];
+                $data_entrada = $this->getEntrada($id_entrada);
+
+                foreach($data_items as $item){
+                    $data_kardex = array(
+                                        'tipo_in_out'=>$item['tipo_in_out'],
+                                        'id_item'=>$item,
+                                        'id_producto'=>$item['id_producto'],
+                                        'id_regional'=>$data_entrada['data_entrada']['id_regional'],
+                                        'id_almacen'=>$data_entrada['data_entrada']['id_almacen'],
+                                        'id_almacen_origen'=>array('id'=>null),
+                                        'id_almacen_destino'=>array('id'=>null),
+                                        'id_proveedor'=>$data_entrada['data_entrada']['id_proveedor'],
+                                        'id_cliente'=>array('id'=>null),
+                                        'id_entrada'=>$data_entrada['data_entrada'],
+                                        'id_salida'=>array('id'=>null),
+                                        'lote'=>$item['lote'],
+                                        'cantidad_diferencia'=>$item['cantidad'],
+                                        'precio_compra'=>$item['precio_unidad_fob'],
+                                        'precio_actual'=>$item['costo_neto'],
+                                        'precio_venta'=>$item['precio_venta']
+                                    );
+                    //$respuesta_kardex=$this->dataKardexRepository->createKardex($data_kardex,$uuid);
+                    echo json_encode($data_kardex);
+                    exit();
+                }
+            }
         }
         if($codigo){
             $resp += ['codigo' => 'dato actualizado'];

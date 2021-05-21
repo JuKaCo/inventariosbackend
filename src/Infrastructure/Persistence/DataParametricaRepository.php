@@ -38,7 +38,7 @@ class DataParametricaRepository implements ParametricaRepository {
                     codigo,
                     valor
                     FROM param_general
-                    WHERE cod_grupo=:cod_grupo AND (LOWER(valor) LIKE LOWER(:filtro) OR LOWER(codigo) LIKE LOWER(:filtro))
+                    WHERE cod_grupo=:cod_grupo AND activo=1 AND (LOWER(valor) LIKE LOWER(:filtro) OR LOWER(codigo) LIKE LOWER(:filtro))
                     ORDER BY id_param";
                 $res = ($this->db)->prepare($sql);
                 $res->bindParam(':filtro', $filtro, PDO::PARAM_STR);
@@ -50,7 +50,7 @@ class DataParametricaRepository implements ParametricaRepository {
                     codigo,
                     valor
                     FROM param_general
-                    WHERE cod_grupo=:cod_grupo AND id_padre=:id_padre AND (LOWER(valor) LIKE LOWER(:filtro) OR LOWER(codigo) LIKE LOWER(:filtro))
+                    WHERE cod_grupo=:cod_grupo AND id_padre=:id_padre AND activo=1 AND (LOWER(valor) LIKE LOWER(:filtro) OR LOWER(codigo) LIKE LOWER(:filtro))
                     ORDER BY id_param";
                 $res = ($this->db)->prepare($sql);
                 $res->bindParam(':filtro', $filtro, PDO::PARAM_STR);
@@ -87,7 +87,7 @@ class DataParametricaRepository implements ParametricaRepository {
                     codigo,
                     valor
                     FROM param_general
-                    WHERE cod_grupo=:cod_grupo AND id_padre=:id_padre AND LOWER(codigo) = LOWER(:codigo)
+                    WHERE cod_grupo=:cod_grupo AND id_padre=:id_padre AND (LOWER(codigo) = LOWER(:codigo) OR LOWER(id_param) = LOWER(:codigo))
                     ORDER BY id_param";
                 $res = ($this->db)->prepare($sql);
                 $res->bindParam(':codigo', $codigo, PDO::PARAM_STR);
