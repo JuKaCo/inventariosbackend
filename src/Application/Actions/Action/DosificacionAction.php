@@ -9,19 +9,19 @@ use Psr\Log\LoggerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\UploadedFileInterface;
-use App\Domain\FacturacionRepository;
+use App\Domain\DosificacionRepository;
 
-class FacturacionAction extends Action {
+class DosificacionAction extends Action {
 
-    protected $facturacionRepository;
+    protected $dosificacionRepository;
 
     /**
      * @param LoggerInterface $logger
      * @param $repository  ?
      */
-    public function __construct(LoggerInterface $logger, FacturacionRepository $rep) {
+    public function __construct(LoggerInterface $logger, DosificacionRepository $rep) {
         parent::__construct($logger);
-        $this->facturacionRepository = $rep;
+        $this->dosificacionRepository = $rep;
     }
 
     public function action(): Response {
@@ -36,7 +36,7 @@ class FacturacionAction extends Action {
         $this->args = $args;
         $id_docificacion = $args['id_dosificacion'];
         
-        $res=$this->facturacionRepository->getDoficifacion($id_docificacion);
+        $res=$this->dosificacionRepository->getDoficifacion($id_docificacion);
 
         if($res['success']==false){
             return $this->respondWithData(null,$res['message'],202,false);
@@ -51,7 +51,7 @@ class FacturacionAction extends Action {
         $this->args = $args;
         $query=$request->getQueryParams();
 
-        $res=$this->facturacionRepository->listDoficifacion($query);
+        $res=$this->dosificacionRepository->listDoficifacion($query);
 
         if($res['success']==false){
             return $this->respondWithData(null,$res['message'],202,true);
@@ -75,7 +75,7 @@ class FacturacionAction extends Action {
         $token = $token['data'];
         $uuid=$token->sub;
         
-        $res=$this->facturacionRepository->createDocificacion($data_docificacion,$uuid);
+        $res=$this->dosificacionRepository->createDocificacion($data_docificacion,$uuid);
 
         if($res['success']==false){
             return $this->respondWithData(null,$res['message'],202,false);
@@ -99,7 +99,7 @@ class FacturacionAction extends Action {
         $token = $token['data'];
         $uuid=$token->sub;
         
-        $res=$this->facturacionRepository->editDosificacion($id_docificacion, $data_docificacion, $uuid);
+        $res=$this->dosificacionRepository->editDosificacion($id_docificacion, $data_docificacion, $uuid);
 
         if($res['success']==false){
             return $this->respondWithData(null,$res['message'],202,false);
@@ -123,7 +123,7 @@ class FacturacionAction extends Action {
         $token = $token['data'];
         $uuid=$token->sub;
         
-        $res=$this->facturacionRepository->modifyDosificacion($id_docificacion, $data_docificacion, $uuid);
+        $res=$this->dosificacionRepository->modifyDosificacion($id_docificacion, $data_docificacion, $uuid);
 
         if($res['success']==false){
             return $this->respondWithData(null,$res['message'],202,false);
@@ -146,7 +146,7 @@ class FacturacionAction extends Action {
         $token = $token['data'];
         $uuid=$token->sub;
         
-        $res=$this->facturacionRepository->changestatusDosificacion($id_docificacion, $uuid);
+        $res=$this->dosificacionRepository->changestatusDosificacion($id_docificacion, $uuid);
 
         if($res['success']==false){
             return $this->respondWithData(null,$res['message'],202,false);

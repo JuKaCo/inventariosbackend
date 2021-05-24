@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Domain;
 
-interface FacturacionRepository
+interface DosificacionRepository
 {
     public function getDoficifacion($id_dosificacio): array;
     public function listDoficifacion($query): array;

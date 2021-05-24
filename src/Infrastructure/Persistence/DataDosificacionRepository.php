@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Infrastructure\Persistence;
 
 use App\Application\Actions\RepositoryConection\Conect;
-use App\Domain\FacturacionRepository;
+use App\Domain\DosificacionRepository;
 use \PDO;
 use AbmmHasan\Uuid;
 
-class DataFacturacionRepository implements FacturacionRepository {
+class DataDosificacionRepository implements DosificacionRepository {
 
     /**
      * @var data[]
@@ -22,7 +22,7 @@ class DataFacturacionRepository implements FacturacionRepository {
     private $db;
 
     /**
-     * DataFacturacionRepository constructor.
+     * DataDosificacionRepository constructor.
      *
      */
     public function __construct() {
@@ -57,28 +57,30 @@ class DataFacturacionRepository implements FacturacionRepository {
     }
 
     public function listDoficifacion($query): array {
-        if(!(isset($query['filtro'])&&isset($query['limite'])&&isset($query['indice']))){
+        if(!(isset($query['filtro'])&&isset($query['estado'])&&isset($query['limite'])&&isset($query['indice']))){
             return array('success'=>false,'message'=>'Datos invalidos');
         }
         $filtro=$query['filtro'];
         $limite=$query['limite'];
         $indice=$query['indice'];
+        $estado=$query['estado'];
         $limite=$limite+$indice;
         $filter="%".strtolower($filtro)."%";
 
         $sql = "SELECT fd.*
                 FROM fac_dosificacion as fd LEFT JOIN regional as reg ON fd.id_regional = reg.id
-                WHERE fd.activo = 1 AND (LOWER(fd.llave_dosificacion) LIKE LOWER(:filter) OR LOWER(fd.nro_autorizacion) LIKE LOWER(:filter)
+                WHERE fd.activo = :estado AND (LOWER(fd.llave_dosificacion) LIKE LOWER(:filter) OR LOWER(fd.nro_autorizacion) LIKE LOWER(:filter)
                                          OR DATE_FORMAT(fd.fecha_exp, '%d/%m/%Y') LIKE :filter OR DATE_FORMAT(fd.f_crea,'%d/%m/%Y') LIKE :filter
                                          OR LOWER(reg.nombre) LIKE LOWER(:filter))";
         $res = ($this->db)->prepare($sql);
         $res->bindParam(':filter', $filter, PDO::PARAM_STR);
+        $res->bindParam(':estado', $estado, PDO::PARAM_INT);
         $res->execute();
         $total=$res->rowCount();
 
         $sql = "SELECT fd.*, reg.id as id_regional, reg.nombre as nombre_regional
                 FROM fac_dosificacion as fd LEFT JOIN regional as reg ON fd.id_regional = reg.id
-                WHERE fd.activo = 1 AND (LOWER(fd.llave_dosificacion) LIKE LOWER(:filter) OR LOWER(fd.nro_autorizacion) LIKE LOWER(:filter)
+                WHERE fd.activo = :estado AND (LOWER(fd.llave_dosificacion) LIKE LOWER(:filter) OR LOWER(fd.nro_autorizacion) LIKE LOWER(:filter)
                                          OR DATE_FORMAT(fd.fecha_exp, '%d/%m/%Y') LIKE :filter OR DATE_FORMAT(fd.f_crea,'%d/%m/%Y') LIKE :filter
                                          OR LOWER(reg.nombre) LIKE LOWER(:filter))
                 ORDER BY fd.f_crea DESC
@@ -87,6 +89,7 @@ class DataFacturacionRepository implements FacturacionRepository {
         $res->bindParam(':filter', $filter, PDO::PARAM_STR);
         $res->bindParam(':limite', $limite, PDO::PARAM_INT);
         $res->bindParam(':indice', $indice, PDO::PARAM_INT);
+        $res->bindParam(':estado', $estado, PDO::PARAM_INT);
         $res->execute();
 
         if($res->rowCount()>0){
