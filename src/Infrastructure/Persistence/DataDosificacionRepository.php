@@ -108,7 +108,7 @@ class DataDosificacionRepository implements DosificacionRepository {
             $concat=array('resultados'=>$arrayres,'total'=>$total);
             $resp = array('success'=>true,'message'=>'Exito','data_dosificacion'=>$concat);
         } else {
-            $resp = array('success'=>false,'message'=>'No se encontraron registros');
+            $resp = array('success'=>true,'message'=>'No se encontraron registros','data_dosificacion'=> [] );
         }
         return $resp;
     }
