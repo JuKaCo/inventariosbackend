@@ -68,6 +68,8 @@ $routes($app);
 $routes = require __DIR__ . '/../app/facturacionRutes.php';
 $routes($app);
 
+$routes = require __DIR__ . '/../app/ventasRoutes.php';
+$routes($app);
 
 /** @var bool $displayErrorDetails */
 $displayErrorDetails = $container->get('settings')['displayErrorDetails'];
