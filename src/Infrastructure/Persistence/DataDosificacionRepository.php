@@ -31,7 +31,7 @@ class DataDosificacionRepository implements DosificacionRepository {
     }
 
     public function getDoficifacion($id_dosificacion): array {
-        $sql = "SELECT fd.*, reg.id as id_regional, reg.nombre as nombre_regional
+        $sql = "SELECT fd.*, reg.id as id_regional, reg.nombre as nombre_regional, reg.codigo, reg.direccion, reg.telefono
                 FROM fac_dosificacion fd LEFT JOIN 
                      regional as reg ON fd.id_regional = reg.id
                 WHERE fd.id=:id_dosificacion AND fd.activo=1";
@@ -48,7 +48,10 @@ class DataDosificacionRepository implements DosificacionRepository {
                             'fecha_exp'=> date('d/m/Y',strtotime($res['fecha_exp'])),
                             'activo' =>  $res['activo'],
                             'id_regional' => array('id' => $res['id_regional'],
-                                                   'nombre' => $res['nombre_regional']));
+                                                   'nombre' => $res['nombre_regional'],
+                                                   'codigo' => $res['codigo'],
+                                                   'direccion' => $res['direccion'],
+                                                   'telefono' => $res['telefono']));
             $resp = array('success'=>true,'message'=>'Exito','data_dosificacion'=>$result);
         } else {
             $resp = array('success'=>false,'message'=>'No se encontraron registros');
@@ -78,7 +81,7 @@ class DataDosificacionRepository implements DosificacionRepository {
         $res->execute();
         $total=$res->rowCount();
 
-        $sql = "SELECT fd.*, reg.id as id_regional, reg.nombre as nombre_regional
+        $sql = "SELECT fd.*, reg.id as id_regional, reg.nombre as nombre_regional, reg.codigo, reg.direccion, reg.telefono
                 FROM fac_dosificacion as fd LEFT JOIN regional as reg ON fd.id_regional = reg.id
                 WHERE fd.activo = :estado AND (LOWER(fd.llave_dosificacion) LIKE LOWER(:filter) OR LOWER(fd.nro_autorizacion) LIKE LOWER(:filter)
                                          OR DATE_FORMAT(fd.fecha_exp, '%d/%m/%Y') LIKE :filter OR DATE_FORMAT(fd.f_crea,'%d/%m/%Y') LIKE :filter
@@ -102,7 +105,10 @@ class DataDosificacionRepository implements DosificacionRepository {
                                 'fecha_exp'=> date('d/m/Y',strtotime($item['fecha_exp'])),
                                 'activo' =>  $item['activo'],
                                 'id_regional' => array('id' => $item['id_regional'],
-                                                   'nombre' => $item['nombre_regional']));
+                                                    'nombre' => $item['nombre_regional'],
+                                                    'codigo' => $item['codigo'],
+                                                    'direccion' => $item['direccion'],
+                                                    'telefono' => $item['telefono']));
                 array_push($arrayres,$result);
             }
             $concat=array('resultados'=>$arrayres,'total'=>$total);
@@ -114,7 +120,7 @@ class DataDosificacionRepository implements DosificacionRepository {
     }
 
     public function createDocificacion($data_docificacion,$uuid): array {
-        if(!(isset($data_docificacion['llave_dosificacion'])&&isset($data_docificacion['nro_autorizacion'])&&isset($data_docificacion['fecha_exp'])&&isset($data_docificacion['id_regional']))){
+        if(!(isset($data_docificacion['llave_dosificacion'])&&isset($data_docificacion['nro_autorizacion'])&&isset($data_docificacion['fecha_exp'])&&isset($data_docificacion['regional']))){
             return array('success'=>false,'message'=>'Datos invalidos');
         }
         // OR :fecha_exp > now() -> por si hay que valida la fecha de exp
@@ -153,12 +159,13 @@ class DataDosificacionRepository implements DosificacionRepository {
             $res->bindParam(':llave_dosificacion', $data_docificacion['llave_dosificacion'], PDO::PARAM_STR);
             $res->bindParam(':nro_autorizacion', $data_docificacion['nro_autorizacion'], PDO::PARAM_STR);
             $res->bindParam(':fecha_exp', $data_docificacion['fecha_exp'], PDO::PARAM_STR);
-            $res->bindParam(':id_regional', $data_docificacion['id_regional'], PDO::PARAM_STR);
+            $aux = $data_docificacion['regional']['id'];
+            $res->bindParam(':id_regional', $aux, PDO::PARAM_STR);
             $res->bindParam(':u_crea', $uuid, PDO::PARAM_STR);
             $res->execute();
             $res = $res->fetchAll(PDO::FETCH_ASSOC);
 
-            $sql = "SELECT fd.*, reg.id, reg.codigo as cod_reg, reg.nombre
+            $sql = "SELECT fd.*, reg.id, reg.codigo as cod_reg, reg.nombre, reg.codigo, reg.direccion, reg.telefono
                     FROM fac_dosificacion fd, regional reg
                     WHERE fd.id=:uuid AND fd.activo=1 AND fd.id_regional=reg.id";
             $res = ($this->db)->prepare($sql);
@@ -172,14 +179,18 @@ class DataDosificacionRepository implements DosificacionRepository {
                             'nro_autorizacion'=>$res['nro_autorizacion'],
                             'fecha_exp'=>date('d/m/Y',strtotime($res['fecha_exp'])),
                             'activo'=>$res['activo'],
-                            'id_regional'=>$res['id_regional']);
+                            'id_regional' => array('id' => $res['id_regional'],
+                                                    'nombre' => $res['nombre'],
+                                                    'codigo' => $res['cod_reg'],
+                                                    'direccion' => $res['direccion'],
+                                                    'telefono' => $res['telefono']));
             $resp = array('success'=>true,'message'=>'Docificación registrada exitosamente','data_dosificacion'=>$result);
          }
         return $resp;
     }
 
     public function editDosificacion($id_dosificacion,$data_docificacion,$uuid): array {
-        if(!(isset($data_docificacion['llave_dosificacion'])&&isset($data_docificacion['nro_autorizacion'])&&isset($data_docificacion['fecha_exp'])&&isset($data_docificacion['id_regional']))){
+        if(!(isset($data_docificacion['llave_dosificacion'])&&isset($data_docificacion['nro_autorizacion'])&&isset($data_docificacion['fecha_exp'])&&isset($data_docificacion['regional']))){
             return array('success'=>false,'message'=>'Datos invalidos');
         }
         $sql = "SELECT *
@@ -205,7 +216,8 @@ class DataDosificacionRepository implements DosificacionRepository {
             $res->bindParam(':llave_dosificacion', $data_docificacion['llave_dosificacion'], PDO::PARAM_STR);
             $res->bindParam(':nro_autorizacion', $data_docificacion['nro_autorizacion'], PDO::PARAM_STR);
             $res->bindParam(':fecha_exp', $data_docificacion['fecha_exp'], PDO::PARAM_STR);
-            $res->bindParam(':id_regional', $data_docificacion['id_regional'], PDO::PARAM_STR);
+            $aux = $data_docificacion['regional']['id'];
+            $res->bindParam(':id_regional', $aux, PDO::PARAM_STR);
             $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
             $res->execute();
             $resp = array('success'=>true,'message'=>'Dosificación actualizada','data_dosificacion'=>$data_docificacion);
@@ -259,7 +271,7 @@ class DataDosificacionRepository implements DosificacionRepository {
                 $resp += ['fecha_exp' => 'dato actualizado'];
         }
 
-        if(isset($data_docificacion['id_regional'])){
+        if(isset($data_docificacion['regional'])){
             $sql = "UPDATE fac_dosificacion 
                         SET id_regional=:id_regional,
                         f_mod=now(), 
@@ -267,7 +279,8 @@ class DataDosificacionRepository implements DosificacionRepository {
                         WHERE id=:id_dosificacion;";
                 $res = ($this->db)->prepare($sql);
                 $res->bindParam(':id_dosificacion', $id_dosificacion, PDO::PARAM_STR);
-                $res->bindParam(':id_regional', $data_docificacion['id_regional'], PDO::PARAM_STR);
+                $aux = $data_docificacion['regional']['id'];
+                $res->bindParam(':id_regional', $aux, PDO::PARAM_STR);
                 $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
                 $res->execute();
                 $resp += ['id_regional' => 'dato actualizado'];
