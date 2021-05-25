@@ -34,7 +34,7 @@ class DataDosificacionRepository implements DosificacionRepository {
         $sql = "SELECT fd.*, reg.id as id_regional, reg.nombre as nombre_regional, reg.codigo, reg.direccion, reg.telefono
                 FROM fac_dosificacion fd LEFT JOIN 
                      regional as reg ON fd.id_regional = reg.id
-                WHERE fd.id=:id_dosificacion AND fd.activo=1";
+                WHERE fd.id=:id_dosificacion";
                 
         $res = ($this->db)->prepare($sql);
         $res->bindParam(':id_dosificacion', $id_dosificacion, PDO::PARAM_STR);
@@ -126,65 +126,145 @@ class DataDosificacionRepository implements DosificacionRepository {
         // OR :fecha_exp > now() -> por si hay que valida la fecha de exp
         $sql = "SELECT *
                 FROM fac_dosificacion
-                WHERE llave_dosificacion LIKE :llave_dosificacion";
+                WHERE llave_dosificacion = :llave_dosificacion";
         $res = ($this->db)->prepare($sql);
         $res->bindParam(':llave_dosificacion', $data_docificacion['llave_dosificacion'], PDO::PARAM_STR);
         $res->execute();
-        if($res->rowCount()==1){
+        if($res->rowCount() > 1){
             $resp = array('success'=>false,'message'=>'Error, la llave de dosificación ya existe');
         }else{
-            $uuid_neo = Uuid::v4();
-            $sql = "INSERT INTO fac_dosificacion (
-                id,
-                llave_dosificacion,
-                nro_autorizacion,
-                fecha_exp,
-                id_regional,
-                activo,
-                f_crea,
-                u_crea
-                )VALUES(
-                :uuid,
-                :llave_dosificacion,
-                :nro_autorizacion,
-                STR_TO_DATE(:fecha_exp, '%d/%m/%Y'),
-                :id_regional,
-                1,
-                now(),
-                :u_crea
-                );";
+            $sql = "SELECT *
+                    FROM fac_dosificacion
+                    WHERE id_regional = :id_regional AND activo = 1";
             $res = ($this->db)->prepare($sql);
-
-            $res->bindParam(':uuid', $uuid_neo, PDO::PARAM_STR);
-            $res->bindParam(':llave_dosificacion', $data_docificacion['llave_dosificacion'], PDO::PARAM_STR);
-            $res->bindParam(':nro_autorizacion', $data_docificacion['nro_autorizacion'], PDO::PARAM_STR);
-            $res->bindParam(':fecha_exp', $data_docificacion['fecha_exp'], PDO::PARAM_STR);
             $aux = $data_docificacion['regional']['id'];
             $res->bindParam(':id_regional', $aux, PDO::PARAM_STR);
-            $res->bindParam(':u_crea', $uuid, PDO::PARAM_STR);
             $res->execute();
-            $res = $res->fetchAll(PDO::FETCH_ASSOC);
+            if($res->rowCount() == 1){
+                $res = $res->fetchAll(PDO::FETCH_ASSOC);
+                $res = $res[0];
+                $sql = "UPDATE fac_dosificacion 
+                        SET activo=0,
+                        f_inac=now(), 
+                        u_inac=:u_inac
+                        WHERE id=:id_dosificacion;";
+                $res1 = ($this->db)->prepare($sql);
+                $res1->bindParam(':u_inac', $uuid, PDO::PARAM_STR);
+                $aux = $res['id'];
+                $res1->bindParam(':id_dosificacion', $aux, PDO::PARAM_STR);
+                $res1->execute();
+                if($res1->rowCount()==1){
+                    $uuid_neo = Uuid::v4();
+                    $sql = "INSERT INTO fac_dosificacion (
+                        id,
+                        llave_dosificacion,
+                        nro_autorizacion,
+                        fecha_exp,
+                        id_regional,
+                        activo,
+                        f_crea,
+                        u_crea
+                        )VALUES(
+                        :uuid,
+                        :llave_dosificacion,
+                        :nro_autorizacion,
+                        STR_TO_DATE(:fecha_exp, '%d/%m/%Y'),
+                        :id_regional,
+                        1,
+                        now(),
+                        :u_crea
+                        );";
+                    $res2 = ($this->db)->prepare($sql);
+        
+                    $res2->bindParam(':uuid', $uuid_neo, PDO::PARAM_STR);
+                    $res2->bindParam(':llave_dosificacion', $data_docificacion['llave_dosificacion'], PDO::PARAM_STR);
+                    $res2->bindParam(':nro_autorizacion', $data_docificacion['nro_autorizacion'], PDO::PARAM_STR);
+                    $res2->bindParam(':fecha_exp', $data_docificacion['fecha_exp'], PDO::PARAM_STR);
+                    $aux = $data_docificacion['regional']['id'];
+                    $res2->bindParam(':id_regional', $aux, PDO::PARAM_STR);
+                    $res2->bindParam(':u_crea', $uuid, PDO::PARAM_STR);
+                    $res2->execute();
+                    $res2 = $res2->fetchAll(PDO::FETCH_ASSOC);
+        
+                    $sql = "SELECT fd.*, reg.id as id_regional2, reg.codigo as cod_reg, reg.nombre, reg.codigo, reg.direccion, reg.telefono
+                            FROM fac_dosificacion fd, regional reg
+                            WHERE fd.id=:uuid AND fd.activo=1 AND fd.id_regional=reg.id";
+                    $res2 = ($this->db)->prepare($sql);
+                    $res2->bindParam(':uuid', $uuid_neo, PDO::PARAM_STR);
+                    $res2->execute();
+                    $res2 = $res2->fetchAll(PDO::FETCH_ASSOC);
+                    $res2 = $res2[0];
+        
+                    $result = array('id'=>$res2['id'],
+                                    'llave_dosificacion'=>$res2['llave_dosificacion'],
+                                    'nro_autorizacion'=>$res2['nro_autorizacion'],
+                                    'fecha_exp'=>date('d/m/Y',strtotime($res2['fecha_exp'])),
+                                    'activo'=>$res2['activo'],
+                                    'regional' => array('id' => $res2['id_regional2'],
+                                                            'nombre' => $res2['nombre'],
+                                                            'codigo' => $res2['cod_reg'],
+                                                            'direccion' => $res2['direccion'],
+                                                            'telefono' => $res2['telefono']));
+                    $resp = array('success'=>true,'message'=>'Docificación registrada exitosamente','data_dosificacion'=>$result);
+                }else{
+                    $resp = array('success'=>false,'message'=>'Error, ocurrio un error');
+                }
+                
+            } else {
+                $uuid_neo = Uuid::v4();
+                $sql = "INSERT INTO fac_dosificacion (
+                    id,
+                    llave_dosificacion,
+                    nro_autorizacion,
+                    fecha_exp,
+                    id_regional,
+                    activo,
+                    f_crea,
+                    u_crea
+                    )VALUES(
+                    :uuid,
+                    :llave_dosificacion,
+                    :nro_autorizacion,
+                    STR_TO_DATE(:fecha_exp, '%d/%m/%Y'),
+                    :id_regional,
+                    1,
+                    now(),
+                    :u_crea
+                    );";
+                $res = ($this->db)->prepare($sql);
+    
+                $res->bindParam(':uuid', $uuid_neo, PDO::PARAM_STR);
+                $res->bindParam(':llave_dosificacion', $data_docificacion['llave_dosificacion'], PDO::PARAM_STR);
+                $res->bindParam(':nro_autorizacion', $data_docificacion['nro_autorizacion'], PDO::PARAM_STR);
+                $res->bindParam(':fecha_exp', $data_docificacion['fecha_exp'], PDO::PARAM_STR);
+                $aux = $data_docificacion['regional']['id'];
+                $res->bindParam(':id_regional', $aux, PDO::PARAM_STR);
+                $res->bindParam(':u_crea', $uuid, PDO::PARAM_STR);
+                $res->execute();
+                $res = $res->fetchAll(PDO::FETCH_ASSOC);
+    
+                $sql = "SELECT fd.*, reg.id as id_regional2, reg.codigo as cod_reg, reg.nombre, reg.codigo, reg.direccion, reg.telefono
+                        FROM fac_dosificacion fd, regional reg
+                        WHERE fd.id=:uuid AND fd.activo=1 AND fd.id_regional=reg.id";
+                $res = ($this->db)->prepare($sql);
+                $res->bindParam(':uuid', $uuid_neo, PDO::PARAM_STR);
+                $res->execute();
+                $res = $res->fetchAll(PDO::FETCH_ASSOC);
+                $res = $res[0];
+    
+                $result = array('id'=>$res['id'],
+                                'llave_dosificacion'=>$res['llave_dosificacion'],
+                                'nro_autorizacion'=>$res['nro_autorizacion'],
+                                'fecha_exp'=>date('d/m/Y',strtotime($res['fecha_exp'])),
+                                'activo'=>$res['activo'],
+                                'regional' => array('id' => $res['id_regional2'],
+                                                        'nombre' => $res['nombre'],
+                                                        'codigo' => $res['cod_reg'],
+                                                        'direccion' => $res['direccion'],
+                                                        'telefono' => $res['telefono']));
+                $resp = array('success'=>true,'message'=>'Docificación registrada exitosamente','data_dosificacion'=>$result);
+            }
 
-            $sql = "SELECT fd.*, reg.id, reg.codigo as cod_reg, reg.nombre, reg.codigo, reg.direccion, reg.telefono
-                    FROM fac_dosificacion fd, regional reg
-                    WHERE fd.id=:uuid AND fd.activo=1 AND fd.id_regional=reg.id";
-            $res = ($this->db)->prepare($sql);
-            $res->bindParam(':uuid', $uuid_neo, PDO::PARAM_STR);
-            $res->execute();
-            $res = $res->fetchAll(PDO::FETCH_ASSOC);
-            $res = $res[0];
-
-            $result = array('id'=>$res['id'],
-                            'llave_dosificacion'=>$res['llave_dosificacion'],
-                            'nro_autorizacion'=>$res['nro_autorizacion'],
-                            'fecha_exp'=>date('d/m/Y',strtotime($res['fecha_exp'])),
-                            'activo'=>$res['activo'],
-                            'regional' => array('id' => $res['id_regional'],
-                                                    'nombre' => $res['nombre'],
-                                                    'codigo' => $res['cod_reg'],
-                                                    'direccion' => $res['direccion'],
-                                                    'telefono' => $res['telefono']));
-            $resp = array('success'=>true,'message'=>'Docificación registrada exitosamente','data_dosificacion'=>$result);
          }
         return $resp;
     }
@@ -195,9 +275,10 @@ class DataDosificacionRepository implements DosificacionRepository {
         }
         $sql = "SELECT *
                 FROM fac_dosificacion
-                WHERE llave_dosificacion LIKE :llave_dosificacion";
+                WHERE llave_dosificacion LIKE :llave_dosificacion AND id <> :id AND activo=1";
         $res = ($this->db)->prepare($sql);
         $res->bindParam(':llave_dosificacion', $data_docificacion['llave_dosificacion'], PDO::PARAM_STR);
+        $res->bindParam('id', $id_dosificacion, PDO::PARAM_STR);
         $res->execute();
 
         if($res->rowCount()==1){
