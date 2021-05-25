@@ -88,12 +88,16 @@ class SessionMiddleware implements Middleware {
      * $cargo_usuario=$token->cargo_usuario;
      * $preferred_username=$token->preferred_username;
      * 
-      "name": "Roger Nav",
-      "cargo_usuario": "Encargado de almacen",
-      "preferred_username": "rnavia",
-      "given_name": "Roger",
-      "family_name": "Nav",
-      "email": "ranvia@123.com"
+        "scope": "openid offline_access email profile",
+        "email_verified": false,
+        "regional": "c23c5276-ac12-11eb-8dab-000c29c20449",
+        "name": "Roger Nav",
+        "privilegio": "total",
+        "cargo_usuario": "Patron",
+        "preferred_username": "rnavia",
+        "given_name": "Roger",
+        "family_name": "Nav",
+        "email": "ranvia@123.com"
       }
      */
     public function process(Request $request, RequestHandler $handler): Response {
