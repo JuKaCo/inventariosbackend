@@ -38,6 +38,8 @@ return function (App $app) {
 
         $group->get('/compra', ParametricaAction::class.':genParamCompra');
 
+        $group->get('/cliente', ParametricaAction::class.':genParamCliente');
+
         $group->get('/configuracion/{codigo}', ParametricaAction::class.':genParamConfiguracion');
 
 

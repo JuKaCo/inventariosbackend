@@ -436,4 +436,27 @@ class DataParametricaRepository implements ParametricaRepository {
         }
         return array();
     }
+
+    public function getCliente($filtro): array {
+        $filtro = '%' . $filtro . '%';
+        try {
+            $sql = "SELECT cli.id,
+                           cli.nombre,
+                           cli.nit,
+                           cli.correo,
+                           cli.direccion
+                    FROM cliente cli 
+                    WHERE cli.activo=1
+                          AND (LOWER(cli.nombre) LIKE LOWER(:filter) 
+                            OR cli.nit LIKE :filter)";
+            $res = ($this->db)->prepare($sql);
+            $res->bindParam(':filter', $filtro, PDO::PARAM_STR);
+            $res->execute();
+            $res = $res->fetchAll(PDO::FETCH_ASSOC);
+            return $res;
+        } catch (Exception $e) {
+            return array('error' => true);
+        }
+        return array();
+    }
 }
