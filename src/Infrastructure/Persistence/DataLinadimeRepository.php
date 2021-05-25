@@ -175,11 +175,8 @@ class DataLinadimeRepository implements LinadimeRepository {
                 $datosNV = 0;
                 $obs = array();
 
-                $sql = "SELECT UUID() as uuid;";
-                $uuid = $this->db->prepare($sql);
-                $uuid->execute();
-                $uuid = $uuid->fetch();
-                $uuid = $uuid["uuid"];
+                $uuid=Uuid::v4();
+                
                 try {  
                     $this->db->beginTransaction();
 
@@ -278,10 +275,8 @@ class DataLinadimeRepository implements LinadimeRepository {
                     if (!file_exists($ruta)) {
                         if (!mkdir($ruta, 0777, true)) {
                             $this->db->rollBack();
-                            return array('error' => 'permisos');
+                            return array('error' => 'permisos1');
                         }
-                    }else{
-                        return array('error' => 'permisos');
                     }
 
                     $uploadFileName = $uuid . '--' . $id_usuario;

@@ -11,13 +11,14 @@ use App\Application\Actions\Action\ItemSecAction;
 use App\Application\Actions\Action\SalidaAction;
 
 return function (App $app) {
-
+    //cotizacion rutas
     $app->group('/api/v1/cotizacion', function(Group $group){
         $group->get('/obtener/{id_cotizacion}',CotizacionAction::class.':obtiene_Cotizacion');
         $group->put('/editar/{id_cotizacion}',CotizacionAction::class.':edita_Cotizacion');
         $group->post('/crear',CotizacionAction::class.':crea_Cotizacion');
         $group->delete('/cambiarestado/{id_cotizacion}',CotizacionAction::class.':cambiaestado_Cotizacion');
         $group->get('/listar',CotizacionAction::class.':lista_Cotizacion');
+        $group->patch('/modificar/{id_cotizacion}',CotizacionAction::class.':modifica_Cotizacion');
     });
     //ventas rutas
     $app->group('/api/v1/venta', function(Group $group){

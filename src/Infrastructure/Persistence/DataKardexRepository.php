@@ -7,6 +7,8 @@ namespace App\Infrastructure\Persistence;
 use App\Application\Actions\RepositoryConection\Conect;
 use App\Domain\KardexRepository;
 use App\Infrastructure\Persistence\DataCorrelativoRepository;
+use App\Infrastructure\Persistence\DataProductoRepository;
+use App\Infrastructure\Persistence\DataRepository;
 use \PDO;
 use AbmmHasan\Uuid;
 
@@ -31,6 +33,8 @@ class DataKardexRepository implements KardexRepository {
         $con = new Conect();
         $this->db = $con->getConection();
         $this->dataCorrelativoRepository = new DataCorrelativoRepository;
+        $this->dataProductoRepository = new DataProductoRepository;
+        $this->dataProveedorRepository = new DataProveedorRepository;
     }
 
     public function getKardex($id_kardex): array {
@@ -418,8 +422,13 @@ class DataKardexRepository implements KardexRepository {
             if($data_kardex['tipo_in_out']=="IN"){
                 $cantidad_actual = (integer)$res['cantidad_actual'] + (integer)$data_kardex['cantidad_diferencia'];//si es ingreso sumamos
             }else{
-                $cantidad_actual = (integer)$res['cantidad_actual'] - (integer)$data_kardex['cantidad_diferencia'];//si es salida restamos
-            }//CAMBIAMOS ESTADO A ANTERIOR REGISTRO
+                if(((integer)$res['cantidad_actual'])<((integer)$data_kardex['cantidad_diferencia'])){
+                    $resp = array('success'=>false,'message'=>'cantidad actual es inferior a la cantidad solicitada','data_kardex'=>array());
+                }else{
+                    $cantidad_actual = (integer)$res['cantidad_actual'] - (integer)$data_kardex['cantidad_diferencia'];//si es salida restamos
+                }
+            }
+            //CAMBIAMOS ESTADO A ANTERIOR REGISTRO
             $sql = "UPDATE kardex
                     SET estado='ARCHIVADO'
                     WHERE id LIKE :id AND activo=1";
@@ -556,6 +565,66 @@ class DataKardexRepository implements KardexRepository {
         if($data_kardex['tipo_financiamiento']['codigo']==null){$result['tipo_financiamiento']=json_decode("{}");}
         if($data_kardex['modalidad_contratacion']['codigo']==null){$result['modalidad_contratacion']=json_decode("{}");}  */
         $resp = array('success'=>true,'message'=>'kardex registrado exitosamente','data_kardex'=>$result);
+        return $resp;
+    }
+
+    public function getProdsKardex($id_almacen, $query): array {
+        
+        $limite = $query['limite'];
+        $indice = $query['indice'];
+        $filtro = $query['filtro'];
+        $filtro = '%'.$filtro.'%';
+
+        $sql = "SELECT k.id
+                FROM kardex k, producto p, item i, proveedor pr
+                WHERE k.id_producto=p.id AND k.id_item=i.id AND k.id_proveedor=pr.id AND
+                k.id_almacen LIKE :id_almacen AND k.estado like 'VIGENTE' AND 
+                (LOWER(k.lote) LIKE LOWER(:filtro) OR LOWER(p.codigo) LIKE LOWER(:filtro) OR 
+                LOWER(p.nombre_comercial) LIKE LOWER(:filtro) OR LOWER(p.medicamento) LIKE LOWER(:filtro) OR
+                LOWER(p.dispositivo) LIKE LOWER(:filtro) OR LOWER(pr.nombre) LIKE LOWER(:filtro))";
+        $res = ($this->db)->prepare($sql);
+        $res->bindParam(':id_almacen', $id_almacen, PDO::PARAM_STR);
+        $res->bindParam(':filtro', $filtro, PDO::PARAM_STR);
+        $res->execute();
+        $total=$res->rowCount();
+        $sql = "SELECT k.id_producto, k.id_proveedor, k.lote, i.fecha_exp, k.cantidad_actual, k.precio_venta
+                FROM kardex k, producto p, item i, proveedor pr
+                WHERE k.id_producto=p.id AND k.id_item=i.id AND k.id_proveedor=pr.id AND
+                k.id_almacen LIKE :id_almacen AND k.estado like 'VIGENTE' AND 
+                (LOWER(k.lote) LIKE LOWER(:filtro) OR LOWER(p.codigo) LIKE LOWER(:filtro) OR 
+                LOWER(p.nombre_comercial) LIKE LOWER(:filtro) OR LOWER(p.medicamento) LIKE LOWER(:filtro) OR
+                LOWER(p.dispositivo) LIKE LOWER(:filtro) OR LOWER(pr.nombre) LIKE LOWER(:filtro))
+                ORDER BY p.nombre_comercial
+                LIMIT :indice, :limite;";
+        $res = ($this->db)->prepare($sql);
+        $res->bindParam(':id_almacen', $id_almacen, PDO::PARAM_STR);
+        $res->bindParam(':filtro', $filtro, PDO::PARAM_STR);
+        $res->bindParam(':limite', $limite, PDO::PARAM_INT);
+        $res->bindParam(':indice', $indice, PDO::PARAM_INT);
+        $res->execute();
+        if($res->rowCount()>0){
+            $restodo = $res->fetchAll(PDO::FETCH_ASSOC);
+            $arrayres = array();
+            foreach ($restodo as $res){
+                $data_proveedor = $this->dataProveedorRepository->getProveedor($res['id_proveedor']);
+                $data_producto = $this->dataProductoRepository->getProducto($res['id_producto']);
+                $fecha = explode("-",$res['fecha_exp']);
+                $result = array(
+                                'id_producto'=>$data_producto['data_producto'],
+                                'id_proveedor'=>$data_proveedor['data_proveedor'],
+                                'lote'=>$res['lote'],
+                                'cantidad_actual'=>(integer)$res['cantidad_actual'],
+                                'fecha_exp'=>$fecha[2]."/".$fecha[1]."/".$fecha[0],
+                                'precio_venta'=>(double)$res['precio_venta']
+                                );
+                array_push($arrayres,$result);
+            }
+            $concat=array('resultados'=>$arrayres,'total'=>$total);
+            $resp = array('success'=>true,'message'=>'Exito','data_kardex'=>$concat);   
+        }else{
+            $concat=array('resultados'=>array(),'total'=>0);
+            $resp = array('success'=>true,'message'=>'No se encontraron registros','data_kardex'=>$concat);
+        }
         return $resp;
     }
 

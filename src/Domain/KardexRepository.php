@@ -11,4 +11,5 @@ interface KardexRepository
     public function changestatusKardex($id_kardex,$uuid): array;
     public function listKardex($query): array;
     public function modifyKardex($id_kardex,$data_kardex,$uuid): array;
+    public function getProdsKardex($id_almacen,$query): array;
 }

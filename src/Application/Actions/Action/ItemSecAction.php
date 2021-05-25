@@ -47,8 +47,8 @@ class ItemSecAction extends Action {
         $this->response = $response;
         $this->args = $args;
         $query=$request->getQueryParams();
-        $id_entrada_salida = $args['id_entrada_salida'];
-        $res=$this->itemsecRepository->listItemSec($query, $id_entrada_salida);
+        $id_coti_vent = $args['id_coti_vent'];
+        $res=$this->itemsecRepository->listItemSec($query, $id_coti_vent);
 
         if($res['success']==false){
             return $this->respondWithData(null,$res['message'],202,true);

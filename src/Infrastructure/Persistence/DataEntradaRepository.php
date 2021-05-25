@@ -671,9 +671,7 @@ class DataEntradaRepository implements EntradaRepository {
                                         'precio_actual'=>$item['costo_neto'],
                                         'precio_venta'=>$item['precio_venta']
                                     );
-                    //$respuesta_kardex=$this->dataKardexRepository->createKardex($data_kardex,$uuid);
-                    echo json_encode($data_kardex);
-                    exit();
+                    $this->dataKardexRepository->createKardex($data_kardex,$uuid);
                 }
             }
         }
