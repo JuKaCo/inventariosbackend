@@ -193,11 +193,7 @@ class DataLinameRepository implements LinameRepository {
                     $datosNV = 0;
                     $obs = array();
 
-                    $sql = "SELECT UUID() as uuid;";
-                    $uuid = $this->db->prepare($sql);
-                    $uuid->execute();
-                    $uuid = $uuid->fetch();
-                    $uuid = $uuid["uuid"];
+                    $uuid=Uuid::v4();
 
                     try {
                         $this->db->beginTransaction();
