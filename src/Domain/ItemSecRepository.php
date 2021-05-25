@@ -11,5 +11,4 @@ interface ItemSecRepository
     public function createItemSec($data_itemsec,$uuid): array;
     public function changestatusItemSec($id_itemsec,$uuid): array;
     public function listItemSec($query,$id_coti_ven): array;
-    public function calculatePriceItemSec($data_itemsec): array;
 }

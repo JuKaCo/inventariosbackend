@@ -73,8 +73,8 @@ return function (ContainerBuilder $containerBuilder) {
 
         ReporteRepository::class=> \DI\autowire(DataReporteRepository::class),
         KardexRepository::class=> \DI\autowire(DataKardexRepository::class),
-        ItemSecRepository::class=> \DI\autowire(DataCotizacionRepository::class),
-        CotizacionRepository::class=> \DI\autowire(DataItemSecRepository::class),
+        ItemSecRepository::class=> \DI\autowire(DataItemSecRepository::class),
+        CotizacionRepository::class=> \DI\autowire(DataCotizacionRepository::class),
         VentaRepository::class=> \DI\autowire(DataVentaRepository::class),
 
     ]);

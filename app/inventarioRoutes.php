@@ -86,6 +86,6 @@ return function (App $app) {
         $group->delete('/cambiarestado/{id_kardex}',KardexAction::class.':cambiaestado_Kardex');
         $group->get('/listar',KardexAction::class.':lista_Kardex');
         $group->patch('/modificar/{id_kardex}',KardexAction::class.':modifica_Kardex');
-        $group->post('/calcular',KardexAction::class.':calcula_Precio_Kardex');
+        $group->get('/obtenerprods/{id_almacen}',KardexAction::class.':obtiene_prods_Kardex');
     });
 };

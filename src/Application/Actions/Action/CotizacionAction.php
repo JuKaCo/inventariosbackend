@@ -5,77 +5,61 @@ declare(strict_types=1);
 namespace App\Application\Actions\Action;
 
 use App\Application\Actions\Action;
-use App\Domain\KardexRepository;
+use App\Domain\CotizacionRepository;
 use Psr\Log\LoggerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
-class KardexAction extends Action {
+class CotizacionAction extends Action {
 
-    protected $kardexRepository;
+    protected $cotizacionRepository;
 
     /**
      * @param LoggerInterface $logger
-     * @param KardexRepository  $kardexRepository
+     * @param CotizacionRepository  $cotizacionRepository
      */
-    public function __construct(LoggerInterface $logger, KardexRepository $kardexRepository) {
+    public function __construct(LoggerInterface $logger, CotizacionRepository $cotizacionRepository) {
         parent::__construct($logger);
-        $this->kardexRepository = $kardexRepository;
+        $this->cotizacionRepository = $cotizacionRepository;
     }
 
     public function action(): Response {
         $users = array();
-        $this->logger->info("Kardex's list was viewed.");
+        $this->logger->info("Cotizacions list was viewed.");
         return $this->respondWithData($users);
     }
 
-    public function obtiene_Kardex(Request $request, Response $response, $args): Response {
+    public function obtiene_Cotizacion(Request $request, Response $response, $args): Response {
         $this->request = $request;
         $this->response = $response;
         $this->args = $args;
-        $id_kardex = $args['id_kardex'];
-        $res=$this->kardexRepository->getKardex($id_kardex);
+        $id_cotizacion = $args['id_cotizacion'];
+        $res=$this->cotizacionRepository->getCotizacion($id_cotizacion);
         if($res['success']==false){
             return $this->respondWithData(null,$res['message'],202,true);
         }else{
-            return $this->respondWithData($res['data_kardex'],$res['message'],200,true);
+            return $this->respondWithData($res['data_cotizacion'],$res['message'],200,true);
         }
     }
 
-    public function lista_Kardex(Request $request, Response $response, $args): Response {
+    public function lista_Cotizacion(Request $request, Response $response, $args): Response {
         $this->request = $request;
         $this->response = $response;
         $this->args = $args;
         $query=$request->getQueryParams();
 
-        $res=$this->kardexRepository->listKardex($query);
+        $res=$this->cotizacionRepository->listCotizacion($query);
 
         if($res['success']==false){
             return $this->respondWithData(null,$res['message'],202,true);
         }else{
-            return $this->respondWithData($res['data_kardex'],$res['message'],200,true);
+            return $this->respondWithData($res['data_cotizacion'],$res['message'],200,true);
         }
     }
 
-    public function obtiene_prods_Kardex(Request $request, Response $response, $args): Response {
-        $this->request = $request;
-        $this->response = $response;
-        $this->args = $args;
-        $id_almacen = $args['id_almacen'];
-        $query=$request->getQueryParams();
-
-        $res=$this->kardexRepository->getProdsKardex($id_almacen,$query);
-
-        if($res['success']==false){
-            return $this->respondWithData(null,$res['message'],202,true);
-        }else{
-            return $this->respondWithData($res['data_kardex'],$res['message'],200,true);
-        }
-    }
-
-    /* body servicio de edicion de kardex
+    /* body servicio de edicion de cotizacion
     {
-        'id_kardex':int,
+        'id_cotizacion':int,
         'codigo':string,
         'nombre':string,
         'pais':array,
@@ -84,12 +68,12 @@ class KardexAction extends Action {
         'activo':int
     } 
     */
-    public function edita_Kardex(Request $request, Response $response, $args): Response {
+    public function edita_Cotizacion(Request $request, Response $response, $args): Response {
         $this->request = $request;
         $this->response = $response;
         $this->args = $args;
-        $id_kardex = $args['id_kardex'];
-        $data_kardex =  $request->getParsedBody();
+        $id_cotizacion = $args['id_cotizacion'];
+        $data_cotizacion =  $request->getParsedBody();
 
         $JWT = new \App\Application\Middleware\JWTdata($request);
         $token = $JWT->getToken();
@@ -99,20 +83,20 @@ class KardexAction extends Action {
         $token = $token['data'];
         $uuid=$token->sub;
 
-        $res=$this->kardexRepository->editKardex($id_kardex,$data_kardex,$uuid);
+        $res=$this->cotizacionRepository->editCotizacion($id_cotizacion,$data_cotizacion,$uuid);
 
         if($res['success']==false){
             return $this->respondWithData(null,$res['message'],202,false);
         }else{
-            return $this->respondWithData($res['data_kardex'],$res['message'],200,true);
+            return $this->respondWithData($res['data_cotizacion'],$res['message'],200,true);
         }
     }
 
-    public function cambiaestado_Kardex(Request $request, Response $response, $args): Response {
+    public function cambiaestado_Cotizacion(Request $request, Response $response, $args): Response {
         $this->request = $request;
         $this->response = $response;
         $this->args = $args;
-        $id_kardex = $args['id_kardex'];
+        $id_cotizacion = $args['id_cotizacion'];
         $JWT = new \App\Application\Middleware\JWTdata($request);
         $token = $JWT->getToken();
         if (!$token['success']) {
@@ -120,7 +104,7 @@ class KardexAction extends Action {
         }
         $token = $token['data'];
         $uuid=$token->sub;
-        $res=$this->kardexRepository->changestatusKardex($id_kardex,$uuid);
+        $res=$this->cotizacionRepository->changestatusCotizacion($id_cotizacion,$uuid);
         if($res['success']==false){
             return $this->respondWithData(null,$res['message'],202,true);
         }else{
@@ -129,9 +113,9 @@ class KardexAction extends Action {
         
     }
 
-    /* body servicio de creacion kardexs
+    /* body servicio de creacion cotizacions
     {
-        "nombre": "kardex_test",
+        "nombre": "cotizacion_test",
         "telefono": 22416539,
         "correo": "asd@asd.com",
         "nit": 123456789,
@@ -181,11 +165,11 @@ class KardexAction extends Action {
         }
     }
     */
-    public function crea_Kardex(Request $request, Response $response, $args): Response {
+    public function crea_Cotizacion(Request $request, Response $response, $args): Response {
         $this->request = $request;
         $this->response = $response;
         $this->args = $args;
-        $data_kardex =  $request->getParsedBody();
+        $data_cotizacion =  $request->getParsedBody();
 
         $JWT = new \App\Application\Middleware\JWTdata($request);
         $token = $JWT->getToken();
@@ -195,21 +179,21 @@ class KardexAction extends Action {
         $token = $token['data'];
         $uuid=$token->sub;
         
-        $res=$this->kardexRepository->createKardex($data_kardex,$uuid);
+        $res=$this->cotizacionRepository->createCotizacion($data_cotizacion,$uuid);
 
         if($res['success']==false){
             return $this->respondWithData(null,$res['message'],202,false);
         }else{
-            return $this->respondWithData($res['data_kardex'],$res['message'],200,true);
+            return $this->respondWithData($res['data_cotizacion'],$res['message'],200,true);
         }
     }
 
-    public function modifica_Kardex(Request $request, Response $response, $args): Response {
+    public function modifica_Cotizacion(Request $request, Response $response, $args): Response {
         $this->request = $request;
         $this->response = $response;
         $this->args = $args;
-        $id_kardex = $args['id_kardex'];
-        $data_kardex =  $request->getParsedBody();
+        $id_cotizacion = $args['id_cotizacion'];
+        $data_cotizacion =  $request->getParsedBody();
 
         $JWT = new \App\Application\Middleware\JWTdata($request);
         $token = $JWT->getToken();
@@ -219,12 +203,12 @@ class KardexAction extends Action {
         $token = $token['data'];
         $uuid=$token->sub;
 
-        $res=$this->kardexRepository->modifyKardex($id_kardex,$data_kardex,$uuid);
+        $res=$this->cotizacionRepository->modifyCotizacion($id_cotizacion,$data_cotizacion,$uuid);
 
         if($res['success']==false){
             return $this->respondWithData(null,$res['message'],202,false);
         }else{
-            return $this->respondWithData($res['data_kardex'],$res['message'],200,true);
+            return $this->respondWithData($res['data_cotizacion'],$res['message'],200,true);
         }
     }
 }
