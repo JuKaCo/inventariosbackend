@@ -18,10 +18,12 @@ use App\Domain\AlmacenRepository;
 use App\Domain\CompraRepository;
 use App\Domain\ItemRepository;
 use App\Domain\EntradaRepository;
+use App\Domain\FacturacionRepository;
 use App\Domain\ReporteRepository;
 use App\Domain\KardexRepository;
 use App\Domain\ItemSecRepository;
 use App\Domain\CotizacionRepository;
+use App\Domain\DosificacionRepository;
 use App\Domain\VentaRepository;
 use App\Infrastructure\Persistence\User\InMemoryUserRepository;
 use App\Infrastructure\Persistence\DataMenuRepository;
@@ -40,6 +42,7 @@ use App\Infrastructure\Persistence\DataAlmacenRepository;
 use App\Infrastructure\Persistence\DataCompraRepository;
 use App\Infrastructure\Persistence\DataItemRepository;
 use App\Infrastructure\Persistence\DataEntradaRepository;
+use App\Infrastructure\Persistence\DataDosificacionRepository;
 use App\Infrastructure\Persistence\DataReporteRepository;
 use App\Infrastructure\Persistence\DataKardexRepository;
 use App\Infrastructure\Persistence\DataCotizacionRepository;
@@ -67,6 +70,8 @@ return function (ContainerBuilder $containerBuilder) {
         AlmacenRepository::class => \DI\autowire(DataAlmacenRepository::class),
         CompraRepository::class => \DI\autowire(DataCompraRepository::class),
         ItemRepository::class => \DI\autowire(DataItemRepository::class),
+        
+        DosificacionRepository::class => \DI\autowire(DataDosificacionRepository::class),
 
 
         EntradaRepository::class=> \DI\autowire(DataEntradaRepository::class),
