@@ -34,12 +34,14 @@ class AlmacenAction extends Action {
         $this->response = $response;
         $this->args = $args;
         $id_almacen = $args['id_almacen'];
-        $res=$this->almacenRepository->getAlmacen($id_almacen);
-        if($res['success']==false){
-            return $this->respondWithData(null,$res['message'],202,true);
-        }else{
-            return $this->respondWithData($res['data_almacen'],$res['message'],200,true);
+        $JWT = new \App\Application\Middleware\JWTdata($request);
+        $token = $JWT->getToken();
+        if (!$token['success']) {
+            return $this->respondWithData(array(), 'Datos de token invalidos', 403,false);
         }
+        $token = $token['data'];
+        $res=$this->almacenRepository->getAlmacen($id_almacen,$token);
+        return $this->respondWithData($res['data_almacen'],$res['message'],$res['code'],$res['success']);
     }
 
     public function lista_Almacen(Request $request, Response $response, $args): Response {
@@ -48,13 +50,16 @@ class AlmacenAction extends Action {
         $this->args = $args;
         $query=$request->getQueryParams();
 
-        $res=$this->almacenRepository->listAlmacen($query);
-
-        if($res['success']==false){
-            return $this->respondWithData(null,$res['message'],202,true);
-        }else{
-            return $this->respondWithData($res['data_almacen'],$res['message'],200,true);
+        $JWT = new \App\Application\Middleware\JWTdata($request);
+        $token = $JWT->getToken();
+        if (!$token['success']) {
+            return $this->respondWithData(array(), 'Datos de token invalidos', 403,false);
         }
+        $token = $token['data'];
+
+        $res=$this->almacenRepository->listAlmacen($query,$token);
+
+        return $this->respondWithData($res['data_almacen'],$res['message'],$res['code'],$res['success']);
     }
 
     /* body servicio de edicion de almacen
@@ -83,13 +88,9 @@ class AlmacenAction extends Action {
         $token = $token['data'];
         $uuid=$token->sub;
 
-        $res=$this->almacenRepository->editAlmacen($id_almacen,$data_almacen,$uuid);
+        $res=$this->almacenRepository->editAlmacen($id_almacen,$data_almacen,$token);
 
-        if($res['success']==false){
-            return $this->respondWithData(null,$res['message'],202,false);
-        }else{
-            return $this->respondWithData($res['data_almacen'],$res['message'],200,true);
-        }
+        return $this->respondWithData($res['data_almacen'],$res['message'],$res['code'],$res['success']);
     }
 
     public function cambiaestado_Almacen(Request $request, Response $response, $args): Response {
@@ -104,13 +105,8 @@ class AlmacenAction extends Action {
         }
         $token = $token['data'];
         $uuid=$token->sub;
-        $res=$this->almacenRepository->changestatusAlmacen($id_almacen,$uuid);
-        if($res['success']==false){
-            return $this->respondWithData(null,$res['message'],202,true);
-        }else{
-            return $this->respondWithData(null,$res['message'],200,true);
-        }
-        
+        $res=$this->almacenRepository->changestatusAlmacen($id_almacen,$token);
+        return $this->respondWithData($res['data_almacen'],$res['message'],$res['code'],$res['success']);
     }
 
     /* body servicio de creacion almacenes
@@ -135,13 +131,10 @@ class AlmacenAction extends Action {
         }
         $token = $token['data'];
         $uuid=$token->sub;
+        $regional_usuario=$token->regional;
+        $privilegio_usuario=$token->privilegio;
         
-        $res=$this->almacenRepository->createAlmacen($data_almacen,$uuid);
-
-        if($res['success']==false){
-            return $this->respondWithData(null,$res['message'],202,false);
-        }else{
-            return $this->respondWithData($res['data_almacen'],$res['message'],200,true);
-        }
+        $res=$this->almacenRepository->createAlmacen($data_almacen,$token);
+        return $this->respondWithData($res['data_almacen'],$res['message'],$res['code'],$res['success']);        
     }
 }
