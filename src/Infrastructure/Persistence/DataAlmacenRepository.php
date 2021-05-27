@@ -7,7 +7,7 @@ namespace App\Infrastructure\Persistence;
 use App\Application\Actions\RepositoryConection\Conect;
 use App\Domain\AlmacenRepository;
 use App\Infrastructure\Persistence\DataCorrelativoRepository;
-use App\Infrastructure\Persistence\DataregionalRepository;
+use App\Infrastructure\Persistence\DataRegionalRepository;
 use App\Infrastructure\Persistence\DataProgramaRepository;
 use \PDO;
 use AbmmHasan\Uuid;
