@@ -34,12 +34,14 @@ class EntradaAction extends Action {
         $this->response = $response;
         $this->args = $args;
         $id_entrada = $args['id_entrada'];
-        $res=$this->entradaRepository->getEntrada($id_entrada);
-        if($res['success']==false){
-            return $this->respondWithData(null,$res['message'],202,true);
-        }else{
-            return $this->respondWithData($res['data_entrada'],$res['message'],200,true);
+        $JWT = new \App\Application\Middleware\JWTdata($request);
+        $token = $JWT->getToken();
+        if (!$token['success']) {
+            return $this->respondWithData(array(), 'Datos de token invalidos', 403,false);
         }
+        $token = $token['data'];
+        $res=$this->entradaRepository->getEntrada($id_entrada,$token);
+        return $this->respondWithData($res['data_almacen'],$res['message'],$res['code'],$res['success']);
     }
 
     public function lista_Entrada(Request $request, Response $response, $args): Response {
@@ -47,14 +49,15 @@ class EntradaAction extends Action {
         $this->response = $response;
         $this->args = $args;
         $query=$request->getQueryParams();
-
-        $res=$this->entradaRepository->listEntrada($query);
-
-        if($res['success']==false){
-            return $this->respondWithData(null,$res['message'],202,true);
-        }else{
-            return $this->respondWithData($res['data_entrada'],$res['message'],200,true);
+        $JWT = new \App\Application\Middleware\JWTdata($request);
+        $token = $JWT->getToken();
+        if (!$token['success']) {
+            return $this->respondWithData(array(), 'Datos de token invalidos', 403,false);
         }
+        $token = $token['data'];
+        $res=$this->entradaRepository->listEntrada($query,$token);
+
+        return $this->respondWithData($res['data_almacen'],$res['message'],$res['code'],$res['success']);
     }
 
     /* body servicio de edicion de entrada
@@ -81,15 +84,10 @@ class EntradaAction extends Action {
             return $this->respondWithData(array(), 'Datos de token invalidos', 403,false);
         }
         $token = $token['data'];
-        $uuid=$token->sub;
 
-        $res=$this->entradaRepository->editEntrada($id_entrada,$data_entrada,$uuid);
+        $res=$this->entradaRepository->editEntrada($id_entrada,$data_entrada,$token);
 
-        if($res['success']==false){
-            return $this->respondWithData(null,$res['message'],202,false);
-        }else{
-            return $this->respondWithData($res['data_entrada'],$res['message'],200,true);
-        }
+        return $this->respondWithData($res['data_almacen'],$res['message'],$res['code'],$res['success']);
     }
 
     public function cambiaestado_Entrada(Request $request, Response $response, $args): Response {
@@ -103,14 +101,9 @@ class EntradaAction extends Action {
             return $this->respondWithData(array(), 'Datos de token invalidos', 403,false);
         }
         $token = $token['data'];
-        $uuid=$token->sub;
-        $res=$this->entradaRepository->changestatusEntrada($id_entrada,$uuid);
-        if($res['success']==false){
-            return $this->respondWithData(null,$res['message'],202,true);
-        }else{
-            return $this->respondWithData(null,$res['message'],200,true);
-        }
-        
+
+        $res=$this->entradaRepository->changestatusEntrada($id_entrada,$token);
+        return $this->respondWithData($res['data_almacen'],$res['message'],$res['code'],$res['success']);
     }
 
     /* body servicio de creacion entradas
@@ -177,15 +170,10 @@ class EntradaAction extends Action {
             return $this->respondWithData(array(), 'Datos de token invalidos', 403,false);
         }
         $token = $token['data'];
-        $uuid=$token->sub;
         
-        $res=$this->entradaRepository->createEntrada($data_entrada,$uuid);
+        $res=$this->entradaRepository->createEntrada($data_entrada,$token);
 
-        if($res['success']==false){
-            return $this->respondWithData(null,$res['message'],202,false);
-        }else{
-            return $this->respondWithData($res['data_entrada'],$res['message'],200,true);
-        }
+        return $this->respondWithData($res['data_almacen'],$res['message'],$res['code'],$res['success']);
     }
 
     public function modifica_Entrada(Request $request, Response $response, $args): Response {
@@ -201,14 +189,9 @@ class EntradaAction extends Action {
             return $this->respondWithData(array(), 'Datos de token invalidos', 403,false);
         }
         $token = $token['data'];
-        $uuid=$token->sub;
 
-        $res=$this->entradaRepository->modifyEntrada($id_entrada,$data_entrada,$uuid);
+        $res=$this->entradaRepository->modifyEntrada($id_entrada,$data_entrada,$token);
 
-        if($res['success']==false){
-            return $this->respondWithData(null,$res['message'],202,false);
-        }else{
-            return $this->respondWithData($res['data_entrada'],$res['message'],200,true);
-        }
+        return $this->respondWithData($res['data_almacen'],$res['message'],$res['code'],$res['success']);
     }
 }

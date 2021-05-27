@@ -47,8 +47,10 @@ class DataEntradaRepository implements EntradaRepository {
         $this->dataKardexRepository = new DataKardexRepository;
     }
 
-    public function getEntrada($id_entrada): array {
-
+    public function getEntrada($id_entrada,$token): array {
+        if(!($this->verificaPermisos($id_entrada,null,$token))){
+            return array('success'=>false,'message'=>'usuario no autorizado','code'=>403,'data_entrada'=>array());
+        }
         $sql = "SELECT en.*
                 FROM (((((((entrada en LEFT JOIN regional reg ON en.id_regional=reg.id) 
                 LEFT JOIN almacen alm ON en.id_almacen=alm.id)
@@ -101,16 +103,21 @@ class DataEntradaRepository implements EntradaRepository {
             if($result['tipo_adquisicion']['codigo']==null){$result['tipo_adquisicion']=json_decode("{}");} 
             if($result['tipo_financiamiento']['codigo']==null){$result['tipo_financiamiento']=json_decode("{}");}
             if($result['modalidad_contratacion']['codigo']==null){$result['modalidad_contratacion']=json_decode("{}");}  
-            $resp = array('success'=>true,'message'=>'Exito','data_entrada'=>$result);
+            $resp = array('success'=>true,'message'=>'Exito','data_entrada'=>$result,'code'=>200);
         }else{
-            $resp = array('success'=>false,'message'=>'No se encontraron registros');
+            $resp = array('success'=>true,'message'=>'No se encontraron registros','data_entrada'=>array(),'code'=>200);
         }
         return $resp;
     }
 
-    public function listEntrada($query): array {
+    public function listEntrada($query,$token): array {
         if(!(isset($query['filtro'])&&isset($query['limite'])&&isset($query['indice']))){
             return array('success'=>false,'message'=>'Datos invalidos');
+        }
+        if($token->privilegio=='limitado'){
+            $filtro_regional="id_regional='".$token->regional."' AND ";
+        }else{
+            $filtro_regional="";
         }
         $filtro=$query['filtro'];
         $limite=$query['limite'];
@@ -127,7 +134,7 @@ class DataEntradaRepository implements EntradaRepository {
                 LEFT JOIN param_general ta ON (en.tipo_adquisicion=ta.codigo AND ta.cod_grupo LIKE 'param_tipo_adquisicion'))
                 LEFT JOIN param_general tf ON (en.tipo_financiamiento=tf.codigo AND tf.cod_grupo LIKE 'param_tipo_financiamiento'))
                 LEFT JOIN param_general mc ON (en.modalidad_contratacion=mc.codigo AND mc.cod_grupo LIKE 'param_modalidad_contr')
-                WHERE en.activo=1 AND (
+                WHERE en.activo=1 AND  ".$filtro_regional."(
                 LOWER(en.codigo) LIKE LOWER(:filtro) OR LOWER(en.factura_comercial) LIKE LOWER(:filtro) OR
                 LOWER(en.c_31) LIKE LOWER(:filtro) OR LOWER(en.cite_contrato_compra) LIKE LOWER(:filtro) OR LOWER(en.nota) LIKE LOWER(:filtro) OR
                 LOWER(en.comision) LIKE LOWER(:filtro) OR LOWER(en.estado) LIKE LOWER(:filtro) OR
@@ -147,7 +154,7 @@ class DataEntradaRepository implements EntradaRepository {
                 LEFT JOIN param_general ta ON (en.tipo_adquisicion=ta.codigo AND ta.cod_grupo LIKE 'param_tipo_adquisicion'))
                 LEFT JOIN param_general tf ON (en.tipo_financiamiento=tf.codigo AND tf.cod_grupo LIKE 'param_tipo_financiamiento'))
                 LEFT JOIN param_general mc ON (en.modalidad_contratacion=mc.codigo AND mc.cod_grupo LIKE 'param_modalidad_contr')
-                WHERE en.activo=1 AND (
+                WHERE en.activo=1 AND  ".$filtro_regional."(
                 LOWER(en.codigo) LIKE LOWER(:filtro) OR LOWER(en.factura_comercial) LIKE LOWER(:filtro) OR
                 LOWER(en.c_31) LIKE LOWER(:filtro) OR LOWER(en.cite_contrato_compra) LIKE LOWER(:filtro) OR LOWER(en.nota) LIKE LOWER(:filtro) OR
                 LOWER(en.comision) LIKE LOWER(:filtro) OR LOWER(en.estado) LIKE LOWER(:filtro) OR
@@ -203,15 +210,15 @@ class DataEntradaRepository implements EntradaRepository {
                 array_push($arrayres,$result);
             }
             $concat=array('resultados'=>$arrayres,'total'=>$total);
-            $resp = array('success'=>true,'message'=>'Exito','data_entrada'=>$concat);
+            $resp = array('success'=>true,'message'=>'Exito','data_entrada'=>$concat,'code'=>200);
         }else{
             $concat=array('resultados'=>array(),'total'=>0);
-            $resp = array('success'=>true,'message'=>'No se encontraron registros', 'data_entrada'=>$concat);
+            $resp = array('success'=>true,'message'=>'No se encontraron registros', 'data_entrada'=>$concat,'code'=>200);
         }
         return $resp;
     }
 
-    public function editEntrada($id_entrada,$data_entrada,$uuid): array {
+    public function editEntrada($id_entrada,$data_entrada,$token): array {
         if(!(isset($id_entrada)&&isset($data_entrada['codigo'])&&isset($data_entrada['nombre_comercial'])&&isset($data_entrada['codigo_liname'])
         &&isset($data_entrada['codigo_linadime'])&&isset($data_entrada['referencia'])
         &&isset($data_entrada['medicamento'])&&isset($data_entrada['form_farm'])&&isset($data_entrada['concen'])
@@ -219,7 +226,9 @@ class DataEntradaRepository implements EntradaRepository {
         &&isset($data_entrada['dispositivo'])&&isset($data_entrada['especificacion_tec'])&&isset($data_entrada['presentacion']))){
             return array('success'=>false,'message'=>'Datos invalidos');
         }
-
+        if(!($this->verificaPermisos($id_entrada,$data_entrada['id_regional']['id'],$token))){
+            return array('success'=>false,'message'=>'usuario no autorizado','code'=>403,'data_entrada'=>array());
+        }
         $sql = "SELECT *
                 FROM entrada
                 WHERE (codigo LIKE :codigo OR nombre_comercial LIKE :nombre_comercial ) AND id!=:id_entrada";
@@ -230,7 +239,7 @@ class DataEntradaRepository implements EntradaRepository {
             //$res->bindParam(':reg_san', $data_entrada['reg_san'], PDO::PARAM_STR);
             $res->execute();
         if($res->rowCount()>0){
-            $resp = array('success'=>false,'message'=>'Error, el nombre comercial o codigo del entrada ya existe en otro registro');
+            $resp = array('success'=>false,'message'=>'Error, el nombre comercial o codigo del entrada ya existe en otro registro','code'=>202,'data_entrada'=>array());
         }else{
             $sql = "UPDATE entrada 
                     SET codigo=:codigo,
@@ -272,36 +281,39 @@ class DataEntradaRepository implements EntradaRepository {
             $res->bindParam(':nivel_uso_i', $data_entrada['nivel_uso_i'], PDO::PARAM_STR);
             $res->bindParam(':nivel_uso_ii', $data_entrada['nivel_uso_ii'], PDO::PARAM_STR);
             $res->bindParam(':nivel_uso_iii', $data_entrada['nivel_uso_iii'], PDO::PARAM_STR); 
-            $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
+            $res->bindParam(':u_mod', $token->sub, PDO::PARAM_STR);
             $res->execute();
             //$res = $res->fetchAll(PDO::FETCH_ASSOC);
             if($data_entrada['codigo_liname']['id_liname']==null){$data_entrada['codigo_liname']=json_decode ("{}");}
             if($data_entrada['codigo_linadime']['id_linadime']==null){$data_entrada['codigo_linadime']=json_decode ("{}");} 
-            $resp = array('success'=>true,'message'=>'entrada actualizado','data_entrada'=>$data_entrada);
+            $resp = array('success'=>true,'message'=>'entrada actualizado','data_entrada'=>$data_entrada,'code'=>200);
         }
         return $resp;
     }
 
-    public function changestatusEntrada($id_entrada,$uuid): array {
+    public function changestatusEntrada($id_entrada,$token): array {
+        if(!($this->verificaPermisos($id_entrada,null,$token))){
+            return array('success'=>false,'message'=>'usuario no autorizado','code'=>403,'data_entrada'=>array());
+        }
         $sql = "UPDATE entrada 
                 SET activo=0,
                 f_inac=now(), 
                 u_inac=:u_inac
                 WHERE id=:id_entrada;";
         $res = ($this->db)->prepare($sql);
-        $res->bindParam(':u_inac', $uuid, PDO::PARAM_STR);
+        $res->bindParam(':u_inac', $token->sub, PDO::PARAM_STR);
         $res->bindParam(':id_entrada', $id_entrada, PDO::PARAM_STR);
         $res->execute();
         //$res = $res->fetchAll(PDO::FETCH_ASSOC);
         if($res->rowCount()==1){
-            $resp = array('success'=>true,'message'=>'1 fila afectada');
+            $resp = array('success'=>true,'message'=>'1 fila afectada','code'=>200,'data_entrada'=>array());
         }else{
-            $resp = array('success'=>false,'message'=>'0 fila afectada');
+            $resp = array('success'=>false,'message'=>'0 fila afectada','code'=>202,'data_entrada'=>array());
         }
         return ($resp);
     }
 
-    public function createEntrada($data_entrada,$uuid): array {
+    public function createEntrada($data_entrada,$token): array {
         if(!(isset($data_entrada['id_regional'])&&isset($data_entrada['id_almacen'])
         &&isset($data_entrada['tipo_entrada'])&&isset($data_entrada['id_proveedor'])
         &&isset($data_entrada['id_compra'])&&isset($data_entrada['tipo_adquisicion'])&&isset($data_entrada['tipo_financiamiento'])
@@ -309,7 +321,10 @@ class DataEntradaRepository implements EntradaRepository {
         &&isset($data_entrada['cite_contrato_compra'])&&isset($data_entrada['nota'])&&isset($data_entrada['comision']))){
             return array('success'=>false,'message'=>'Datos invalidos');
         }
-        $correlativo = $this->dataCorrelativoRepository->genCorrelativo($data_entrada['id_almacen']['codigo'].'-IN', $data_entrada['tipo_entrada']['codigo'], $uuid);
+        if(!($this->verificaPermisos(null,$data_entrada['id_regional']['id'],$token))){
+            return array('success'=>false,'message'=>'usuario no autorizado','code'=>403,'data_entrada'=>array());
+        }
+        $correlativo = $this->dataCorrelativoRepository->genCorrelativo($data_entrada['id_almacen']['codigo'].'-IN', $data_entrada['tipo_entrada']['codigo'], $token->sub);
         $correlativo = $correlativo['correlativo'];
         $correlativo = $data_entrada['id_almacen']['codigo'] . '-IN-' . $correlativo .'-'. $data_entrada['tipo_entrada']['codigo'];
         $uuid_neo = Uuid::v4();
@@ -371,7 +386,7 @@ class DataEntradaRepository implements EntradaRepository {
         $res->bindParam(':cite_contrato_compra', $data_entrada['cite_contrato_compra'], PDO::PARAM_STR);
         $res->bindParam(':nota', $data_entrada['nota'], PDO::PARAM_STR);
         $res->bindParam(':comision',$data_entrada['comision'], PDO::PARAM_STR);
-        $res->bindParam(':u_crea', $uuid, PDO::PARAM_STR);
+        $res->bindParam(':u_crea', $token->sub, PDO::PARAM_STR);
         $res->execute();
         $res = $res->fetchAll(PDO::FETCH_ASSOC);
         $sql = "SELECT *
@@ -406,11 +421,14 @@ class DataEntradaRepository implements EntradaRepository {
         if($data_entrada['tipo_adquisicion']['codigo']==null){$result['tipo_adquisicion']=json_decode("{}");} 
         if($data_entrada['tipo_financiamiento']['codigo']==null){$result['tipo_financiamiento']=json_decode("{}");}
         if($data_entrada['modalidad_contratacion']['codigo']==null){$result['modalidad_contratacion']=json_decode("{}");}  
-        $resp = array('success'=>true,'message'=>'entrada registrada exitosamente','data_entrada'=>$result);
+        $resp = array('success'=>true,'message'=>'entrada registrada exitosamente','data_entrada'=>$result,'code'=>200);
         return $resp;
     }
 
-    public function modifyEntrada($id_entrada,$data_entrada,$uuid): array {
+    public function modifyEntrada($id_entrada,$data_entrada,$token): array {
+        if(!($this->verificaPermisos($id_entrada,$data_entrada['id_regional']['id'],$token))){
+            return array('success'=>false,'message'=>'usuario no autorizado','code'=>403,'data_entrada'=>array());
+        }
         $codigo=false;
         $resp=array();
 
@@ -423,7 +441,7 @@ class DataEntradaRepository implements EntradaRepository {
             $res = ($this->db)->prepare($sql);
             $res->bindParam(':id_entrada', $id_entrada, PDO::PARAM_STR);
             $res->bindParam(':id_regional', $data_entrada['id_regional']['id'], PDO::PARAM_STR);
-            $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
+            $res->bindParam(':u_mod', $token->sub, PDO::PARAM_STR);
             $res->execute();
             $resp += ['id_regional' => 'dato actualizado'];
         }
@@ -440,7 +458,7 @@ class DataEntradaRepository implements EntradaRepository {
             $res = $res->fetchAll(PDO::FETCH_ASSOC);
             $res = $res[0];
 
-            $correlativo = $this->dataCorrelativoRepository->genCorrelativo($res['cod_almacen'].'-IN', $res['tipo_entrada'], $uuid);
+            $correlativo = $this->dataCorrelativoRepository->genCorrelativo($res['cod_almacen'].'-IN', $res['tipo_entrada'], $token->sub);
             $correlativo = $correlativo['correlativo'];
             $correlativo = $res['cod_almacen'] . '-IN-' . $correlativo .'-'. $res['tipo_entrada'];
             $sql = "UPDATE entrada 
@@ -453,7 +471,7 @@ class DataEntradaRepository implements EntradaRepository {
             $res->bindParam(':id_entrada', $id_entrada, PDO::PARAM_STR);
             $res->bindParam(':id_almacen', $data_entrada['id_almacen']['id'], PDO::PARAM_STR);
             $res->bindParam(':codigo', $correlativo, PDO::PARAM_STR);
-            $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
+            $res->bindParam(':u_mod', $token->sub, PDO::PARAM_STR);
             $res->execute();
             $resp += ['id_almacen' => 'dato actualizado'];
             $codigo=true;
@@ -468,7 +486,7 @@ class DataEntradaRepository implements EntradaRepository {
             $res->execute();
             $res = $res->fetchAll(PDO::FETCH_ASSOC);
             $res = $res[0];
-            $correlativo = $this->dataCorrelativoRepository->genCorrelativo($res['cod_almacen'].'-IN', $data_entrada['tipo_entrada']['codigo'], $uuid);
+            $correlativo = $this->dataCorrelativoRepository->genCorrelativo($res['cod_almacen'].'-IN', $data_entrada['tipo_entrada']['codigo'], $token->sub);
             $correlativo = $correlativo['correlativo'];
             $correlativo = $res['cod_almacen'] . '-IN-' . $correlativo .'-'. $data_entrada['tipo_entrada']['codigo'];
             $sql = "UPDATE entrada 
@@ -481,7 +499,7 @@ class DataEntradaRepository implements EntradaRepository {
             $res->bindParam(':id_entrada', $id_entrada, PDO::PARAM_STR);
             $res->bindParam(':tipo_entrada', $data_entrada['tipo_entrada']['codigo'], PDO::PARAM_STR);
             $res->bindParam(':codigo', $correlativo, PDO::PARAM_STR);
-            $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
+            $res->bindParam(':u_mod', $token->sub, PDO::PARAM_STR);
             $res->execute();
             $resp += ['tipo_entrada' => 'dato actualizado'];
             $codigo=true;
@@ -496,7 +514,7 @@ class DataEntradaRepository implements EntradaRepository {
             $res = ($this->db)->prepare($sql);
             $res->bindParam(':id_entrada', $id_entrada, PDO::PARAM_STR);
             $res->bindParam(':id_proveedor', $data_entrada['id_proveedor']['id'], PDO::PARAM_STR);
-            $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
+            $res->bindParam(':u_mod', $token->sub, PDO::PARAM_STR);
             $res->execute();
             $resp += ['id_proveedor' => 'dato actualizado'];
         }
@@ -510,7 +528,7 @@ class DataEntradaRepository implements EntradaRepository {
             $res = ($this->db)->prepare($sql);
             $res->bindParam(':id_entrada', $id_entrada, PDO::PARAM_STR);
             $res->bindParam(':id_compra', $data_entrada['id_compra']['id'], PDO::PARAM_STR);
-            $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
+            $res->bindParam(':u_mod', $token->sub, PDO::PARAM_STR);
             $res->execute();
             $resp += ['id_compra' => 'dato actualizado'];
         }
@@ -524,7 +542,7 @@ class DataEntradaRepository implements EntradaRepository {
             $res = ($this->db)->prepare($sql);
             $res->bindParam(':id_entrada', $id_entrada, PDO::PARAM_STR);
             $res->bindParam(':tipo_adquisicion', $data_entrada['tipo_adquisicion']['codigo'], PDO::PARAM_STR);
-            $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
+            $res->bindParam(':u_mod', $token->sub, PDO::PARAM_STR);
             $res->execute();
             $resp += ['tipo_adquisicion' => 'dato actualizado'];
         }
@@ -538,7 +556,7 @@ class DataEntradaRepository implements EntradaRepository {
             $res = ($this->db)->prepare($sql);
             $res->bindParam(':id_entrada', $id_entrada, PDO::PARAM_STR);
             $res->bindParam(':tipo_financiamiento', $data_entrada['tipo_financiamiento']['id'], PDO::PARAM_STR);
-            $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
+            $res->bindParam(':u_mod', $token->sub, PDO::PARAM_STR);
             $res->execute();
             $resp += ['tipo_financiamiento' => 'dato actualizado'];
         }
@@ -552,7 +570,7 @@ class DataEntradaRepository implements EntradaRepository {
             $res = ($this->db)->prepare($sql);
             $res->bindParam(':id_entrada', $id_entrada, PDO::PARAM_STR);
             $res->bindParam(':factura_comercial', $data_entrada['factura_comercial'], PDO::PARAM_STR);
-            $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
+            $res->bindParam(':u_mod', $token->sub, PDO::PARAM_STR);
             $res->execute();
             $resp += ['factura_comercial' => 'dato actualizado'];
         }
@@ -566,7 +584,7 @@ class DataEntradaRepository implements EntradaRepository {
             $res = ($this->db)->prepare($sql);
             $res->bindParam(':id_entrada', $id_entrada, PDO::PARAM_STR);
             $res->bindParam(':c_31', $data_entrada['c_31'], PDO::PARAM_STR);
-            $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
+            $res->bindParam(':u_mod', $token->sub, PDO::PARAM_STR);
             $res->execute();
             $resp += ['c_31' => 'dato actualizado'];
         }
@@ -580,7 +598,7 @@ class DataEntradaRepository implements EntradaRepository {
             $res = ($this->db)->prepare($sql);
             $res->bindParam(':id_entrada', $id_entrada, PDO::PARAM_STR);
             $res->bindParam(':modalidad_contratacion', $data_entrada['modalidad_contratacion']['codigo'], PDO::PARAM_STR);
-            $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
+            $res->bindParam(':u_mod', $token->sub, PDO::PARAM_STR);
             $res->execute();
             $resp += ['modalidad_contratacion' => 'dato actualizado'];
         }
@@ -594,7 +612,7 @@ class DataEntradaRepository implements EntradaRepository {
             $res = ($this->db)->prepare($sql);
             $res->bindParam(':id_entrada', $id_entrada, PDO::PARAM_STR);
             $res->bindParam(':cite_contrato_compra', $data_entrada['cite_contrato_compra'], PDO::PARAM_STR);
-            $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
+            $res->bindParam(':u_mod', $token->sub, PDO::PARAM_STR);
             $res->execute();
             $resp += ['cite_contrato_compra' => 'dato actualizado'];
         }
@@ -608,7 +626,7 @@ class DataEntradaRepository implements EntradaRepository {
             $res = ($this->db)->prepare($sql);
             $res->bindParam(':id_entrada', $id_entrada, PDO::PARAM_STR);
             $res->bindParam(':nota', $data_entrada['nota'], PDO::PARAM_STR);
-            $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
+            $res->bindParam(':u_mod', $token->sub, PDO::PARAM_STR);
             $res->execute();
             $resp += ['nota' => 'dato actualizado'];
         }
@@ -623,7 +641,7 @@ class DataEntradaRepository implements EntradaRepository {
             $res = ($this->db)->prepare($sql);
             $res->bindParam(':id_entrada', $id_entrada, PDO::PARAM_STR);
             $res->bindParam(':comision', $data_entrada['comision'], PDO::PARAM_STR);
-            $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
+            $res->bindParam(':u_mod', $token->sub, PDO::PARAM_STR);
             $res->execute();
             $resp += ['comision' => 'dato actualizado'];
         }
@@ -638,7 +656,7 @@ class DataEntradaRepository implements EntradaRepository {
             $res = ($this->db)->prepare($sql);
             $res->bindParam(':id_entrada', $id_entrada, PDO::PARAM_STR);
             $res->bindParam(':estado', $data_entrada['estado'], PDO::PARAM_STR);
-            $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
+            $res->bindParam(':u_mod', $token->sub, PDO::PARAM_STR);
             $res->execute();
             $resp += ['estado' => 'dato actualizado'];
             if($data_entrada['estado']=='COMPLETADO'){
@@ -650,7 +668,7 @@ class DataEntradaRepository implements EntradaRepository {
                 $data_items = $this->dataItemRepository->listItem($query,$id_entrada);
 
                 $data_items = $data_items['data_item']['resultados'];
-                $data_entrada = $this->getEntrada($id_entrada);
+                $data_entrada = $this->getEntrada($id_entrada,$token);
 
                 foreach($data_items as $item){
                     $data_kardex = array(
@@ -671,14 +689,14 @@ class DataEntradaRepository implements EntradaRepository {
                                         'precio_actual'=>$item['costo_neto'],
                                         'precio_venta'=>$item['precio_venta']
                                     );
-                    $this->dataKardexRepository->createKardex($data_kardex,$uuid);
+                    $this->dataKardexRepository->createKardex($data_kardex,$token->sub);
                 }
             }
         }
         if($codigo){
             $resp += ['codigo' => 'dato actualizado'];
         }
-        $resp = array('success'=>'true','message'=>'datos actualizados','data_entrada'=>$resp);
+        $resp = array('success'=>'true','message'=>'datos actualizados','data_entrada'=>$resp,'code'=>200);
         return $resp;
     }
 
@@ -698,6 +716,54 @@ class DataEntradaRepository implements EntradaRepository {
             return round($total,2);
         }else{
             return 0;
+        }
+    }
+
+    private function verificaPermisos($uuid_registro_a_modificar,$id_regional_registro_nuevo,$token){
+        //sacamos los datos del token
+        $regional_usuario=$token->regional;
+        $privilegio_usuario=$token->privilegio;
+        if($privilegio_usuario=='total'){//el usuario tiene acceso total
+            return true;
+        }else{//el usuario tiene acceso limitado a su regional
+            if($uuid_registro_a_modificar==null){
+                //es una alta
+                if($id_regional_registro_nuevo!=$regional_usuario){
+                    //el nuevo registro que intenta introducir el usuario pertenecerá a otra regional
+                    return false;
+                }else{
+                    return true;//el nuevo registro pertenece a la regional del usuario
+                }
+            }else{
+                //es una modificacion
+                $sql = "SELECT id_regional
+                        FROM entrada
+                        WHERE id=:uuid;";
+                $res = ($this->db)->prepare($sql);
+                $res->bindParam(':uuid', $uuid_registro_a_modificar, PDO::PARAM_STR);
+                $res->execute();
+                if($res->rowCount()>0){
+                    $res = $res->fetchAll(PDO::FETCH_ASSOC);
+                    $id_regional_ant = $res[0]['id_regional'];
+                    if($id_regional_ant!=$regional_usuario){
+                        //el usuario intenta modificar un registro distinto al de su regional
+                        return false;
+                    }else{
+                        if($id_regional_registro_nuevo==null){
+                            return true;
+                        }else{
+                            if($id_regional_registro_nuevo!=$regional_usuario){
+                                //el nuevo registro que intenta modificar el usuario pertenecerá a otra regional
+                                return false;
+                            }else{
+                                return true;
+                            }
+                        }
+                    }
+                }else{
+                    return false;
+                }                    
+            }
         }
     }
 }
