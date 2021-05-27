@@ -437,7 +437,13 @@ class DataParametricaRepository implements ParametricaRepository {
         return array();
     }
 
-    public function getCliente($filtro): array {
+    public function getCliente($query): array {
+        if(!isset($query['id_regional'])){
+            return array('success'=>false,'message'=>'Datos invalidos');
+        }
+        $id_regional = $query['id_regional'];
+        $filtro=$query['filtro'];
+
         $filtro = '%' . $filtro . '%';
         try {
             $sql = "SELECT cli.id,
@@ -447,10 +453,12 @@ class DataParametricaRepository implements ParametricaRepository {
                            cli.direccion
                     FROM cliente cli 
                     WHERE cli.activo=1
+                          AND cli.id_regional=:id_regional
                           AND (LOWER(cli.nombre) LIKE LOWER(:filter) 
                             OR cli.nit LIKE :filter)";
             $res = ($this->db)->prepare($sql);
             $res->bindParam(':filter', $filtro, PDO::PARAM_STR);
+            $res->bindParam(':id_regional', $id_regional, PDO::PARAM_STR);
             $res->execute();
             $res = $res->fetchAll(PDO::FETCH_ASSOC);
             return $res;
