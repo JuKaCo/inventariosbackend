@@ -130,7 +130,7 @@ class SessionMiddleware implements Middleware {
                         return $this->respondWithData(array(), 'Datos de token invalidos', 403);
                     }
                     $token = $token['data'];
-                    /*                     * ******Validando Rutas******* */
+                    /********Validando Rutas******* */
 
                     // obteniendo los roles
                     $roles = $token->realm_access->roles;
@@ -140,10 +140,20 @@ class SessionMiddleware implements Middleware {
                     //obteniendo el path del request
                     $uri = $request->getUri()->getPath();
                     // Eliminando la base del path
-                    $path = str_replace('/ceass-back-end/public/', '', $uri);
-                    //$path = 'api/v1/param/gen/5?filtro=6&aasd=asd';
                     // Combirtiendo a array el path
-                    $pathArray = explode('/', $path);
+                    if ($_ENV['PRODUCTION'] == 1) {
+                        //$uri = "/api/v1/param/cliente";
+                        $pathArray = explode('/', $uri);
+
+                        $pathArray = array_slice($pathArray, 1);
+
+                        $path = join('/', $pathArray);
+                    } else {
+                        $path = str_replace($_ENV['BASE_URI'], '', $uri);
+                        //$path = 'api/v1/param/gen/5?filtro=6&aasd=asd';
+                        $pathArray = explode('/', $path);
+                    }
+                    
                     // Obteniendo el metodo de la solicitud Ejem.: GET, POST, PUT, etc
                     $method = $request->getMethod();
                     // Funcion que busca en BD todos los accesos admitidos por el rol y el metodo
@@ -182,7 +192,7 @@ class SessionMiddleware implements Middleware {
                             return $response->withHeader('Content-Type', 'application/json')->withStatus(401);
                         }
                     }
-                    /*                     * *******Fin Validando Rutas********* */
+                    /*********Fin Validando Rutas**********/
                 } catch (Exception $e) {
                     $existingContent = (string) $response->getBody();
 
