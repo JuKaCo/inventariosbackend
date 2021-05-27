@@ -6,6 +6,8 @@ namespace App\Infrastructure\Persistence;
 
 use App\Application\Actions\RepositoryConection\Conect;
 use App\Domain\ClienteRepository;
+use App\Infrastructure\Persistence\DataRegionalRepository;
+use App\Infrastructure\Persistence\DataParametricaRepository;
 use \PDO;
 use AbmmHasan\Uuid;
 
@@ -28,17 +30,12 @@ class DataClienteRepository implements ClienteRepository {
     public function __construct() {
         $con = new Conect();
         $this->db = $con->getConection();
+        $this->dataRegionalRepository = new DataRegionalRepository;
+        $this->dataParametricaRepository = new DataParametricaRepository;
     }
 
     public function getCliente($id_cliente): array {
-        $sql = "SELECT cl.*, 
-        pg.id_param, pg.cod_grupo, pg.codigo as cod_param, pg.valor,
-        pg1.id_param as id_param1, pg1.cod_grupo as cod_grupo1, pg1.codigo as cod_param1, pg1.valor as valor1,
-        pg2.id_param as id_param2, pg2.cod_grupo as cod_grupo2, pg2.codigo as cod_param2, pg2.valor as valor2,
-        pg3.id_param as id_param3, pg3.cod_grupo as cod_grupo3, pg3.codigo as cod_param3, pg3.valor as valor3,
-        pg4.id_param as id_param4, pg4.cod_grupo as cod_grupo4, pg4.codigo as cod_param4, pg4.valor as valor4,
-        pg5.id_param as id_param5, pg5.cod_grupo as cod_grupo5, pg5.codigo as cod_param5, pg5.valor as valor5,
-        pg6.id_param as id_param6, pg6.cod_grupo as cod_grupo6, pg6.codigo as cod_param6, pg6.valor as valor6
+        $sql = "SELECT cl.*
         FROM ((((((cliente cl LEFT JOIN param_general pg ON cl.dependencia=pg.id_param) 
         LEFT JOIN param_general pg1 ON cl.nivel=pg1.id_param)
         LEFT JOIN param_general pg2 ON cl.departamento=pg2.id_param)
@@ -53,55 +50,29 @@ class DataClienteRepository implements ClienteRepository {
         if($res->rowCount()>0){
             $res = $res->fetchAll(PDO::FETCH_ASSOC);
             $res = $res[0];
+            $data_regional = $this->dataRegionalRepository->getRegional($res['id_regional']);
+            $data_dependencia = $this->dataParametricaRepository->getCodParametrica('param_dependencia',0,$res['dependencia']);
+            $data_nivel = $this->dataParametricaRepository->getCodParametrica('param_nivel_hosp',0,$res['nivel']);
+            $data_departamento = $this->dataParametricaRepository->getCodParametrica('param_departamentos_bol',0,$res['departamento']);
+            $data_provincia = $this->dataParametricaRepository->getCodParametrica('param_provincia',0,$res['provincia']);
+            $data_municipio = $this->dataParametricaRepository->getCodParametrica('param_municipio',0,$res['municipio']);
+            $data_subsector = $this->dataParametricaRepository->getCodParametrica('param_subsec_hosp',0,$res['subsector']);
+            $data_tipo = $this->dataParametricaRepository->getCodParametrica('param_tipo_hosp',0,$res['tipo']);
             $result = array('id'=>$res['id'],
+                            'id_regional'=>$data_regional['data_regional'],
                             'nombre'=>$res['nombre'],
                             'telefono'=>$res['telefono'],
                             'correo'=>$res['correo'],
                             'nit'=>$res['nit'],
-                            'dependencia'=>array(
-                                'id_param'=>$res['id_param'],
-                                'cod_grupo'=>$res['cod_grupo'],
-                                'codigo'=>$res['cod_param'],
-                                'valor'=>$res['valor']
-                            ),
-                            'nivel'=>array(
-                                'id_param'=>$res['id_param1'],
-                                'cod_grupo'=>$res['cod_grupo1'],
-                                'codigo'=>$res['cod_param1'],
-                                'valor'=>$res['valor1']
-                            ),
-                            'departamento'=>array(
-                                'id_param'=>$res['id_param2'],
-                                'cod_grupo'=>$res['cod_grupo2'],
-                                'codigo'=>$res['cod_param2'],
-                                'valor'=>$res['valor2']
-                            ),
-                            'provincia'=>array(
-                                'id_param'=>$res['id_param3'],
-                                'cod_grupo'=>$res['cod_grupo3'],
-                                'codigo'=>$res['cod_param3'],
-                                'valor'=>$res['valor3']
-                            ),
-                            'municipio'=>array(
-                                'id_param'=>$res['id_param4'],
-                                'cod_grupo'=>$res['cod_grupo4'],
-                                'codigo'=>$res['cod_param4'],
-                                'valor'=>$res['valor4']
-                            ),
+                            'dependencia'=>$data_dependencia,
+                            'nivel'=>$data_nivel,
+                            'departamento'=>$data_departamento,
+                            'provincia'=>$data_provincia,
+                            'municipio'=>$data_municipio,
                             'ciudad'=>$res['ciudad'],
                             'direccion'=>$res['direccion'],
-                            'subsector'=>array(
-                                'id_param'=>$res['id_param5'],
-                                'cod_grupo'=>$res['cod_grupo5'],
-                                'codigo'=>$res['cod_param5'],
-                                'valor'=>$res['valor5']
-                            ),
-                            'tipo'=>array(
-                                'id_param'=>$res['id_param6'],
-                                'cod_grupo'=>$res['cod_grupo6'],
-                                'codigo'=>$res['cod_param6'],
-                                'valor'=>$res['valor6']
-                            ),
+                            'subsector'=>$data_subsector,
+                            'tipo'=>$data_tipo,
                             'activo'=>$res['activo']);
             if($res['id_param']==null){$result['dependencia']=json_decode ("{}");}
             if($res['id_param1']==null){$result['nivel']=json_decode ("{}");}
@@ -146,26 +117,26 @@ class DataClienteRepository implements ClienteRepository {
         $res->execute();
         $total=$res->rowCount();
         $sql = "SELECT cl.*, 
-        pg.id_param, pg.cod_grupo, pg.codigo as cod_param, pg.valor,
-        pg1.id_param as id_param1, pg1.cod_grupo as cod_grupo1, pg1.codigo as cod_param1, pg1.valor as valor1,
-        pg2.id_param as id_param2, pg2.cod_grupo as cod_grupo2, pg2.codigo as cod_param2, pg2.valor as valor2,
-        pg3.id_param as id_param3, pg3.cod_grupo as cod_grupo3, pg3.codigo as cod_param3, pg3.valor as valor3,
-        pg4.id_param as id_param4, pg4.cod_grupo as cod_grupo4, pg4.codigo as cod_param4, pg4.valor as valor4,
-        pg5.id_param as id_param5, pg5.cod_grupo as cod_grupo5, pg5.codigo as cod_param5, pg5.valor as valor5,
-        pg6.id_param as id_param6, pg6.cod_grupo as cod_grupo6, pg6.codigo as cod_param6, pg6.valor as valor6
-        FROM ((((((cliente cl LEFT JOIN param_general pg ON cl.dependencia=pg.id_param) 
-        LEFT JOIN param_general pg1 ON cl.nivel=pg1.id_param)
-        LEFT JOIN param_general pg2 ON cl.departamento=pg2.id_param)
-        LEFT JOIN param_general pg3 ON cl.provincia=pg3.id_param)
-        LEFT JOIN param_general pg4 ON cl.municipio=pg4.id_param)
-        LEFT JOIN param_general pg5 ON cl.subsector=pg5.id_param)
-        LEFT JOIN param_general pg6 ON cl.tipo=pg6.id_param
-        WHERE cl.activo=1 AND (
-        LOWER(cl.nombre) LIKE LOWER(:filtro) OR LOWER(cl.telefono) LIKE (:filtro) OR (cl.nit) LIKE (:filtro) OR
-        LOWER(cl.correo) LIKE LOWER(:filtro) OR LOWER(cl.ciudad) LIKE LOWER(:filtro) OR LOWER(cl.direccion) LIKE LOWER(:filtro) OR
-        LOWER(pg.valor) LIKE LOWER(:filtro) OR LOWER(pg1.valor) LIKE LOWER(:filtro) OR LOWER(pg2.valor) LIKE LOWER(:filtro) OR
-        LOWER(pg3.valor) LIKE LOWER(:filtro) OR LOWER(pg4.valor) LIKE LOWER(:filtro) OR LOWER(pg5.valor) LIKE LOWER(:filtro) OR
-        LOWER(pg6.valor) LIKE LOWER(:filtro) )
+                pg.id_param, pg.cod_grupo, pg.codigo as cod_param, pg.valor,
+                pg1.id_param as id_param1, pg1.cod_grupo as cod_grupo1, pg1.codigo as cod_param1, pg1.valor as valor1,
+                pg2.id_param as id_param2, pg2.cod_grupo as cod_grupo2, pg2.codigo as cod_param2, pg2.valor as valor2,
+                pg3.id_param as id_param3, pg3.cod_grupo as cod_grupo3, pg3.codigo as cod_param3, pg3.valor as valor3,
+                pg4.id_param as id_param4, pg4.cod_grupo as cod_grupo4, pg4.codigo as cod_param4, pg4.valor as valor4,
+                pg5.id_param as id_param5, pg5.cod_grupo as cod_grupo5, pg5.codigo as cod_param5, pg5.valor as valor5,
+                pg6.id_param as id_param6, pg6.cod_grupo as cod_grupo6, pg6.codigo as cod_param6, pg6.valor as valor6
+                FROM ((((((cliente cl LEFT JOIN param_general pg ON cl.dependencia=pg.id_param) 
+                LEFT JOIN param_general pg1 ON cl.nivel=pg1.id_param)
+                LEFT JOIN param_general pg2 ON cl.departamento=pg2.id_param)
+                LEFT JOIN param_general pg3 ON cl.provincia=pg3.id_param)
+                LEFT JOIN param_general pg4 ON cl.municipio=pg4.id_param)
+                LEFT JOIN param_general pg5 ON cl.subsector=pg5.id_param)
+                LEFT JOIN param_general pg6 ON cl.tipo=pg6.id_param
+                WHERE cl.activo=1 AND (
+                LOWER(cl.nombre) LIKE LOWER(:filtro) OR LOWER(cl.telefono) LIKE (:filtro) OR (cl.nit) LIKE (:filtro) OR
+                LOWER(cl.correo) LIKE LOWER(:filtro) OR LOWER(cl.ciudad) LIKE LOWER(:filtro) OR LOWER(cl.direccion) LIKE LOWER(:filtro) OR
+                LOWER(pg.valor) LIKE LOWER(:filtro) OR LOWER(pg1.valor) LIKE LOWER(:filtro) OR LOWER(pg2.valor) LIKE LOWER(:filtro) OR
+                LOWER(pg3.valor) LIKE LOWER(:filtro) OR LOWER(pg4.valor) LIKE LOWER(:filtro) OR LOWER(pg5.valor) LIKE LOWER(:filtro) OR
+                LOWER(pg6.valor) LIKE LOWER(:filtro) )
                 ORDER BY cl.f_crea DESC
                 LIMIT :indice, :limite;";
         $res = ($this->db)->prepare($sql);
@@ -177,63 +148,37 @@ class DataClienteRepository implements ClienteRepository {
             $restodo = $res->fetchAll(PDO::FETCH_ASSOC);
             $arrayres = array();
             foreach ($restodo as $res){
+                $data_regional = $this->dataRegionalRepository->getRegional($res['id_regional']);
+                $data_dependencia = $this->dataParametricaRepository->getCodParametrica('param_dependencia',0,$res['dependencia']);
+                $data_nivel = $this->dataParametricaRepository->getCodParametrica('param_nivel_hosp',0,$res['nivel']);
+                $data_departamento = $this->dataParametricaRepository->getCodParametrica('param_departamentos_bol',0,$res['departamento']);
+                $data_provincia = $this->dataParametricaRepository->getCodParametrica('param_provincia',0,$res['provincia']);
+                $data_municipio = $this->dataParametricaRepository->getCodParametrica('param_municipio',0,$res['municipio']);
+                $data_subsector = $this->dataParametricaRepository->getCodParametrica('param_subsec_hosp',0,$res['subsector']);
+                $data_tipo = $this->dataParametricaRepository->getCodParametrica('param_tipo_hosp',0,$res['tipo']);
                 $result = array('id'=>$res['id'],
-                'nombre'=>$res['nombre'],
-                'telefono'=>$res['telefono'],
-                'correo'=>$res['correo'],
-                'nit'=>$res['nit'],
-                'dependencia'=>array(
-                    'id_param'=>$res['id_param'],
-                    'cod_grupo'=>$res['cod_grupo'],
-                    'codigo'=>$res['cod_param'],
-                    'valor'=>$res['valor']
-                ),
-                'nivel'=>array(
-                    'id_param'=>$res['id_param1'],
-                    'cod_grupo'=>$res['cod_grupo1'],
-                    'codigo'=>$res['cod_param1'],
-                    'valor'=>$res['valor1']
-                ),
-                'departamento'=>array(
-                    'id_param'=>$res['id_param2'],
-                    'cod_grupo'=>$res['cod_grupo2'],
-                    'codigo'=>$res['cod_param2'],
-                    'valor'=>$res['valor2']
-                ),
-                'provincia'=>array(
-                    'id_param'=>$res['id_param3'],
-                    'cod_grupo'=>$res['cod_grupo3'],
-                    'codigo'=>$res['cod_param3'],
-                    'valor'=>$res['valor3']
-                ),
-                'municipio'=>array(
-                    'id_param'=>$res['id_param4'],
-                    'cod_grupo'=>$res['cod_grupo4'],
-                    'codigo'=>$res['cod_param4'],
-                    'valor'=>$res['valor4']
-                ),
-                'ciudad'=>$res['ciudad'],
-                'direccion'=>$res['direccion'],
-                'subsector'=>array(
-                    'id_param'=>$res['id_param5'],
-                    'cod_grupo'=>$res['cod_grupo5'],
-                    'codigo'=>$res['cod_param5'],
-                    'valor'=>$res['valor5']
-                ),
-                'tipo'=>array(
-                    'id_param'=>$res['id_param6'],
-                    'cod_grupo'=>$res['cod_grupo6'],
-                    'codigo'=>$res['cod_param6'],
-                    'valor'=>$res['valor6']
-                ),
-                'activo'=>$res['activo']);
-                if($res['id_param']==null){$result['dependencia']=json_decode ("{}");}
-                if($res['id_param1']==null){$result['nivel']=json_decode ("{}");}
-                if($res['id_param2']==null){$result['departamento']=json_decode ("{}");}
-                if($res['id_param3']==null){$result['provincia']=json_decode ("{}");}
-                if($res['id_param4']==null){$result['municipio']=json_decode ("{}");}
-                if($res['id_param5']==null){$result['subsector']=json_decode ("{}");}
-                if($res['id_param6']==null){$result['tipo']=json_decode ("{}");}
+                                'id_regional'=>$data_regional['data_regional'],
+                                'nombre'=>$res['nombre'],
+                                'telefono'=>$res['telefono'],
+                                'correo'=>$res['correo'],
+                                'nit'=>$res['nit'],
+                                'dependencia'=>$data_dependencia,
+                                'nivel'=>$data_nivel,
+                                'departamento'=>$data_departamento,
+                                'provincia'=>$data_provincia,
+                                'municipio'=>$data_municipio,
+                                'ciudad'=>$res['ciudad'],
+                                'direccion'=>$res['direccion'],
+                                'subsector'=>$data_subsector,
+                                'tipo'=>$data_tipo,
+                                'activo'=>$res['activo']);
+                if($data_dependencia['id_param']==null){$result['dependencia']=json_decode ("{}");}
+                if($data_nivel['id_param']==null){$result['nivel']=json_decode ("{}");}
+                if($data_departamento['id_param']==null){$result['departamento']=json_decode ("{}");}
+                if($data_provincia['id_param']==null){$result['provincia']=json_decode ("{}");}
+                if($data_municipio['id_param']==null){$result['municipio']=json_decode ("{}");}
+                if($data_subsector['id_param']==null){$result['subsector']=json_decode ("{}");}
+                if($data_tipo['id_param']==null){$result['tipo']=json_decode ("{}");}
                 array_push($arrayres,$result);
             }
             $concat=array('resultados'=>$arrayres,'total'=>$total);
@@ -245,7 +190,7 @@ class DataClienteRepository implements ClienteRepository {
     }
 
     public function editCliente($id_cliente,$data_cliente,$uuid): array {
-        if(!(isset($data_cliente['nombre'])&&isset($data_cliente['telefono'])&&isset($data_cliente['correo'])
+        if(!(isset($data_cliente['id_regional'])&&isset($data_cliente['nombre'])&&isset($data_cliente['telefono'])&&isset($data_cliente['correo'])
         &&isset($data_cliente['nit'])&&isset($data_cliente['dependencia'])&&isset($data_cliente['nivel'])
         &&isset($data_cliente['departamento'])&&isset($data_cliente['provincia'])&&isset($data_cliente['municipio'])
         &&isset($data_cliente['ciudad'])&&isset($data_cliente['direccion'])&&isset($data_cliente['subsector'])
@@ -264,7 +209,8 @@ class DataClienteRepository implements ClienteRepository {
             $resp = array('success'=>false,'message'=>'Error, el nit del cliente ya existe en otro registro');
         }else{
             $sql = "UPDATE cliente 
-                    SET nombre=:nombre,
+                    SET id_regional=:id_regional,
+                    nombre=:nombre,
                     telefono=:telefono,
                     correo=:correo,
                     nit=:nit,
@@ -282,6 +228,7 @@ class DataClienteRepository implements ClienteRepository {
                     WHERE id=:id_cliente;";
             $res = ($this->db)->prepare($sql);
             $res->bindParam(':id_cliente', $id_cliente, PDO::PARAM_STR);
+            $res->bindParam(':id_regional', $data_cliente['id_regional']['id'], PDO::PARAM_STR);
             $res->bindParam(':nombre', $data_cliente['nombre'], PDO::PARAM_STR);
             $res->bindParam(':telefono', $data_cliente['telefono'], PDO::PARAM_STR);
             $res->bindParam(':correo', $data_cliente['correo'], PDO::PARAM_STR);
@@ -331,7 +278,7 @@ class DataClienteRepository implements ClienteRepository {
     }
 
     public function createCliente($data_cliente,$uuid): array {
-        if(!(isset($data_cliente['nombre'])&&isset($data_cliente['telefono'])&&isset($data_cliente['correo'])
+        if(!(isset($data_cliente['id_regional'])&&isset($data_cliente['nombre'])&&isset($data_cliente['telefono'])&&isset($data_cliente['correo'])
         &&isset($data_cliente['nit'])&&isset($data_cliente['dependencia'])&&isset($data_cliente['nivel'])
         &&isset($data_cliente['departamento'])&&isset($data_cliente['provincia'])&&isset($data_cliente['municipio'])
         &&isset($data_cliente['ciudad'])&&isset($data_cliente['direccion'])&&isset($data_cliente['subsector'])
@@ -351,6 +298,7 @@ class DataClienteRepository implements ClienteRepository {
             $uuid_neo = Uuid::v4();
             $sql = "INSERT INTO cliente (
                     id,
+                    id_regional,
                     nombre,
                     telefono,
                     correo,
@@ -369,6 +317,7 @@ class DataClienteRepository implements ClienteRepository {
                     u_crea
                     )VALUES(
                     :uuid,
+                    :id_regional,
                     :nombre,
                     :telefono,
                     :correo,
@@ -388,6 +337,7 @@ class DataClienteRepository implements ClienteRepository {
                     );";
             $res = ($this->db)->prepare($sql);
             $res->bindParam(':uuid', $uuid_neo, PDO::PARAM_STR);
+            $res->bindParam(':id_regional', $data_cliente['id_regional']['id'], PDO::PARAM_STR);
             $res->bindParam(':nombre', $data_cliente['nombre'], PDO::PARAM_STR);
             $res->bindParam(':telefono', $data_cliente['telefono'], PDO::PARAM_STR);
             $res->bindParam(':correo', $data_cliente['correo'], PDO::PARAM_STR);
@@ -413,6 +363,7 @@ class DataClienteRepository implements ClienteRepository {
             $res = $res->fetchAll(PDO::FETCH_ASSOC);
             $res = $res[0];
             $result = array('id'=>$res['id'],
+                            'id_regional'=>$data_cliente['id_regional'],
                             'nombre'=>$res['nombre'],
                             'telefono'=>$res['telefono'],
                             'correo'=>$res['correo'],
