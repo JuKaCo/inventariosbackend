@@ -34,7 +34,10 @@ class DataClienteRepository implements ClienteRepository {
         $this->dataParametricaRepository = new DataParametricaRepository;
     }
 
-    public function getCliente($id_cliente): array {
+    public function getCliente($id_cliente,$token): array {
+        if(!($this->verificaPermisos($id_cliente,null,$token))){
+            return array('success'=>false,'message'=>'usuario no autorizado','code'=>403,'data_cliente'=>array());
+        }
         $sql = "SELECT cl.*
         FROM ((((((cliente cl LEFT JOIN param_general pg ON cl.dependencia=pg.id_param) 
         LEFT JOIN param_general pg1 ON cl.nivel=pg1.id_param)
@@ -74,27 +77,32 @@ class DataClienteRepository implements ClienteRepository {
                             'subsector'=>$data_subsector,
                             'tipo'=>$data_tipo,
                             'activo'=>$res['activo']);
-            if($res['id_param']==null){$result['dependencia']=json_decode ("{}");}
-            if($res['id_param1']==null){$result['nivel']=json_decode ("{}");}
-            if($res['id_param2']==null){$result['departamento']=json_decode ("{}");}
-            if($res['id_param3']==null){$result['provincia']=json_decode ("{}");}
-            if($res['id_param4']==null){$result['municipio']=json_decode ("{}");}
-            if($res['id_param5']==null){$result['subsector']=json_decode ("{}");}
-            if($res['id_param6']==null){$result['tipo']=json_decode ("{}");}
-            $resp = array('success'=>true,'message'=>'Exito','data_cliente'=>$result);
+            if($data_dependencia['id_param']==null){$result['dependencia']=json_decode ("{}");}
+            if($data_nivel['id_param']==null){$result['nivel']=json_decode ("{}");}
+            if($data_departamento['id_param']==null){$result['departamento']=json_decode ("{}");}
+            if($data_provincia['id_param']==null){$result['provincia']=json_decode ("{}");}
+            if($data_municipio['id_param']==null){$result['municipio']=json_decode ("{}");}
+            if($data_subsector['id_param']==null){$result['subsector']=json_decode ("{}");}
+            if($data_tipo['id_param']==null){$result['tipo']=json_decode ("{}");}
+            $resp = array('success'=>true,'message'=>'Exito','data_cliente'=>$result,'code'=>200);
         }else{
-            $resp = array('success'=>false,'message'=>'No se encontraron registros');
+            $resp = array('success'=>true,'message'=>'No se encontraron registros','data_cliente'=>array(),'code'=>200);
         }
         return $resp;
     }
 
-    public function listCliente($query): array {
+    public function listCliente($query,$token): array {
         if(!(isset($query['filtro'])&&isset($query['limite'])&&isset($query['indice']))){
-            return array('success'=>false,'message'=>'Datos invalidos');
+            return array('success'=>false,'message'=>'Datos invalidos','code'=>202,'data_cliente'=>array());
         }
         $filtro=$query['filtro'];
         $limite=$query['limite'];
         $indice=$query['indice'];
+        if($token->privilegio=='limitado'){
+            $filtro_regional="id_regional='".$token->regional."' AND ";
+        }else{
+            $filtro_regional="";
+        }
         $limite=$limite+$indice;
         $filter="%".strtolower($filtro)."%";
 
@@ -106,8 +114,8 @@ class DataClienteRepository implements ClienteRepository {
             LEFT JOIN param_general pg4 ON cl.municipio=pg4.id_param)
             LEFT JOIN param_general pg5 ON cl.subsector=pg5.id_param)
             LEFT JOIN param_general pg6 ON cl.tipo=pg6.id_param
-            WHERE cl.activo=1 AND (
-            LOWER(cl.nombre) LIKE LOWER(:filtro) OR LOWER(cl.telefono) LIKE LOWER(:filtro) OR (cl.nit) LIKE (:filtro) OR
+            WHERE cl.activo=1 AND ".$filtro_regional."
+            (LOWER(cl.nombre) LIKE LOWER(:filtro) OR LOWER(cl.telefono) LIKE LOWER(:filtro) OR (cl.nit) LIKE (:filtro) OR
             LOWER(cl.correo) LIKE LOWER(:filtro) OR LOWER(cl.ciudad) LIKE LOWER(:filtro) OR LOWER(cl.direccion) LIKE LOWER(:filtro) OR
             LOWER(pg.valor) LIKE LOWER(:filtro) OR LOWER(pg1.valor) LIKE LOWER(:filtro) OR LOWER(pg2.valor) LIKE LOWER(:filtro) OR
             LOWER(pg3.valor) LIKE LOWER(:filtro) OR LOWER(pg4.valor) LIKE LOWER(:filtro) OR LOWER(pg5.valor) LIKE LOWER(:filtro) OR
@@ -131,8 +139,8 @@ class DataClienteRepository implements ClienteRepository {
                 LEFT JOIN param_general pg4 ON cl.municipio=pg4.id_param)
                 LEFT JOIN param_general pg5 ON cl.subsector=pg5.id_param)
                 LEFT JOIN param_general pg6 ON cl.tipo=pg6.id_param
-                WHERE cl.activo=1 AND (
-                LOWER(cl.nombre) LIKE LOWER(:filtro) OR LOWER(cl.telefono) LIKE (:filtro) OR (cl.nit) LIKE (:filtro) OR
+                WHERE cl.activo=1 AND ".$filtro_regional."
+                (LOWER(cl.nombre) LIKE LOWER(:filtro) OR LOWER(cl.telefono) LIKE (:filtro) OR (cl.nit) LIKE (:filtro) OR
                 LOWER(cl.correo) LIKE LOWER(:filtro) OR LOWER(cl.ciudad) LIKE LOWER(:filtro) OR LOWER(cl.direccion) LIKE LOWER(:filtro) OR
                 LOWER(pg.valor) LIKE LOWER(:filtro) OR LOWER(pg1.valor) LIKE LOWER(:filtro) OR LOWER(pg2.valor) LIKE LOWER(:filtro) OR
                 LOWER(pg3.valor) LIKE LOWER(:filtro) OR LOWER(pg4.valor) LIKE LOWER(:filtro) OR LOWER(pg5.valor) LIKE LOWER(:filtro) OR
@@ -182,22 +190,25 @@ class DataClienteRepository implements ClienteRepository {
                 array_push($arrayres,$result);
             }
             $concat=array('resultados'=>$arrayres,'total'=>$total);
-            $resp = array('success'=>true,'message'=>'Exito','data_cliente'=>$concat);
+            $resp = array('success'=>true,'message'=>'Exito','data_cliente'=>$concat,'code'=>200);
         }else{
-            $resp = array('success'=>false,'message'=>'No se encontraron registros');
+            $concat=array('resultados'=>array(),'total'=>0);
+            $resp = array('success'=>true,'message'=>'No se encontraron registros','data_cliente'=>$concat,'code'=>200);
         }
         return $resp;
     }
 
-    public function editCliente($id_cliente,$data_cliente,$uuid): array {
+    public function editCliente($id_cliente,$data_cliente,$token): array {
         if(!(isset($data_cliente['id_regional'])&&isset($data_cliente['nombre'])&&isset($data_cliente['telefono'])&&isset($data_cliente['correo'])
         &&isset($data_cliente['nit'])&&isset($data_cliente['dependencia'])&&isset($data_cliente['nivel'])
         &&isset($data_cliente['departamento'])&&isset($data_cliente['provincia'])&&isset($data_cliente['municipio'])
         &&isset($data_cliente['ciudad'])&&isset($data_cliente['direccion'])&&isset($data_cliente['subsector'])
         &&isset($data_cliente['tipo']))){
-            return array('success'=>false,'message'=>'Datos invalidos');
+            return array('success'=>false,'message'=>'Datos invalidos','code'=>202,'data_cliente'=>array());
         }
-        $backup_data_cliente=$data_cliente;
+        if(!($this->verificaPermisos($id_cliente,$data_cliente['id_regional']['id'],$token))){
+            return array('success'=>false,'message'=>'usuario no autorizado','code'=>403,'data_cliente'=>array());
+        }
         $sql = "SELECT *
                 FROM cliente
                 WHERE nit=:nit AND id!=:id_cliente";
@@ -206,7 +217,7 @@ class DataClienteRepository implements ClienteRepository {
             $res->bindParam(':id_cliente', $id_cliente, PDO::PARAM_STR);
             $res->execute();
         if($res->rowCount()>0){
-            $resp = array('success'=>false,'message'=>'Error, el nit del cliente ya existe en otro registro');
+            $resp = array('success'=>false,'message'=>'Error, el nit del cliente ya existe en otro registro','code'=>202,'data_cliente'=>array());
         }else{
             $sql = "UPDATE cliente 
                     SET id_regional=:id_regional,
@@ -242,7 +253,7 @@ class DataClienteRepository implements ClienteRepository {
             $res->bindParam(':direccion', $data_cliente['direccion'], PDO::PARAM_STR);
             $res->bindParam(':subsector', $data_cliente['subsector']['id_param'], PDO::PARAM_INT);
             $res->bindParam(':tipo', $data_cliente['tipo']['id_param'], PDO::PARAM_INT); 
-            $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
+            $res->bindParam(':u_mod', $token->sub, PDO::PARAM_STR);
             $res->execute();
             //$res = $res->fetchAll(PDO::FETCH_ASSOC);
             if($data_cliente['dependencia']['id_param']==null){$data_cliente['dependencia']=json_decode ("{}");}
@@ -252,38 +263,44 @@ class DataClienteRepository implements ClienteRepository {
             if($data_cliente['municipio']['id_param']==null){$data_cliente['municipio']=json_decode ("{}");}
             if($data_cliente['subsector']['id_param']==null){$resuldata_clientet['subsector']=json_decode ("{}");}
             if($data_cliente['tipo']['id_param']==null){$data_cliente['tipo']=json_decode ("{}");}  
-            $resp = array('success'=>true,'message'=>'cliente actualizado','data_cliente'=>$data_cliente);
+            $resp = array('success'=>true,'message'=>'cliente actualizado','data_cliente'=>$data_cliente,'code'=>200);
         }
         return $resp;
     }
 
-    public function changestatusCliente($id_cliente,$uuid): array {
+    public function changestatusCliente($id_cliente,$token): array {
+        if(!($this->verificaPermisos($id_cliente,null,$token))){
+            return array('success'=>false,'message'=>'usuario no autorizado','code'=>403,'data_cliente'=>array());
+        }
         $sql = "UPDATE cliente 
                 SET activo=0,
                 f_inac=now(), 
                 u_inac=:u_inac
                 WHERE id=:id_cliente;";
         $res = ($this->db)->prepare($sql);
-        $res->bindParam(':u_inac', $uuid, PDO::PARAM_STR);
+        $res->bindParam(':u_inac', $token->sub, PDO::PARAM_STR);
         $res->bindParam(':id_cliente', $id_cliente, PDO::PARAM_STR);
         $res->execute();
         //$res = $res->fetchAll(PDO::FETCH_ASSOC);
         if($res->rowCount()==1){
-            $resp = array('success'=>true,'message'=>'1 fila afectada');
+            $resp = array('success'=>true,'message'=>'1 fila afectada','code'=>200,'data_cliente'=>array());
         }else{
-            $resp = array('success'=>false,'message'=>'0 fila afectada');
+            $resp = array('success'=>false,'message'=>'0 fila afectada','code'=>202,'data_cliente'=>array());
         }
         return ($resp);
 
     }
 
-    public function createCliente($data_cliente,$uuid): array {
+    public function createCliente($data_cliente,$token): array {
         if(!(isset($data_cliente['id_regional'])&&isset($data_cliente['nombre'])&&isset($data_cliente['telefono'])&&isset($data_cliente['correo'])
         &&isset($data_cliente['nit'])&&isset($data_cliente['dependencia'])&&isset($data_cliente['nivel'])
         &&isset($data_cliente['departamento'])&&isset($data_cliente['provincia'])&&isset($data_cliente['municipio'])
         &&isset($data_cliente['ciudad'])&&isset($data_cliente['direccion'])&&isset($data_cliente['subsector'])
         &&isset($data_cliente['tipo']))){
             return array('success'=>false,'message'=>'Datos invalidos');
+        }
+        if(!($this->verificaPermisos(null,$data_cliente['id_regional']['id'],$token))){
+            return array('success'=>false,'message'=>'usuario no autorizado','code'=>403,'data_cliente'=>array());
         }
         $sql = "SELECT *
                 FROM cliente
@@ -293,7 +310,7 @@ class DataClienteRepository implements ClienteRepository {
         $res->bindParam(':nombre', $data_cliente['nombre'], PDO::PARAM_STR);
         $res->execute();
         if($res->rowCount()==1){
-            $resp = array('success'=>false,'message'=>'Error, ya existe un cliente con el mismo NIT o nombre');
+            $resp = array('success'=>false,'message'=>'Error, ya existe un cliente con el mismo NIT o nombre','code'=>202,'data_cliente'=>array());
         }else{
             $uuid_neo = Uuid::v4();
             $sql = "INSERT INTO cliente (
@@ -351,7 +368,7 @@ class DataClienteRepository implements ClienteRepository {
             $res->bindParam(':direccion', $data_cliente['direccion'], PDO::PARAM_STR);
             $res->bindParam(':subsector', $data_cliente['subsector']['id_param'], PDO::PARAM_INT);
             $res->bindParam(':tipo', $data_cliente['tipo']['id_param'], PDO::PARAM_INT); 
-            $res->bindParam(':u_crea', $uuid, PDO::PARAM_STR);
+            $res->bindParam(':u_crea', $token->sub, PDO::PARAM_STR);
             $res->execute();
             $res = $res->fetchAll(PDO::FETCH_ASSOC);
             $sql = "SELECT *
@@ -385,8 +402,55 @@ class DataClienteRepository implements ClienteRepository {
             if($data_cliente['municipio']['id_param']==null){$result['municipio']=json_decode ("{}");}
             if($data_cliente['subsector']['id_param']==null){$result['subsector']=json_decode ("{}");}
             if($data_cliente['tipo']['id_param']==null){$result['tipo']=json_decode ("{}");}               
-            $resp = array('success'=>true,'message'=>'cliente registrado exitosamente','data_cliente'=>$result);
+            $resp = array('success'=>true,'message'=>'cliente registrado exitosamente','data_cliente'=>$result,'code'=>200);
         }
         return $resp;
+    }
+    private function verificaPermisos($uuid_registro_a_modificar,$id_regional_registro_nuevo,$token){
+        //sacamos los datos del token
+        $regional_usuario=$token->regional;
+        $privilegio_usuario=$token->privilegio;
+        if($privilegio_usuario=='total'){//el usuario tiene acceso total
+            return true;
+        }else{//el usuario tiene acceso limitado a su regional
+            if($uuid_registro_a_modificar==null){
+                //es una alta
+                if($id_regional_registro_nuevo!=$regional_usuario){
+                    //el nuevo registro que intenta introducir el usuario pertenecerá a otra regional
+                    return false;
+                }else{
+                    return true;//el nuevo registro pertenece a la regional del usuario
+                }
+            }else{
+                //es una modificacion
+                $sql = "SELECT id_regional
+                        FROM cliente
+                        WHERE id=:uuid;";
+                $res = ($this->db)->prepare($sql);
+                $res->bindParam(':uuid', $uuid_registro_a_modificar, PDO::PARAM_STR);
+                $res->execute();
+                if($res->rowCount()>0){
+                    $res = $res->fetchAll(PDO::FETCH_ASSOC);
+                    $id_regional_ant = $res[0]['id_regional'];
+                    if($id_regional_ant!=$regional_usuario){
+                        //el usuario intenta modificar un registro distinto al de su regional
+                        return false;
+                    }else{
+                        if($id_regional_registro_nuevo==null){
+                            return true;
+                        }else{
+                            if($id_regional_registro_nuevo!=$regional_usuario){
+                                //el nuevo registro que intenta modificar el usuario pertenecerá a otra regional
+                                return false;
+                            }else{
+                                return true;
+                            }
+                        }
+                    }
+                }else{
+                    return false;
+                }                    
+            }
+        }
     }
 }

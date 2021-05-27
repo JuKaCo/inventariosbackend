@@ -5,9 +5,9 @@ namespace App\Domain;
 
 interface ClienteRepository
 {
-    public function getCliente($id_cliente): array;
-    public function editCliente($id_cliente,$data_cliente,$uuid): array;
-    public function createCliente($data_cliente,$uuid): array;
-    public function changestatusCliente($id_cliente,$uuid): array;
-    public function listCliente($query): array;
+    public function getCliente($id_cliente,$token): array;
+    public function editCliente($id_cliente,$data_cliente,$token): array;
+    public function createCliente($data_cliente,$token): array;
+    public function changestatusCliente($id_cliente,$token): array;
+    public function listCliente($query,$token): array;
 }
