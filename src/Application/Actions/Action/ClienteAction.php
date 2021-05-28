@@ -34,12 +34,14 @@ class ClienteAction extends Action {
         $this->response = $response;
         $this->args = $args;
         $id_cliente = $args['id_cliente'];
-        $res=$this->clienteRepository->getCliente($id_cliente);
-        if($res['success']==false){
-            return $this->respondWithData(null,$res['message'],202,true);
-        }else{
-            return $this->respondWithData($res['data_cliente'],$res['message'],200,true);
+        $JWT = new \App\Application\Middleware\JWTdata($request);
+        $token = $JWT->getToken();
+        if (!$token['success']) {
+            return $this->respondWithData(array(), 'Datos de token invalidos', 403,false);
         }
+        $token = $token['data'];
+        $res=$this->clienteRepository->getCliente($id_cliente,$token);
+        return $this->respondWithData($res['data_cliente'],$res['message'],$res['code'],$res['success']);
     }
 
     public function lista_Cliente(Request $request, Response $response, $args): Response {
@@ -47,14 +49,15 @@ class ClienteAction extends Action {
         $this->response = $response;
         $this->args = $args;
         $query=$request->getQueryParams();
-
-        $res=$this->clienteRepository->listCliente($query);
-
-        if($res['success']==false){
-            return $this->respondWithData(null,$res['message'],202,true);
-        }else{
-            return $this->respondWithData($res['data_cliente'],$res['message'],200,true);
+        $JWT = new \App\Application\Middleware\JWTdata($request);
+        $token = $JWT->getToken();
+        if (!$token['success']) {
+            return $this->respondWithData(array(), 'Datos de token invalidos', 403,false);
         }
+        $token = $token['data'];
+        $res=$this->clienteRepository->listCliente($query,$token);
+
+        return $this->respondWithData($res['data_cliente'],$res['message'],$res['code'],$res['success']);
     }
 
     /* body servicio de edicion de cliente
@@ -83,13 +86,9 @@ class ClienteAction extends Action {
         $token = $token['data'];
         $uuid=$token->sub;
 
-        $res=$this->clienteRepository->editCliente($id_cliente,$data_cliente,$uuid);
+        $res=$this->clienteRepository->editCliente($id_cliente,$data_cliente,$token);
 
-        if($res['success']==false){
-            return $this->respondWithData(null,$res['message'],202,false);
-        }else{
-            return $this->respondWithData($res['data_cliente'],$res['message'],200,true);
-        }
+        return $this->respondWithData($res['data_cliente'],$res['message'],$res['code'],$res['success']);
     }
 
     public function cambiaestado_Cliente(Request $request, Response $response, $args): Response {
@@ -103,13 +102,9 @@ class ClienteAction extends Action {
             return $this->respondWithData(array(), 'Datos de token invalidos', 403,false);
         }
         $token = $token['data'];
-        $uuid=$token->sub;
-        $res=$this->clienteRepository->changestatusCliente($id_cliente,$uuid);
-        if($res['success']==false){
-            return $this->respondWithData(null,$res['message'],202,true);
-        }else{
-            return $this->respondWithData(null,$res['message'],200,true);
-        }
+
+        $res=$this->clienteRepository->changestatusCliente($id_cliente,$token);
+        return $this->respondWithData($res['data_cliente'],$res['message'],$res['code'],$res['success']);
         
     }
 
@@ -176,15 +171,9 @@ class ClienteAction extends Action {
         if (!$token['success']) {
             return $this->respondWithData(array(), 'Datos de token invalidos', 403,false);
         }
-        $token = $token['data'];
-        $uuid=$token->sub;
-        
-        $res=$this->clienteRepository->createCliente($data_cliente,$uuid);
+        $token = $token['data'];        
+        $res=$this->clienteRepository->createCliente($data_cliente,$token);
 
-        if($res['success']==false){
-            return $this->respondWithData(null,$res['message'],202,false);
-        }else{
-            return $this->respondWithData($res['data_cliente'],$res['message'],200,true);
-        }
+        return $this->respondWithData($res['data_cliente'],$res['message'],$res['code'],$res['success']);
     }
 }

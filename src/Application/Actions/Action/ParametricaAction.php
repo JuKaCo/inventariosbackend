@@ -235,10 +235,12 @@ class ParametricaAction  extends Action {
         $this->response = $response;
         $this->args = $args;
         $query=$request->getQueryParams();
-        $filtro=$query['filtro'];
-        $data = $this->parametricaRepository->getCliente($filtro);
+        $data = $this->parametricaRepository->getCliente($query);
         if (isset($data['error'])) {
             return $this->respondWithData(array(), 'Error', 500, false);
+        }
+        if (isset($data['success'])) {
+            return $this->respondWithData(array(), 'No se encontro datos', 202, false);
         }
         if ($data == null) {
             return $this->respondWithData(array(), 'No se encontro datos', 202, false);
