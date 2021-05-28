@@ -41,7 +41,7 @@ class EntradaAction extends Action {
         }
         $token = $token['data'];
         $res=$this->entradaRepository->getEntrada($id_entrada,$token);
-        return $this->respondWithData($res['data_almacen'],$res['message'],$res['code'],$res['success']);
+        return $this->respondWithData($res['data_entrada'],$res['message'],$res['code'],$res['success']);
     }
 
     public function lista_Entrada(Request $request, Response $response, $args): Response {
@@ -57,7 +57,7 @@ class EntradaAction extends Action {
         $token = $token['data'];
         $res=$this->entradaRepository->listEntrada($query,$token);
 
-        return $this->respondWithData($res['data_almacen'],$res['message'],$res['code'],$res['success']);
+        return $this->respondWithData($res['data_entrada'],$res['message'],$res['code'],$res['success']);
     }
 
     /* body servicio de edicion de entrada
@@ -87,7 +87,7 @@ class EntradaAction extends Action {
 
         $res=$this->entradaRepository->editEntrada($id_entrada,$data_entrada,$token);
 
-        return $this->respondWithData($res['data_almacen'],$res['message'],$res['code'],$res['success']);
+        return $this->respondWithData($res['data_entrada'],$res['message'],$res['code'],$res['success']);
     }
 
     public function cambiaestado_Entrada(Request $request, Response $response, $args): Response {
@@ -103,7 +103,7 @@ class EntradaAction extends Action {
         $token = $token['data'];
 
         $res=$this->entradaRepository->changestatusEntrada($id_entrada,$token);
-        return $this->respondWithData($res['data_almacen'],$res['message'],$res['code'],$res['success']);
+        return $this->respondWithData($res['data_entrada'],$res['message'],$res['code'],$res['success']);
     }
 
     /* body servicio de creacion entradas
@@ -173,7 +173,7 @@ class EntradaAction extends Action {
         
         $res=$this->entradaRepository->createEntrada($data_entrada,$token);
 
-        return $this->respondWithData($res['data_almacen'],$res['message'],$res['code'],$res['success']);
+        return $this->respondWithData($res['data_entrada'],$res['message'],$res['code'],$res['success']);
     }
 
     public function modifica_Entrada(Request $request, Response $response, $args): Response {
@@ -192,6 +192,6 @@ class EntradaAction extends Action {
 
         $res=$this->entradaRepository->modifyEntrada($id_entrada,$data_entrada,$token);
 
-        return $this->respondWithData($res['data_almacen'],$res['message'],$res['code'],$res['success']);
+        return $this->respondWithData($res['data_entrada'],$res['message'],$res['code'],$res['success']);
     }
 }

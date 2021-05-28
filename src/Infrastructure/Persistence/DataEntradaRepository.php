@@ -68,7 +68,7 @@ class DataEntradaRepository implements EntradaRepository {
             $res = $res->fetchAll(PDO::FETCH_ASSOC);
             $res = $res[0];
             $data_regional = $this->dataRegionalRepository->getRegional($res['id_regional']);
-            $data_almacen = $this->dataAlmacenRepository->getAlmacen($res['id_almacen']);
+            $data_almacen = $this->dataAlmacenRepository->getAlmacen($res['id_almacen'],$token);
             $data_proveedor = $this->dataProveedorRepository->getProveedor($res['id_proveedor']);
             $data_compra = $this->dataCompraRepository->getCompra($res['id_compra']);
             $data_tipo_entrada = $this->dataParametricaRepository->getCodParametrica('param_tipo_entrada',0,$res['tipo_entrada']);
@@ -173,7 +173,7 @@ class DataEntradaRepository implements EntradaRepository {
             $arrayres = array();
             foreach ($restodo as $res){
                 $data_regional = $this->dataRegionalRepository->getRegional($res['id_regional']);
-                $data_almacen = $this->dataAlmacenRepository->getAlmacen($res['id_almacen']);
+                $data_almacen = $this->dataAlmacenRepository->getAlmacen($res['id_almacen'],$token);
                 $data_proveedor = $this->dataProveedorRepository->getProveedor($res['id_proveedor']);
                 $data_compra = $this->dataCompraRepository->getCompra($res['id_compra']);
                 $data_tipo_entrada = $this->dataParametricaRepository->getCodParametrica('param_tipo_entrada',0,$res['tipo_entrada']);
