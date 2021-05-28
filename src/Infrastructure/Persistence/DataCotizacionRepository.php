@@ -47,8 +47,10 @@ class DataCotizacionRepository implements CotizacionRepository {
         $this->dataKardexRepository = new DataKardexRepository;
     }
 
-    public function getCotizacion($id_cotizacion): array {
-
+    public function getCotizacion($id_cotizacion,$token): array {
+        if(!($this->verificaPermisos($id_cotizacion,null,$token))){
+            return array('success'=>false,'message'=>'usuario no autorizado','code'=>403,'data_cotizacion'=>array());
+        }
         $sql = "SELECT co.*
                 FROM cotizacion co
                 WHERE co.id=:id_cotizacion AND co.activo=1";
@@ -59,8 +61,8 @@ class DataCotizacionRepository implements CotizacionRepository {
             $res = $res->fetchAll(PDO::FETCH_ASSOC);
             $res = $res[0];
             $data_regional = $this->dataRegionalRepository->getRegional($res['id_regional']);
-            $data_almacen = $this->dataAlmacenRepository->getAlmacen($res['id_almacen']);
-            $data_cliente = $this->dataClienteRepository->getCliente($res['id_cliente']);
+            $data_almacen = $this->dataAlmacenRepository->getAlmacen($res['id_almacen'],$token);
+            $data_cliente = $this->dataClienteRepository->getCliente($res['id_cliente'],$token);
             $result = array('id'=>$res['id'],
                             'codigo'=>$res['codigo'],
                             'id_regional'=>$data_regional['data_regional'],
@@ -73,16 +75,21 @@ class DataCotizacionRepository implements CotizacionRepository {
                             'fecha'=>date('d/m/Y',strtotime($res['f_crea'])),
                             'total'=>$this->calculatotalCotizacion($res['id']));
 
-            $resp = array('success'=>true,'message'=>'Exito','data_cotizacion'=>$result);
+            $resp = array('success'=>true,'message'=>'Exito','data_cotizacion'=>$result,'code'=>200);
         }else{
-            $resp = array('success'=>false,'message'=>'No se encontraron registros');
+            $resp = array('success'=>false,'message'=>'No se encontraron registros','data_cotizacion'=>array(),'code'=>202);
         }
         return $resp;
     }
 
-    public function listCotizacion($query): array {
+    public function listCotizacion($query,$token): array {
         if(!(isset($query['filtro'])&&isset($query['limite'])&&isset($query['indice']))){
-            return array('success'=>false,'message'=>'Datos invalidos');
+            return array('success'=>false,'message'=>'Datos invalidos','data_cotizacion'=>array(),'code'=>202);
+        }
+        if($token->privilegio=='limitado'){
+            $filtro_regional="co.id_regional='".$token->regional."' AND ";
+        }else{
+            $filtro_regional="";
         }
         $filtro=$query['filtro'];
         $limite=$query['limite'];
@@ -92,7 +99,7 @@ class DataCotizacionRepository implements CotizacionRepository {
 
         $sql = "SELECT co.*
                 FROM cotizacion co, cliente cl
-                WHERE co.id_cliente=cl.id AND co.activo=1 AND (
+                WHERE co.id_cliente=cl.id AND co.activo=1 AND ".$filtro_regional."(
                 LOWER(co.codigo) LIKE LOWER(:filtro) OR LOWER(co.dias_validez) LIKE LOWER(:filtro) OR LOWER(co.comentarios) LIKE LOWER(:filtro) OR LOWER(cl.nombre) LIKE LOWER(:filtro))";
         $res = ($this->db)->prepare($sql);
         $res->bindParam(':filtro', $filter, PDO::PARAM_STR);
@@ -100,7 +107,7 @@ class DataCotizacionRepository implements CotizacionRepository {
         $total=$res->rowCount();
         $sql = "SELECT co.*
                 FROM cotizacion co, cliente cl
-                WHERE co.id_cliente=cl.id AND co.activo=1 AND (
+                WHERE co.id_cliente=cl.id AND co.activo=1 AND ".$filtro_regional."(
                 LOWER(co.codigo) LIKE LOWER(:filtro) OR LOWER(co.dias_validez) LIKE LOWER(:filtro) OR LOWER(co.comentarios) LIKE LOWER(:filtro) OR LOWER(cl.nombre) LIKE LOWER(:filtro))
                 ORDER BY co.f_crea DESC
                 LIMIT :indice, :limite;";
@@ -114,8 +121,8 @@ class DataCotizacionRepository implements CotizacionRepository {
             $arrayres = array();
             foreach ($restodo as $res){
                 $data_regional = $this->dataRegionalRepository->getRegional($res['id_regional']);
-                $data_almacen = $this->dataAlmacenRepository->getAlmacen($res['id_almacen']);
-                $data_cliente = $this->dataClienteRepository->getCliente($res['id_cliente']);
+                $data_almacen = $this->dataAlmacenRepository->getAlmacen($res['id_almacen'],$token);
+                $data_cliente = $this->dataClienteRepository->getCliente($res['id_cliente'],$token);
                 
                 $result = array('id'=>$res['id'],
                                 'codigo'=>$res['codigo'],
@@ -131,23 +138,25 @@ class DataCotizacionRepository implements CotizacionRepository {
                 array_push($arrayres,$result);
             }
             $concat=array('resultados'=>$arrayres,'total'=>$total);
-            $resp = array('success'=>true,'message'=>'Exito','data_cotizacion'=>$concat);
+            $resp = array('success'=>true,'message'=>'Exito','data_cotizacion'=>$concat,'code'=>200);
         }else{
             $concat=array('resultados'=>array(),'total'=>0);
-            $resp = array('success'=>true,'message'=>'No se encontraron registros', 'data_cotizacion'=>$concat);
+            $resp = array('success'=>true,'message'=>'No se encontraron registros','data_cotizacion'=>$concat,'code'=>200);
         }
         return $resp;
     }
 
-    public function editCotizacion($id_cotizacion,$data_cotizacion,$uuid): array {
+    public function editCotizacion($id_cotizacion,$data_cotizacion,$token): array {
         if(!(isset($id_cotizacion)&&isset($data_cotizacion['codigo'])&&isset($data_cotizacion['nombre_comercial'])&&isset($data_cotizacion['codigo_liname'])
         &&isset($data_cotizacion['codigo_linadime'])&&isset($data_cotizacion['referencia'])
         &&isset($data_cotizacion['medicamento'])&&isset($data_cotizacion['form_farm'])&&isset($data_cotizacion['concen'])
         &&isset($data_cotizacion['atq'])&&isset($data_cotizacion['precio_ref'])&&isset($data_cotizacion['aclara_parti'])
         &&isset($data_cotizacion['dispositivo'])&&isset($data_cotizacion['especificacion_tec'])&&isset($data_cotizacion['presentacion']))){
-            return array('success'=>false,'message'=>'Datos invalidos');
+            return array('success'=>false,'message'=>'Datos invalidos','data_cotizacion'=>array(),'code'=>202);
         }
-
+        if(!($this->verificaPermisos($id_cotizacion,$data_cotizacion['id_regional']['id'],$token))){
+            return array('success'=>false,'message'=>'usuario no autorizado','code'=>403,'data_cotizacion'=>array());
+        }
         $sql = "SELECT *
                 FROM cotizacion
                 WHERE (codigo LIKE :codigo OR nombre_comercial LIKE :nombre_comercial ) AND id!=:id_cotizacion";
@@ -155,10 +164,10 @@ class DataCotizacionRepository implements CotizacionRepository {
             $res->bindParam(':codigo', $data_cotizacion['codigo'], PDO::PARAM_STR);
             $res->bindParam(':id_cotizacion', $id_cotizacion, PDO::PARAM_STR);
             $res->bindParam(':nombre_comercial', $data_cotizacion['nombre_comercial'], PDO::PARAM_STR);
-            //$res->bindParam(':reg_san', $data_cotizacion['reg_san'], PDO::PARAM_STR);
+
             $res->execute();
         if($res->rowCount()>0){
-            $resp = array('success'=>false,'message'=>'Error, el nombre comercial o codigo del cotizacion ya existe co otro registro');
+            $resp = array('success'=>false,'message'=>'Error, el nombre comercial o codigo del cotizacion ya existe co otro registro','code'=>202);
         }else{
             $sql = "UPDATE cotizacion 
                     SET codigo=:codigo,
@@ -200,42 +209,48 @@ class DataCotizacionRepository implements CotizacionRepository {
             $res->bindParam(':nivel_uso_i', $data_cotizacion['nivel_uso_i'], PDO::PARAM_STR);
             $res->bindParam(':nivel_uso_ii', $data_cotizacion['nivel_uso_ii'], PDO::PARAM_STR);
             $res->bindParam(':nivel_uso_iii', $data_cotizacion['nivel_uso_iii'], PDO::PARAM_STR); 
-            $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
+            $res->bindParam(':u_mod', $token->sub, PDO::PARAM_STR);
             $res->execute();
             //$res = $res->fetchAll(PDO::FETCH_ASSOC);
             if($data_cotizacion['codigo_liname']['id_liname']==null){$data_cotizacion['codigo_liname']=json_decode ("{}");}
             if($data_cotizacion['codigo_linadime']['id_linadime']==null){$data_cotizacion['codigo_linadime']=json_decode ("{}");} 
-            $resp = array('success'=>true,'message'=>'cotizacion actualizado','data_cotizacion'=>$data_cotizacion);
+            $resp = array('success'=>true,'message'=>'cotizacion actualizado','data_cotizacion'=>$data_cotizacion,'code'=>200);
         }
         return $resp;
     }
 
-    public function changestatusCotizacion($id_cotizacion,$uuid): array {
+    public function changestatusCotizacion($id_cotizacion,$token): array {
+        if(!($this->verificaPermisos($id_cotizacion,null,$token))){
+            return array('success'=>false,'message'=>'usuario no autorizado','code'=>403,'data_cotizacion'=>array());
+        }
         $sql = "UPDATE cotizacion 
                 SET activo=0,
                 f_inac=now(), 
                 u_inac=:u_inac
                 WHERE id=:id_cotizacion;";
         $res = ($this->db)->prepare($sql);
-        $res->bindParam(':u_inac', $uuid, PDO::PARAM_STR);
+        $res->bindParam(':u_inac', $token->sub, PDO::PARAM_STR);
         $res->bindParam(':id_cotizacion', $id_cotizacion, PDO::PARAM_STR);
         $res->execute();
         //$res = $res->fetchAll(PDO::FETCH_ASSOC);
         if($res->rowCount()==1){
-            $resp = array('success'=>true,'message'=>'1 fila afectada');
+            $resp = array('success'=>true,'message'=>'1 fila afectada','code'=>200,'data_cotizacion'=>array());
         }else{
-            $resp = array('success'=>false,'message'=>'0 fila afectada');
+            $resp = array('success'=>false,'message'=>'0 fila afectada','code'=>202,'data_cotizacion'=>array());
         }
         return ($resp);
     }
 
-    public function createCotizacion($data_cotizacion,$uuid): array {
+    public function createCotizacion($data_cotizacion,$token): array {
         if(!(isset($data_cotizacion['id_regional'])&&isset($data_cotizacion['id_almacen'])
         &&isset($data_cotizacion['dias_validez'])&&isset($data_cotizacion['id_cliente'])
         &&isset($data_cotizacion['comentarios']))){
-            return array('success'=>false,'message'=>'Datos invalidos');
+            return array('success'=>false,'message'=>'Datos invalidos','data_cotizacion'=>array(),'code'=>202);
         }
-        $correlativo = $this->dataCorrelativoRepository->genCorrelativo($data_cotizacion['id_regional']['codigo'], 'COT', $uuid);
+        if(!($this->verificaPermisos(null,$data_cotizacion['id_regional']['id'],$token))){
+            return array('success'=>false,'message'=>'usuario no autorizado','code'=>403,'data_cotizacion'=>array());
+        }
+        $correlativo = $this->dataCorrelativoRepository->genCorrelativo($data_cotizacion['id_regional']['codigo'], 'COT', $token->sub);
         $correlativo = $correlativo['correlativo'];
         $correlativo = $data_cotizacion['id_regional']['codigo'] . '-COT-' . $correlativo ;
         $uuid_neo = Uuid::v4();
@@ -273,7 +288,7 @@ class DataCotizacionRepository implements CotizacionRepository {
         $res->bindParam(':id_cliente', $data_cotizacion['id_cliente']['id'], PDO::PARAM_STR);
         $res->bindParam(':dias_validez', $data_cotizacion['dias_validez'], PDO::PARAM_INT);
         $res->bindParam(':comentarios', $data_cotizacion['comentarios'], PDO::PARAM_STR);
-        $res->bindParam(':u_crea', $uuid, PDO::PARAM_STR);
+        $res->bindParam(':u_crea', $token->sub, PDO::PARAM_STR);
         $res->execute();
         $res = $res->fetchAll(PDO::FETCH_ASSOC);
         $sql = "SELECT *
@@ -293,17 +308,21 @@ class DataCotizacionRepository implements CotizacionRepository {
                         'comentarios'=>$res['comentarios'],
                         'estado'=>$res['estado'],
                         'activo'=>$res['activo']); 
-        $resp = array('success'=>true,'message'=>'cotizacion registrada exitosamente','data_cotizacion'=>$result);
+        $resp = array('success'=>true,'message'=>'cotizacion registrada exitosamente','data_cotizacion'=>$result,'code'=>200);
         return $resp;
     }
 
-    public function modifyCotizacion($id_cotizacion,$data_cotizacion,$uuid): array {
+    public function modifyCotizacion($id_cotizacion,$data_cotizacion,$token): array {
+        
+        if(!($this->verificaPermisos($id_cotizacion,(isset($data_cotizacion['id_regional']['id']))?$data_cotizacion['id_regional']['id']:null,$token))){
+            return array('success'=>false,'message'=>'usuario no autorizado','code'=>403,'data_cotizacion'=>array());
+        }
         $codigo=false;
         $resp=array();
 
         if(isset($data_cotizacion['id_regional'])){
 
-            $correlativo = $this->dataCorrelativoRepository->genCorrelativo($data_cotizacion['id_regional']['codigo'], 'COT', $uuid);
+            $correlativo = $this->dataCorrelativoRepository->genCorrelativo($data_cotizacion['id_regional']['codigo'], 'COT', $token->sub);
             $correlativo = $correlativo['correlativo'];
             $correlativo = $data_cotizacion['id_regional']['codigo'] . '-COT-' . $correlativo;
 
@@ -317,7 +336,7 @@ class DataCotizacionRepository implements CotizacionRepository {
             $res->bindParam(':id_cotizacion', $id_cotizacion, PDO::PARAM_STR);
             $res->bindParam(':id_regional', $data_cotizacion['id_regional']['id'], PDO::PARAM_STR);
             $res->bindParam(':codigo', $correlativo, PDO::PARAM_STR);
-            $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
+            $res->bindParam(':u_mod', $token->sub, PDO::PARAM_STR);
             $res->execute();
             $resp += ['id_regional' => 'dato actualizado'];
             $codigo=true;
@@ -333,7 +352,7 @@ class DataCotizacionRepository implements CotizacionRepository {
             $res = ($this->db)->prepare($sql);
             $res->bindParam(':id_cotizacion', $id_cotizacion, PDO::PARAM_STR);
             $res->bindParam(':id_almacen', $data_cotizacion['id_almacen']['id'], PDO::PARAM_STR);
-            $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
+            $res->bindParam(':u_mod', $token->sub, PDO::PARAM_STR);
             $res->execute();
             $resp += ['id_almacen' => 'dato actualizado'];
             
@@ -348,7 +367,7 @@ class DataCotizacionRepository implements CotizacionRepository {
             $res = ($this->db)->prepare($sql);
             $res->bindParam(':id_cotizacion', $id_cotizacion, PDO::PARAM_STR);
             $res->bindParam(':id_cliente', $data_cotizacion['id_cliente']['id'], PDO::PARAM_STR);
-            $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
+            $res->bindParam(':u_mod', $token->sub, PDO::PARAM_STR);
             $res->execute();
             $resp += ['id_cliente' => 'dato actualizado'];
         }
@@ -362,7 +381,7 @@ class DataCotizacionRepository implements CotizacionRepository {
             $res = ($this->db)->prepare($sql);
             $res->bindParam(':id_cotizacion', $id_cotizacion, PDO::PARAM_STR);
             $res->bindParam(':dias_validez', $data_cotizacion['dias_validez'], PDO::PARAM_INT);
-            $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
+            $res->bindParam(':u_mod', $token->sub, PDO::PARAM_STR);
             $res->execute();
             $resp += ['dias_validez' => 'dato actualizado'];
         }
@@ -376,7 +395,7 @@ class DataCotizacionRepository implements CotizacionRepository {
             $res = ($this->db)->prepare($sql);
             $res->bindParam(':id_cotizacion', $id_cotizacion, PDO::PARAM_STR);
             $res->bindParam(':comentarios', $data_cotizacion['comentarios'], PDO::PARAM_STR);
-            $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
+            $res->bindParam(':u_mod', $token->sub, PDO::PARAM_STR);
             $res->execute();
             $resp += ['comentarios' => 'dato actualizado'];
         }
@@ -390,7 +409,7 @@ class DataCotizacionRepository implements CotizacionRepository {
             $res = ($this->db)->prepare($sql);
             $res->bindParam(':id_cotizacion', $id_cotizacion, PDO::PARAM_STR);
             $res->bindParam(':estado', $data_cotizacion['estado'], PDO::PARAM_STR);
-            $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
+            $res->bindParam(':u_mod', $token->sub, PDO::PARAM_STR);
             $res->execute();
             $resp += ['estado' => 'dato actualizado'];
         }
@@ -445,7 +464,7 @@ class DataCotizacionRepository implements CotizacionRepository {
         if($codigo){
             $resp += ['codigo' => 'dato actualizado'];
         }
-        $resp = array('success'=>'true','message'=>'datos actualizados','data_cotizacion'=>$resp);
+        $resp = array('success'=>true,'message'=>'datos actualizados','data_cotizacion'=>$resp,'code'=>200);
         return $resp;
     }
 
@@ -465,6 +484,56 @@ class DataCotizacionRepository implements CotizacionRepository {
             return round($total,2);
         }else{
             return 0;
+        }
+    }
+
+    private function verificaPermisos($uuid_registro_a_modificar,$id_regional_registro_nuevo,$token){
+        //sacamos los datos del token
+        $tabla='almacen';
+        $regional_usuario=$token->regional;
+        $privilegio_usuario=$token->privilegio;
+        if($privilegio_usuario=='total'){//el usuario tiene acceso total
+            return true;
+        }else{//el usuario tiene acceso limitado a su regional
+            if($uuid_registro_a_modificar==null){
+                //es una alta
+                if($id_regional_registro_nuevo!=$regional_usuario){
+                    //el nuevo registro que intenta introducir el usuario pertenecerá a otra regional
+                    return false;
+                }else{
+                    return true;//el nuevo registro pertenece a la regional del usuario
+                }
+            }else{
+                //es una modificacion
+                $sql = "SELECT id_regional
+                        FROM cotizacion
+                        WHERE id=:uuid;";
+                $res = ($this->db)->prepare($sql);
+                $res->bindParam(':uuid', $uuid_registro_a_modificar, PDO::PARAM_STR);
+                //$res->bindParam(':tabla', $tabla, PDO::PARAM_INT);
+                $res->execute();
+                if($res->rowCount()>0){
+                    $res = $res->fetchAll(PDO::FETCH_ASSOC);
+                    $id_regional_ant = $res[0]['id_regional'];
+                    if($id_regional_ant!=$regional_usuario){
+                        //el usuario intenta modificar un registro distinto al de su regional
+                        return false;
+                    }else{
+                        if($id_regional_registro_nuevo==null){
+                            return true;
+                        }else{
+                            if($id_regional_registro_nuevo!=$regional_usuario){
+                                //el nuevo registro que intenta modificar el usuario pertenecerá a otra regional
+                                return false;
+                            }else{
+                                return true;
+                            }
+                        }
+                    }
+                }else{
+                    return false;
+                }                    
+            }
         }
     }
 }

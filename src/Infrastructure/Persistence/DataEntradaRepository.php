@@ -112,7 +112,7 @@ class DataEntradaRepository implements EntradaRepository {
 
     public function listEntrada($query,$token): array {
         if(!(isset($query['filtro'])&&isset($query['limite'])&&isset($query['indice']))){
-            return array('success'=>false,'message'=>'Datos invalidos');
+            return array('success'=>false,'message'=>'Datos invalidos','data_entrada'=>array(),'code'=>202);
         }
         if($token->privilegio=='limitado'){
             $filtro_regional="id_regional='".$token->regional."' AND ";
@@ -426,7 +426,7 @@ class DataEntradaRepository implements EntradaRepository {
     }
 
     public function modifyEntrada($id_entrada,$data_entrada,$token): array {
-        if(!($this->verificaPermisos($id_entrada,$data_entrada['id_regional']['id'],$token))){
+        if(!($this->verificaPermisos($id_entrada,(isset($data_entrada['id_regional']['id']))?$data_entrada['id_regional']['id']:null,$token))){
             return array('success'=>false,'message'=>'usuario no autorizado','code'=>403,'data_entrada'=>array());
         }
         $codigo=false;

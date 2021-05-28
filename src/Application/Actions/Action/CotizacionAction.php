@@ -34,12 +34,17 @@ class CotizacionAction extends Action {
         $this->response = $response;
         $this->args = $args;
         $id_cotizacion = $args['id_cotizacion'];
-        $res=$this->cotizacionRepository->getCotizacion($id_cotizacion);
-        if($res['success']==false){
-            return $this->respondWithData(null,$res['message'],202,true);
-        }else{
-            return $this->respondWithData($res['data_cotizacion'],$res['message'],200,true);
+
+        $JWT = new \App\Application\Middleware\JWTdata($request);
+        $token = $JWT->getToken();
+        if (!$token['success']) {
+            return $this->respondWithData(array(), 'Datos de token invalidos', 403,false);
         }
+        $token = $token['data'];
+
+        $res=$this->cotizacionRepository->getCotizacion($id_cotizacion,$token);
+        
+        return $this->respondWithData($res['data_cotizacion'],$res['message'],$res['code'],$res['success']);
     }
 
     public function lista_Cotizacion(Request $request, Response $response, $args): Response {
@@ -48,13 +53,16 @@ class CotizacionAction extends Action {
         $this->args = $args;
         $query=$request->getQueryParams();
 
-        $res=$this->cotizacionRepository->listCotizacion($query);
-
-        if($res['success']==false){
-            return $this->respondWithData(null,$res['message'],202,true);
-        }else{
-            return $this->respondWithData($res['data_cotizacion'],$res['message'],200,true);
+        $JWT = new \App\Application\Middleware\JWTdata($request);
+        $token = $JWT->getToken();
+        if (!$token['success']) {
+            return $this->respondWithData(array(), 'Datos de token invalidos', 403,false);
         }
+        $token = $token['data'];
+
+        $res=$this->cotizacionRepository->listCotizacion($query,$token);
+
+        return $this->respondWithData($res['data_cotizacion'],$res['message'],$res['code'],$res['success']);
     }
 
     /* body servicio de edicion de cotizacion
@@ -81,15 +89,10 @@ class CotizacionAction extends Action {
             return $this->respondWithData(array(), 'Datos de token invalidos', 403,false);
         }
         $token = $token['data'];
-        $uuid=$token->sub;
 
-        $res=$this->cotizacionRepository->editCotizacion($id_cotizacion,$data_cotizacion,$uuid);
+        $res=$this->cotizacionRepository->editCotizacion($id_cotizacion,$data_cotizacion,$token);
 
-        if($res['success']==false){
-            return $this->respondWithData(null,$res['message'],202,false);
-        }else{
-            return $this->respondWithData($res['data_cotizacion'],$res['message'],200,true);
-        }
+        return $this->respondWithData($res['data_cotizacion'],$res['message'],$res['code'],$res['success']);
     }
 
     public function cambiaestado_Cotizacion(Request $request, Response $response, $args): Response {
@@ -103,13 +106,9 @@ class CotizacionAction extends Action {
             return $this->respondWithData(array(), 'Datos de token invalidos', 403,false);
         }
         $token = $token['data'];
-        $uuid=$token->sub;
-        $res=$this->cotizacionRepository->changestatusCotizacion($id_cotizacion,$uuid);
-        if($res['success']==false){
-            return $this->respondWithData(null,$res['message'],202,true);
-        }else{
-            return $this->respondWithData(null,$res['message'],200,true);
-        }
+
+        $res=$this->cotizacionRepository->changestatusCotizacion($id_cotizacion,$token);
+        return $this->respondWithData($res['data_cotizacion'],$res['message'],$res['code'],$res['success']);
         
     }
 
@@ -177,15 +176,10 @@ class CotizacionAction extends Action {
             return $this->respondWithData(array(), 'Datos de token invalidos', 403,false);
         }
         $token = $token['data'];
-        $uuid=$token->sub;
         
-        $res=$this->cotizacionRepository->createCotizacion($data_cotizacion,$uuid);
+        $res=$this->cotizacionRepository->createCotizacion($data_cotizacion,$token);
 
-        if($res['success']==false){
-            return $this->respondWithData(null,$res['message'],202,false);
-        }else{
-            return $this->respondWithData($res['data_cotizacion'],$res['message'],200,true);
-        }
+        return $this->respondWithData($res['data_cotizacion'],$res['message'],$res['code'],$res['success']);
     }
 
     public function modifica_Cotizacion(Request $request, Response $response, $args): Response {
@@ -201,14 +195,9 @@ class CotizacionAction extends Action {
             return $this->respondWithData(array(), 'Datos de token invalidos', 403,false);
         }
         $token = $token['data'];
-        $uuid=$token->sub;
 
-        $res=$this->cotizacionRepository->modifyCotizacion($id_cotizacion,$data_cotizacion,$uuid);
+        $res=$this->cotizacionRepository->modifyCotizacion($id_cotizacion,$data_cotizacion,$token);
 
-        if($res['success']==false){
-            return $this->respondWithData(null,$res['message'],202,false);
-        }else{
-            return $this->respondWithData($res['data_cotizacion'],$res['message'],200,true);
-        }
+        return $this->respondWithData($res['data_cotizacion'],$res['message'],$res['code'],$res['success']);
     }
 }
