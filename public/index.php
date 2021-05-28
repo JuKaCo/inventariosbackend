@@ -41,7 +41,7 @@ $container = $containerBuilder->build();
 AppFactory::setContainer($container);
 $app = AppFactory::create();
 //apache relative route
-if (true) {
+if ($_ENV['PRODUCTION']==0) {
 	$app->setBasePath('/ceass-back-end/public');
 }
 $callableResolver = $app->getCallableResolver();
