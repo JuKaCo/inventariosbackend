@@ -696,7 +696,7 @@ class DataEntradaRepository implements EntradaRepository {
         if($codigo){
             $resp += ['codigo' => 'dato actualizado'];
         }
-        $resp = array('success'=>'true','message'=>'datos actualizados','data_entrada'=>$resp,'code'=>200);
+        $resp = array('success'=>true,'message'=>'datos actualizados','data_entrada'=>$resp,'code'=>200);
         return $resp;
     }
 
