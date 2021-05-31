@@ -45,7 +45,7 @@ class DataCorrelativoRepository implements CorrelativoRepository {
         
         if($res->rowCount()>0){
             $res = $res->fetchAll(PDO::FETCH_ASSOC);
-            $correlativo=$res[0]['MAX(correlativo)'];
+            $correlativo=$res[0]['correlativo'];
             $correlativo++;
             $sql = "UPDATE correlativo 
                     SET correlativo=:correlativo, u_mod=:user_uuid
