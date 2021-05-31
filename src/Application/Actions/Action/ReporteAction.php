@@ -39,8 +39,14 @@ class ReporteAction extends Action {
 
         header('access-control-allow-origin: *');
 
+        $JWT = new \App\Application\Middleware\JWTdata($request);
+        $token = $JWT->getToken();
+        if (!$token['success']) {
+            return $this->respondWithData(array(), 'Datos de token invalidos', 403);
+        }
+        $token = $token['data'];
 
-        $res=$this->repository->reporteIngresoNotaIngreso($id_entrada);
+        $res=$this->repository->reporteIngresoNotaIngreso($id_entrada, $token);
         if (isset($res['error'])) {
             return $this->respondWithData(array(), 'Error', 500, false);
         }

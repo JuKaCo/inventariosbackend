@@ -549,4 +549,43 @@ class DataTemplateRepository {
                 EOD;
             return $html;
     }
+
+
+
+
+    public function getCotizacionTemplate($datosEntrada, $datosItem, $token): string {
+        $filas = "";
+        $i = 0;
+        $total = 0;
+        $fecha = $datosEntrada['fecha'];
+        $nformater = new NumberFormatter("es-MX", NumberFormatter::SPELLOUT);
+        foreach ($datosItem as $item) {
+            // para tabla de valores
+            $espec_tecn = isset($item->id_producto->especificacion_tec) ? $item->id_producto->especificacion_tec : '';
+            $costoTotal = (float)$item['cantidad'] * (float)$item['costo_almacen'];
+            $costoTotal = round($costoTotal, 2);
+            $costoUnit = round($item['costo_almacen'], 2);
+            $costoNeto = round($item['costo_neto'], 2);
+            $precioVenta = round($item['precio_venta'], 2);
+            $i++;
+            $total += $costoTotal;
+            $filas .= "
+                <tr>
+                    <td>$i</td>
+                    <td>{$item['id_producto']['codigo']}</td>
+                    <td>{$item['id_producto']['nombre_comercial']}</td>
+                    <td>{$item['id_producto']['form_farm']}</td>
+                    <td>$espec_tecn</td>
+                    <td>{$item['lote']}</td>
+                    <td>{$item['fecha_exp']}</td>
+                    <td>{$item['cantidad']}</td>
+                    <td>{$costoUnit}</td>
+                    <td>$costoTotal</td>
+                    <td>{$costoNeto}</td>
+                    <td>{$precioVenta}</td>
+                </tr>
+            ";
+        }
+        return "";
+    }
 }
