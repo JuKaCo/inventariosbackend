@@ -5,7 +5,7 @@ namespace App\Domain;
 
 interface ReporteRepository
 {
-    public function reporteIngresoNotaIngreso($data): array;
+    public function reporteIngresoNotaIngreso($data, $token): array;
     public function reporteIngresoActaRecepcion($data, $token): array;
     
 }

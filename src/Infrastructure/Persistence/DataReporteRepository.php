@@ -125,10 +125,7 @@ class DataReporteRepository implements ReporteRepository {
         try {
             $entrada = $this->dataEntradaRepository->getEntrada($id_entrada, $token);
             if ($entrada['success'] == true) {
-                $datosEntrada = $entrada[' 
-                }
-                +
-                +'];
+                $datosEntrada = $entrada['data_entrada'];
                 $quey = array('filtro' => $id_entrada, 'limite' => '1000', 'indice' => '0');
                 $item = $this->dataItemRepository->listItem($quey, $id_entrada);
                 if ($item['success'] == true) {
@@ -159,7 +156,7 @@ class DataReporteRepository implements ReporteRepository {
 
                     $html = $this->template->getActaRecepcionTemplate($datosEntrada, $datosItem, $token);
                     $pdf->writeHTML($html, true, 0, true, 0);
-                                        /* Creado QR */ 
+                    /* Creado QR */
                     $uri_valid = $_ENV['VALID_URL'];
                     $pdf->write2DBarcode($uri_valid.'nota_ingreso/'.$datosEntrada['id'], 'QRCODE,L', 170, 5, 0, 25, array(), 'N');
                     $pdf->Output();
@@ -254,7 +251,7 @@ class DataReporteRepository implements ReporteRepository {
                         }
                     }
                 }else{
-                    return false; 
+                    return false;
                 }                    
             }
         }
