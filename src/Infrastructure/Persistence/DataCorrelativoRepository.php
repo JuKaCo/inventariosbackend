@@ -34,7 +34,7 @@ class DataCorrelativoRepository implements CorrelativoRepository {
  */
     public function genCorrelativo($codigo,$parametro,$user_uuid): array {
 
-        $sql = "SELECT MAX(correlativo)
+        $sql = "SELECT correlativo
                 FROM correlativo
                 WHERE codigo=:codigo AND parametro=:parametro
                 ORDER BY correlativo DESC";
@@ -45,33 +45,43 @@ class DataCorrelativoRepository implements CorrelativoRepository {
         
         if($res->rowCount()>0){
             $res = $res->fetchAll(PDO::FETCH_ASSOC);
-            $correlativo=$res[0]['MAX(correlativo)'];
+            $correlativo=$res[0]['correlativo'];
             $correlativo++;
+            $sql = "UPDATE correlativo 
+                    SET correlativo=:correlativo, u_mod=:user_uuid
+                    WHERE codigo=:codigo AND parametro=:parametro";
+            $res = ($this->db)->prepare($sql);
+            $res->bindParam(':codigo', $codigo, PDO::PARAM_STR);
+            $res->bindParam(':parametro', $parametro, PDO::PARAM_STR);
+            $res->bindParam(':correlativo', $correlativo, PDO::PARAM_STR);
+            $res->bindParam(':user_uuid', $user_uuid, PDO::PARAM_STR);
+            $res->execute();
         }else{
             $correlativo=1;
+            $sql = "INSERT INTO correlativo (
+                    id,
+                    codigo,
+                    parametro,
+                    correlativo,
+                    f_crea,
+                    u_crea)
+                    VALUES (
+                    UUID(),
+                    :codigo,
+                    :parametro,
+                    :correlativo,
+                    now(),
+                    :user_uuid)";
+            $res = ($this->db)->prepare($sql);
+            $res->bindParam(':codigo', $codigo, PDO::PARAM_STR);
+            $res->bindParam(':parametro', $parametro, PDO::PARAM_STR);
+            $res->bindParam(':correlativo', $correlativo, PDO::PARAM_STR);
+            $res->bindParam(':user_uuid', $user_uuid, PDO::PARAM_STR);
+            $res->execute();
+            $res = $res->fetchAll(PDO::FETCH_ASSOC);
         }
         
-        $sql = "INSERT INTO correlativo (
-                id,
-                codigo,
-                parametro,
-                correlativo,
-                f_crea,
-                u_crea)
-                VALUES (
-                UUID(),
-                :codigo,
-                :parametro,
-                :correlativo,
-                now(),
-                :user_uuid)";
-        $res = ($this->db)->prepare($sql);
-        $res->bindParam(':codigo', $codigo, PDO::PARAM_STR);
-        $res->bindParam(':parametro', $parametro, PDO::PARAM_STR);
-        $res->bindParam(':correlativo', $correlativo, PDO::PARAM_STR);
-        $res->bindParam(':user_uuid', $user_uuid, PDO::PARAM_STR);
-        $res->execute();
-        $res = $res->fetchAll(PDO::FETCH_ASSOC);
+        
         return array('codigo'=>$codigo,'parametro'=>$parametro,'correlativo'=>$correlativo);
     }
 
