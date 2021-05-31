@@ -299,7 +299,6 @@ class DataParametricaRepository implements ParametricaRepository {
                                     'id_linadime'=>$res['id_linadime'],
                                     'cod_linadime'=>$res['cod_linadime'],
                                 ),
-                                'reg_san'=>$res['reg_san'],
                                 'referencia'=>$res['referencia'],
                                 'medicamento'=>$res['medicamento'],
                                 'form_farm'=>$res['form_farm'],
