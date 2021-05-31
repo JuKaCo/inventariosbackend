@@ -259,9 +259,6 @@ class DataCompraRepository implements CompraRepository {
         if($res->rowCount()==1){
             $resp = array('success'=>false,'message'=>'Error, el codigo de la compra ya existe');
         }else{
-            //$correlativo = $this->dataCorrelativoRepository->genCorrelativo('REGIO', '0', $uuid);
-            //$correlativo = $correlativo['correlativo'];
-            //$correlativo = "REGIO-".$correlativo;
             $uuid_neo = Uuid::v4();
             $sql = "INSERT INTO compra (
                     id,
@@ -274,7 +271,7 @@ class DataCompraRepository implements CompraRepository {
                     f_crea,
                     u_crea
                     )VALUES(
-                    uuid(),
+                    :uuid,
                     :codigo,
                     :nombre,
                     :gestion,
