@@ -7,10 +7,12 @@ use Slim\Interfaces\RouteCollectorProxyInterface as Group;
 use App\Application\Actions\Action\ReporteAction;
 
 return function (App $app) {
-    $app->group('/api/v1/reporte/entrada', function (Group $group) {
+    $app->group('/api/v1/reporte', function (Group $group) {
 
-        $group->get('/notaingreso/{id}', ReporteAction::class.':getEntradaNotaIngreso');
-        $group->get('/actarecepcion/{id}', ReporteAction::class.':getEntradaActaRecepcion');
+        $group->get('/entrada/notaingreso/{id}', ReporteAction::class.':getEntradaNotaIngreso');
+        $group->get('/entrada/actarecepcion/{id}', ReporteAction::class.':getEntradaActaRecepcion');
+
+        $group->get('/cotizacion/{id}', ReporteAction::class.':getCotizacionReporte');
         
     });
 };

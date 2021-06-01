@@ -553,39 +553,196 @@ class DataTemplateRepository {
 
 
 
-    public function getCotizacionTemplate($datosEntrada, $datosItem, $token): string {
+    public function getCotizacionTemplate($datosCotizacion, $datosItemSec, $token): string {
+
+        // Imagen
+        $imagenLogo = $this->dataParametricaRepository->getConfiguracion('LOGO_CEASS');
+        $imagenLogo = $imagenLogo[0];
+        $img_base64_encoded = preg_replace('#^data:image/[^;]+;base64,#', '', $imagenLogo['recurso']);
+
+        //Titulo
+
+        $codigoEntrada = $datosCotizacion['codigo'];
+        $arrayCodigo = explode('-', $codigoEntrada);
+        $secuencial = $arrayCodigo[3]; 
+
+        // Lista de productos (tabla)
+
         $filas = "";
         $i = 0;
         $total = 0;
-        $fecha = $datosEntrada['fecha'];
-        $nformater = new NumberFormatter("es-MX", NumberFormatter::SPELLOUT);
-        foreach ($datosItem as $item) {
+        foreach ($datosItemSec as $item) {
             // para tabla de valores
-            $espec_tecn = isset($item->id_producto->especificacion_tec) ? $item->id_producto->especificacion_tec : '';
-            $costoTotal = (float)$item['cantidad'] * (float)$item['costo_almacen'];
-            $costoTotal = round($costoTotal, 2);
-            $costoUnit = round($item['costo_almacen'], 2);
-            $costoNeto = round($item['costo_neto'], 2);
-            $precioVenta = round($item['precio_venta'], 2);
             $i++;
-            $total += $costoTotal;
+            $precioVenta = round($item['precio_venta'], 2);
+            $totalFila = round($item['precio_total'], 2);
+            $total += $item['precio_total'];
+
             $filas .= "
                 <tr>
                     <td>$i</td>
-                    <td>{$item['id_producto']['codigo']}</td>
-                    <td>{$item['id_producto']['nombre_comercial']}</td>
-                    <td>{$item['id_producto']['form_farm']}</td>
-                    <td>$espec_tecn</td>
-                    <td>{$item['lote']}</td>
+                    <td>{$item['id_producto_inventario']['codigo']}</td>
+                    <td>{$item['id_producto_inventario']['nombre_comercial']}</td>
                     <td>{$item['fecha_exp']}</td>
+                    <td>{$item['lote']}</td>
                     <td>{$item['cantidad']}</td>
-                    <td>{$costoUnit}</td>
-                    <td>$costoTotal</td>
-                    <td>{$costoNeto}</td>
                     <td>{$precioVenta}</td>
-                </tr>
-            ";
+                    <td>{$totalFila}</td>
+                </tr>";
         }
-        return "";
+
+        $html = <<<EOD
+                    <!DOCTYPE html>
+                    <html lang="es">
+                        <head>
+                            <meta charset="UTF-8">
+                            <title>Document</title>
+                            <style>
+                                .container {
+                                    align-items:center;
+                                    align-content:center;
+                                }
+                                .titulo { 
+                                    text-align: center; 
+                                    font-weight:bold; 
+                                    font-size: 15px;
+                                }
+                                .tabla {
+                                    font-size: 10px;
+                                    aling-self: center;
+                                    align-items:center;
+                                    align-content:center;
+                                    width: 100%;
+                                }
+                                .tabla > table {
+                                    border-spacing: 5px;
+                                }
+                                .datatable{
+                                    border: 1px solid #000000;
+                                    font-size: 8px;
+                                    margin: 15px;
+                                    text-align: center;
+                                    border-collapse: collapse;
+                                    padding: 5px;
+                                    align-self: center;
+                                }
+                                .datatable > td{
+                                    border: 1px solid #000000;
+                                    border-collapse: collapse;
+                                    align-self: center !important;
+                                }
+                                .datatable > th{
+                                    border: 1px solid #000000;
+                                    border-collapse: collapse;
+                                    font-weight:bold;
+                                    align-self: center !important;
+                                }
+                                .table3 {
+                                    width: 100%;
+                                    align-self: center;
+                                }
+                                .table3 > td {
+                                
+                                }
+                                .mensaje {
+                                    font-size: 10px;
+                                    width: 50% !important;
+                                }
+                                .comision {
+                                    font-size: 8px;
+                                    text-align: center !important;
+                                    padding-bottom:0px;
+                                    margin-bottom:0;
+                                }
+                                .td_comision {
+                                    border: 1px solid #000000;
+                                    width: 32%;
+                                    padding:0px; 
+                                    margin:0px
+                                }
+                                .titulo_comision {
+                                    margin-top: 0px;
+                                    padding-top:0px;
+                                    font-weight:bold;
+                                    font-size: 9px;
+                                }
+                                .nota{
+                                    font-size: 8px;
+                                }
+                                .datos_regional {
+                                    font-size: 10px;
+                                    text-align: center; 
+                                }
+                                .firma {
+                                    font-size: 10px;
+                                    text-align: center; 
+                                }
+                            </style>
+                        </head>
+                        <body> 
+                            <div class="container">
+                                <table style="width: 35%;">
+                                    <tr>
+                                        <td><img src="@{$img_base64_encoded}" width="180px"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="datos_regional">CEASS - {$datosCotizacion['id_regional']['nombre']}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="datos_regional">{$datosCotizacion['id_regional']['direccion']}</td>
+                                    </tr>
+
+                                    <tr>
+                                        <td class="datos_regional">{$datosCotizacion['id_regional']['telefono']}</td>
+                                    </tr>
+                                    
+                                </table>
+                                
+                                <p class="titulo"> Cotización Nro. {$secuencial} </p>
+
+                                <div class="tabla">
+                                    <table>
+                                        <tr>
+                                            <td style="font-weight:bold; width: 100px;">Cliente:</td>
+                                            <td colspan="2">{$datosCotizacion['id_cliente']['nombre']}</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="font-weight:bold;">Codigo:</td>
+                                            <td>{$datosCotizacion['codigo']}</td>
+
+                                            <td style="font-weight:bold; width: 100px;">Fecha:</td>
+                                            <td>{$datosCotizacion['fecha']}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div style="with=100%">
+                                    <table class="datatable">
+                                        <tr>
+                                            <th style="width: 4%;">No</th>
+                                            <th>Codigo</th>
+                                            <th>Nombre de Producto</th>
+                                            <th>Fecha expriración</th>
+                                            <th>Lote</th>
+                                            <th>Cantidad</th>
+                                            <th>Precio</th>
+                                            <th>Total</th>
+                                        </tr>
+                                        $filas
+                                    </table>
+                                    <p class="nota"> <span style="font-weight:bold;">                        Nota:</span> El presente documento tiene una validez de 7 dias.</p>
+                                </div>
+
+                                <br><br><br><br><br><br><br><br><br><br>
+                                <div class="firma"> 
+                                    <small>______________________________________________________________________</small><br>
+                                    <span>Representante de ventas</span>
+                                </div>
+                            <div>
+                        </body>
+                    </html>
+                    EOD;
+
+        return $html;
     }
+    
 }

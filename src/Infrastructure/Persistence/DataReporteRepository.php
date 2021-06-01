@@ -158,7 +158,7 @@ class DataReporteRepository implements ReporteRepository {
                     $pdf->writeHTML($html, true, 0, true, 0);
                     /* Creado QR */
                     $uri_valid = $_ENV['VALID_URL'];
-                    $pdf->write2DBarcode($uri_valid.'nota_ingreso/'.$datosEntrada['id'], 'QRCODE,L', 170, 5, 0, 25, array(), 'N');
+                    $pdf->write2DBarcode($uri_valid.'acta_recepcion/'.$datosEntrada['id'], 'QRCODE,L', 170, 5, 0, 25, array(), 'N');
                     $pdf->Output();
 
                     /* *PDF Finaliza* */
@@ -185,12 +185,52 @@ class DataReporteRepository implements ReporteRepository {
         $error = false;
         try {
             $cotizacion = $this->dataCotizacionRepository->getCotizacion($id_cotizacion, $token);
+            
             if ($cotizacion['success'] == true) {
                 $datosCotizacion = $cotizacion['data_cotizacion'];
                 $quey = array('filtro' => "", 'limite' => '1000', 'indice' => '0');
                 $id_cotizacion = 'xxxx-xxxx-xxxx-xxxxxxxx';
-                // $id_cotizacion = $datosCotizacion
+                $listaItemSec = $this->dataItemSecRepository->listItemSec($quey, $id_cotizacion);
+                if ($listaItemSec['success'] == true) {
+                    $datosItemSec = $listaItemSec['data_itemsec']['resultados'];
 
+                    /* *PDF aqui* */
+                    $pdf = new MYPDF(PDF_PAGE_ORIENTATION, 'mm', array('279', '216'), true, 'UTF-8', false);
+                    $pdf->datos($datosCotizacion['id']);
+                    
+                    $pdf->SetCreator('');
+                    $pdf->SetAuthor('CEASS');
+                    $pdf->SetTitle('Nota de ingreso almacen');
+                    $pdf->SetSubject('Nota de ingreso almacen');
+                    $pdf->SetKeywords('Almacen, Ingreso, CEASS');
+                    $pdf->setPrintHeader(false);
+                    $pdf->SetMargins(8, 0, 8);
+
+                    $pdf->SetHeaderMargin(0);
+                    $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
+
+                    $pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
+
+                    $pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
+
+
+                    $pdf->setFontSubsetting(true);
+                    $pdf->SetFont('dejavusans', '', 14, '', true);
+                    $pdf->AddPage();
+
+                    $html = $this->template->getCotizacionTemplate($datosCotizacion, $datosItemSec, $token);
+                    //$html = "<p>Hello World!</p>";
+                    $pdf->writeHTML($html, true, 0, true, 0);
+                    /* Creado QR */
+                    $uri_valid = $_ENV['VALID_URL'];
+                    $pdf->write2DBarcode($uri_valid.'cotizacion/'.$datosCotizacion['id'], 'QRCODE,L', 170, 5, 0, 25, array(), 'N');
+                    $pdf->Output();
+
+                    /* *PDF Finaliza* */
+
+                } else {
+                    $error = true;
+                }
             } else {
                 $error = true;
             }

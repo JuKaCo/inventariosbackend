@@ -7,5 +7,6 @@ interface ReporteRepository
 {
     public function reporteIngresoNotaIngreso($data, $token): array;
     public function reporteIngresoActaRecepcion($data, $token): array;
+    public function reporteCotizacion($data, $token): array;
     
 }
