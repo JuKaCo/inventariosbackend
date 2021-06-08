@@ -203,7 +203,7 @@ class DataCotizacionRepository implements CotizacionRepository {
                 :id_cliente,
                 :dias_validez,
                 :comentarios,
-                'VIGENTE',
+                'PENDIENTE',
                 1,
                 now(),
                 :u_crea
