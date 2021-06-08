@@ -249,6 +249,15 @@ class DataCotizacionRepository implements CotizacionRepository {
         $codigo=false;
         $resp=array();
 
+        $sql = "SELECT *
+                FROM cotizacion
+                WHERE id=:id_cotizacion";
+        $res = ($this->db)->prepare($sql);
+        $res->bindParam(':id_cotizacion', $id_cotizacion, PDO::PARAM_STR);
+        $res->execute();
+        $res = $res->fetchAll(PDO::FETCH_ASSOC);
+        $dato_ant=$res[0];
+
         if(isset($data_cotizacion['id_regional'])){
 
             /*$correlativo = $this->dataCorrelativoRepository->genCorrelativo($data_cotizacion['id_regional']['codigo'], 'COT', $token->sub);
@@ -270,29 +279,31 @@ class DataCotizacionRepository implements CotizacionRepository {
         }
 
         if(isset($data_cotizacion['id_almacen'])){
-            
-            $sql = "UPDATE cotizacion 
-                    SET id_almacen=:id_almacen,
-                    f_mod=now(), 
-                    u_mod=:u_mod
-                    WHERE id=:id_cotizacion;";
-            $res = ($this->db)->prepare($sql);
-            $res->bindParam(':id_cotizacion', $id_cotizacion, PDO::PARAM_STR);
-            $res->bindParam(':id_almacen', $data_cotizacion['id_almacen']['id'], PDO::PARAM_STR);
-            $res->bindParam(':u_mod', $token->sub, PDO::PARAM_STR);
-            $res->execute();
-            $resp += ['id_almacen' => 'dato actualizado, items asociados eliminados'];
-            // se borre en cascada los items secundarios asociados a la cotizacion
-            $query=array(
-                'filtro'=>'',
-                'limite'=>100000000000,
-                'indice'=>0
-            );
-            $data_items = $this->DataItemSecRepository->listItemSec($query,$id_cotizacion);
-            $data_items = $data_items['data_itemsec']['resultados'];
+            if($dato_ant['id_regional']!=$data_cotizacion['id_almacen']['id']){
+                $sql = "UPDATE cotizacion 
+                        SET id_almacen=:id_almacen,
+                        f_mod=now(), 
+                        u_mod=:u_mod
+                        WHERE id=:id_cotizacion;";
+                $res = ($this->db)->prepare($sql);
+                $res->bindParam(':id_cotizacion', $id_cotizacion, PDO::PARAM_STR);
+                $res->bindParam(':id_almacen', $data_cotizacion['id_almacen']['id'], PDO::PARAM_STR);
+                $res->bindParam(':u_mod', $token->sub, PDO::PARAM_STR);
+                $res->execute();
+                
+                // se borre en cascada los items secundarios asociados a la cotizacion
+                $query=array(
+                    'filtro'=>'',
+                    'limite'=>100000000000,
+                    'indice'=>0
+                );
+                $data_items = $this->DataItemSecRepository->listItemSec($query,$id_cotizacion);
+                $data_items = $data_items['data_itemsec']['resultados'];
 
-            foreach($data_items as $item){
-                $this->DataItemSecRepository->changestatusItem($item['id'],$token->sub);
+                foreach($data_items as $item){
+                    $this->DataItemSecRepository->changestatusItemSec($item['id'],$token->sub);
+                }
+                $resp += ['id_almacen' => 'dato actualizado, items asociados eliminados'];
             }
         }
 
