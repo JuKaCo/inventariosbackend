@@ -365,7 +365,7 @@ class DataCotizacionRepository implements CotizacionRepository {
                 //tomamos en cuenta esta data para los productos comprometidos, ademas asignamos un codigo a la cotizacion.
                 $sql = "SELECT reg.codigo as cod_regional
                         FROM cotizacion c, regional reg
-                        WHERE c.id=:id_cotizacion AND reg.id=c.id_almacen";
+                        WHERE c.id=:id_cotizacion AND reg.id=c.id_regional";
                 $res = ($this->db)->prepare($sql);
                 $res->bindParam(':id_cotizacion', $id_cotizacion, PDO::PARAM_STR);
                 
