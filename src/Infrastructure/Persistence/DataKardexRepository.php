@@ -402,7 +402,7 @@ class DataKardexRepository implements KardexRepository {
         //obtenemos el ultimo registro asociado al id_producto y lote
         $sql = "SELECT *
                 FROM kardex
-                WHERE lote = :lote AND id_producto = :id_producto AND id_proveedor = :id_proveedor
+                WHERE LOWER(lote) LIKE LOWER(:lote) AND id_producto = :id_producto AND id_proveedor = :id_proveedor
                 ORDER BY f_crea DESC
                 LIMIT 1;";
         $res = ($this->db)->prepare($sql);
@@ -419,6 +419,7 @@ class DataKardexRepository implements KardexRepository {
             $id_kardex_padre = $res['id'];
             $cantidad_anterior = (integer)$res['cantidad_actual'];
             $cantidad_actual = 0;
+            $estado='VIGENTE';
             if($data_kardex['tipo_in_out']=="IN"){
                 $cantidad_actual = (integer)$res['cantidad_actual'] + (integer)$data_kardex['cantidad_diferencia'];//si es ingreso sumamos
             }else{
@@ -426,6 +427,9 @@ class DataKardexRepository implements KardexRepository {
                     $resp = array('success'=>false,'message'=>'cantidad actual es inferior a la cantidad solicitada','data_kardex'=>array());
                 }else{
                     $cantidad_actual = (integer)$res['cantidad_actual'] - (integer)$data_kardex['cantidad_diferencia'];//si es salida restamos
+                    if($cantidad_actual==0){
+                        $estado='COMPENSADO';
+                    }
                 }
             }
             //CAMBIAMOS ESTADO A ANTERIOR REGISTRO
@@ -439,8 +443,9 @@ class DataKardexRepository implements KardexRepository {
             $cantidad_anterior = 0;
             $cantidad_actual = (integer)$data_kardex['cantidad_diferencia'];
             $id_kardex_padre = null;
+            
         }
-        $estado='VIGENTE';
+        //$estado='VIGENTE';
         $uuid_neo=Uuid::v4();
         $sql = "INSERT INTO kardex (
                 id,
@@ -614,6 +619,7 @@ class DataKardexRepository implements KardexRepository {
                                 'id_proveedor'=>$data_proveedor['data_proveedor'],
                                 'lote'=>$res['lote'],
                                 'cantidad_actual'=>(integer)$res['cantidad_actual'],
+                                'comprometido'=>(integer)0,
                                 'fecha_exp'=>$fecha[2]."/".$fecha[1]."/".$fecha[0],
                                 'precio_venta'=>(double)$res['precio_venta']
                                 );

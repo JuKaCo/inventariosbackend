@@ -8,6 +8,7 @@ use App\Application\Actions\RepositoryConection\Conect;
 use App\Domain\ItemRepository;
 use App\Infrastructure\Persistence\DataCorrelativoRepository;
 use App\Infrastructure\Persistence\DataProductoRepository;
+use App\Infrastructure\Persistence\DataProveedorRepository;
 use App\Infrastructure\Persistence\DataParametricaRepository;
 use \PDO;
 use AbmmHasan\Uuid;
@@ -25,6 +26,7 @@ class DataItemRepository implements ItemRepository {
     private $db;
     private $dataCorrelativoRepository;
     private $dataProductoRepository;
+    private $dataProveedorRepository;
     private $dataParametricaRepository;
 
     /**
@@ -36,6 +38,7 @@ class DataItemRepository implements ItemRepository {
         $this->db = $con->getConection();
         $this->dataCorrelativoRepository = new DataCorrelativoRepository;
         $this->dataProductoRepository = new DataProductoRepository;
+        $this->dataProveedorRepository = new DataProveedorRepository;
         $this->dataParametricaRepository = new DataParametricaRepository;
     }
 
@@ -52,10 +55,13 @@ class DataItemRepository implements ItemRepository {
             
             $data_producto = $this->dataProductoRepository->getProducto($res['id_producto']);
             $data_producto = $data_producto['data_producto'];
+            $data_proveedor = $this->dataProveedorRepository->getProveedor($res['id_proveedor']);
+            $data_proveedor = $data_producto['data_proveedor'];
             $data_factor = $this->dataParametricaRepository->getCodParametrica("param_factor_precio",0,(float)$res['factor']);
             //$data_factor = $data_factor[0];
             $fecha = explode("-",$res['fecha_exp']);
             $result = array('id'=>$res['id'],
+                        'id_proveedor'=>$data_proveedor,
                         'id_producto'=>$data_producto,
                         'id_entrada_salida'=>$res['id_entrada_salida'],
                         'tipo_in_out'=>$res['tipo_in_out'],
@@ -118,10 +124,13 @@ class DataItemRepository implements ItemRepository {
             foreach ($res as $item){
                 $data_producto = $this->dataProductoRepository->getProducto($item['id_producto']);
                 $data_producto = $data_producto['data_producto'];
+                $data_proveedor = $this->dataProveedorRepository->getProveedor($item['id_proveedor']);
+                $data_proveedor = $data_producto['data_proveedor'];
                 $data_factor = $this->dataParametricaRepository->getCodParametrica("param_factor_precio",0,(float)$item['factor']);
                 //$data_factor = $data_factor[0];
                 $fecha = explode("-",$item['fecha_exp']);
                 $result = array('id'=>$item['id'],
+                            'id_proveedor'=>$data_proveedor,
                             'id_producto'=>$data_producto,
                             'id_entrada_salida'=>$item['id_entrada_salida'],
                             'tipo_in_out'=>$item['tipo_in_out'],
@@ -158,6 +167,19 @@ class DataItemRepository implements ItemRepository {
         
         $success=true;
         $resp=array();
+        if(isset($data_item['id_proveedor'])){
+            $sql = "UPDATE item 
+                    SET id_proveedor=:id_proveedor,
+                    f_mod=now(), 
+                    u_mod=:u_mod
+                    WHERE id=:id_item;";
+            $res = ($this->db)->prepare($sql);
+            $res->bindParam(':id_item', $id_item, PDO::PARAM_STR);
+            $res->bindParam(':id_proveedor', $data_item['id_proveedor']['id'], PDO::PARAM_STR);
+            $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
+            $res->execute();
+            $resp += ['id_proveedor' => 'dato actualizado'];
+        }
         if(isset($data_item['registro_sanitario'])){
             $sql = "UPDATE item 
                     SET registro_sanitario=:registro_sanitario,
@@ -353,6 +375,7 @@ class DataItemRepository implements ItemRepository {
         $uuid_neo=Uuid::v4();
         $sql = "INSERT INTO item (
                 id,
+                id_proveedor,
                 id_producto,
                 id_entrada_salida,
                 tipo_in_out,
@@ -374,6 +397,7 @@ class DataItemRepository implements ItemRepository {
                 u_crea
                 )VALUES(
                 :uuid,
+                :id_proveedor,
                 :id_producto,
                 :id_entrada_salida,
                 :tipo_in_out,
@@ -396,6 +420,7 @@ class DataItemRepository implements ItemRepository {
                 );";
         $res = ($this->db)->prepare($sql);
         $res->bindParam(':uuid', $uuid_neo, PDO::PARAM_STR);
+        $res->bindParam(':id_proveedor', $data_item['id_proveedor']['id'], PDO::PARAM_STR);
         $res->bindParam(':id_producto', $data_item['id_producto']['id'], PDO::PARAM_STR);
         $res->bindParam(':id_entrada_salida', $data_item['id_entrada_salida'], PDO::PARAM_STR);
         $res->bindParam(':tipo_in_out', $data_item['tipo_in_out'], PDO::PARAM_STR);
@@ -427,6 +452,7 @@ class DataItemRepository implements ItemRepository {
         //$data_factor = $this->dataParametricaRepository->getCodParametrica("param_factor_precio",0,(float)$res['factor']);
         $fecha = explode("-",$res['fecha_exp']);
         $result = array('id'=>$res['id'],
+                        'id_proveedor'=>$data_item['id_proveedor'],
                         'id_producto'=>$data_item['id_producto'],
                         'id_entrada_salida'=>$res['id_entrada_salida'],
                         'tipo_in_out'=>$res['tipo_in_out'],

@@ -76,7 +76,8 @@ class DataEntradaRepository implements EntradaRepository {
             $data_tipo_financiamiento = $this->dataParametricaRepository->getCodParametrica('param_tipo_financiamiento',0,$res['tipo_financiamiento']);
             $data_tipo_contratacion = $this->dataParametricaRepository->getCodParametrica('param_modalidad_contr',0,$res['modalidad_contratacion']);
             $result = array('id'=>$res['id'],
-                            'codigo'=>$res['codigo'],
+     
+            'codigo'=>$res['codigo'],
                             'id_regional'=>$data_regional['data_regional'],
                             'id_almacen'=>$data_almacen['data_almacen'],
                             'tipo_entrada'=>$data_tipo_entrada,
@@ -430,6 +431,15 @@ class DataEntradaRepository implements EntradaRepository {
         $codigo=false;
         $resp=array();
 
+        $sql = "SELECT *
+                FROM entrada
+                WHERE id=:id_entrada";
+        $res = ($this->db)->prepare($sql);
+        $res->bindParam(':id_entrada', $id_entrada, PDO::PARAM_STR);
+        $res->execute();
+        $res = $res->fetchAll(PDO::FETCH_ASSOC);
+        $dato_ant=$res[0];
+
         if(isset($data_entrada['id_regional'])){
             $sql = "UPDATE entrada 
                     SET id_regional=:id_regional,
@@ -445,31 +455,33 @@ class DataEntradaRepository implements EntradaRepository {
         }
 
         if(isset($data_entrada['id_almacen'])){
-            
-            $sql = "UPDATE entrada 
-                    SET id_almacen=:id_almacen,
-                    codigo=:codigo,
-                    f_mod=now(), 
-                    u_mod=:u_mod
-                    WHERE id=:id_entrada;";
-            $res = ($this->db)->prepare($sql);
-            $res->bindParam(':id_entrada', $id_entrada, PDO::PARAM_STR);
-            $res->bindParam(':id_almacen', $data_entrada['id_almacen']['id'], PDO::PARAM_STR);
-            $res->bindParam(':u_mod', $token->sub, PDO::PARAM_STR);
-            $res->execute();
-            $resp += ['id_almacen' => 'dato actualizado'];
-            //al cambiar almacen, debemos eliminar los registros de items asociados a la entrada
-            $query=array(
-                'filtro'=>'',
-                'limite'=>100000000000,
-                'indice'=>0
-            );
-            $data_items = $this->dataItemRepository->listItem($query,$id_entrada);
-            $data_items = $data_items['data_item']['resultados'];
+            if($dato_ant['id_almacen']!=$data_entrada['id_almacen']['id']){
+                $sql = "UPDATE entrada 
+                        SET id_almacen=:id_almacen,
+                        codigo=:codigo,
+                        f_mod=now(), 
+                        u_mod=:u_mod
+                        WHERE id=:id_entrada;";
+                $res = ($this->db)->prepare($sql);
+                $res->bindParam(':id_entrada', $id_entrada, PDO::PARAM_STR);
+                $res->bindParam(':id_almacen', $data_entrada['id_almacen']['id'], PDO::PARAM_STR);
+                $res->bindParam(':u_mod', $token->sub, PDO::PARAM_STR);
+                $res->execute();
+                $resp += ['id_almacen' => 'dato actualizado'];
+                //al cambiar almacen, debemos eliminar los registros de items asociados a la entrada
+                $query=array(
+                    'filtro'=>'',
+                    'limite'=>100000000000,
+                    'indice'=>0
+                );
+                $data_items = $this->dataItemRepository->listItem($query,$id_entrada);
+                $data_items = $data_items['data_item']['resultados'];
 
-            foreach($data_items as $item){
-                $this->dataItemRepository->changestatusItem($item['id'],$token->sub);
+                foreach($data_items as $item){
+                    $this->dataItemRepository->changestatusItem($item['id'],$token->sub);
+                }
             }
+            
         }
 
         if(isset($data_entrada['tipo_entrada'])){
@@ -488,17 +500,21 @@ class DataEntradaRepository implements EntradaRepository {
         }
 
         if(isset($data_entrada['id_proveedor'])){
-            $sql = "UPDATE entrada 
-                    SET id_proveedor=:id_proveedor,
-                    f_mod=now(), 
-                    u_mod=:u_mod
-                    WHERE id=:id_entrada;";
-            $res = ($this->db)->prepare($sql);
-            $res->bindParam(':id_entrada', $id_entrada, PDO::PARAM_STR);
-            $res->bindParam(':id_proveedor', $data_entrada['id_proveedor']['id'], PDO::PARAM_STR);
-            $res->bindParam(':u_mod', $token->sub, PDO::PARAM_STR);
-            $res->execute();
-            $resp += ['id_proveedor' => 'dato actualizado'];
+            if($dato_ant['id_proveedor']!=$data_entrada['id_proveedor']['id']){
+                $sql = "UPDATE entrada 
+                        SET id_proveedor=:id_proveedor,
+                        f_mod=now(), 
+                        u_mod=:u_mod
+                        WHERE id=:id_entrada;";
+                $res = ($this->db)->prepare($sql);
+                $res->bindParam(':id_entrada', $id_entrada, PDO::PARAM_STR);
+                $res->bindParam(':id_proveedor', $data_entrada['id_proveedor']['id'], PDO::PARAM_STR);
+                $res->bindParam(':u_mod', $token->sub, PDO::PARAM_STR);
+                $res->execute();
+                $resp += ['id_proveedor' => 'dato actualizado'];
+                
+            }
+            
         }
 
         if(isset($data_entrada['id_compra'])){
@@ -629,78 +645,82 @@ class DataEntradaRepository implements EntradaRepository {
         }
 
         if(isset($data_entrada['estado'])){
-            $data_entrada['estado']=$data_entrada['estado'];
-            $sql = "UPDATE entrada 
-                    SET estado=:estado,
-                    f_mod=now(), 
-                    u_mod=:u_mod
-                    WHERE id=:id_entrada;";
-            $res = ($this->db)->prepare($sql);
-            $res->bindParam(':id_entrada', $id_entrada, PDO::PARAM_STR);
-            $res->bindParam(':estado', $data_entrada['estado'], PDO::PARAM_STR);
-            $res->bindParam(':u_mod', $token->sub, PDO::PARAM_STR);
-            $res->execute();
-            $resp += ['estado' => 'dato actualizado'];
-            if($data_entrada['estado']=='COMPLETADO'){
-                //aqui deberiamos generar el codigo de la entrada.
-                $sql = "SELECT alm.codigo as cod_almacen, e.tipo_entrada
-                        FROM entrada e, almacen alm
-                        WHERE e.id=:id_entrada AND alm.id=e.id_almacen";
-                $res = ($this->db)->prepare($sql);
-                $res->bindParam(':id_entrada', $id_entrada, PDO::PARAM_STR);
-                
-                $res->execute();
-                $res = $res->fetchAll(PDO::FETCH_ASSOC);
-                $res = $res[0];
-
-                $correlativo = $this->dataCorrelativoRepository->genCorrelativo($res['cod_almacen'].'-IN', $res['tipo_entrada'], $token->sub);
-                $correlativo = $correlativo['correlativo'];
-                $correlativo = $res['cod_almacen'] . '-IN-' . $correlativo .'-'. $res['tipo_entrada'];
+            if($dato_ant['estado']!=$data_entrada['estado']){
                 $sql = "UPDATE entrada 
-                        SET codigo=:codigo,
+                        SET estado=:estado,
                         f_mod=now(), 
                         u_mod=:u_mod
                         WHERE id=:id_entrada;";
                 $res = ($this->db)->prepare($sql);
                 $res->bindParam(':id_entrada', $id_entrada, PDO::PARAM_STR);
-                $res->bindParam(':codigo', $correlativo, PDO::PARAM_STR);
+                $res->bindParam(':estado', $data_entrada['estado'], PDO::PARAM_STR);
                 $res->bindParam(':u_mod', $token->sub, PDO::PARAM_STR);
                 $res->execute();
-                $resp += ['id_almacen' => 'dato actualizado'];
-                $codigo=true;
-                //concluye asignacion de codigo y empieza envio a kardex
-                $query=array(
-                    'filtro'=>'',
-                    'limite'=>100000000000,
-                    'indice'=>0
-                );
-                $data_items = $this->dataItemRepository->listItem($query,$id_entrada);
+                $resp += ['estado' => 'dato actualizado'];
+                if($data_entrada['estado']=='COMPLETADO'){
+                    //aqui deberiamos generar el codigo de la entrada.
+                    $sql = "SELECT alm.codigo as cod_almacen, e.tipo_entrada
+                            FROM entrada e, almacen alm
+                            WHERE e.id=:id_entrada AND alm.id=e.id_almacen";
+                    $res = ($this->db)->prepare($sql);
+                    $res->bindParam(':id_entrada', $id_entrada, PDO::PARAM_STR);
+                    
+                    $res->execute();
+                    $res = $res->fetchAll(PDO::FETCH_ASSOC);
+                    $res = $res[0];
 
-                $data_items = $data_items['data_item']['resultados'];
-                $data_entrada = $this->getEntrada($id_entrada,$token);
+                    $correlativo = $this->dataCorrelativoRepository->genCorrelativo($res['cod_almacen'].'-IN', $res['tipo_entrada'], $token->sub);
+                    $correlativo = $correlativo['correlativo'];
+                    $correlativo = $res['cod_almacen'] . '-IN-' . $correlativo .'-'. $res['tipo_entrada'];
+                    $sql = "UPDATE entrada 
+                            SET codigo=:codigo,
+                            f_mod=now(), 
+                            u_mod=:u_mod
+                            WHERE id=:id_entrada;";
+                    $res = ($this->db)->prepare($sql);
+                    $res->bindParam(':id_entrada', $id_entrada, PDO::PARAM_STR);
+                    $res->bindParam(':codigo', $correlativo, PDO::PARAM_STR);
+                    $res->bindParam(':u_mod', $token->sub, PDO::PARAM_STR);
+                    $res->execute();
+                    $resp += ['estado' => 'dato actualizado'];
+                    $codigo=true;
+                    //concluye asignacion de codigo y empieza envio a kardex
+                    $query=array(
+                        'filtro'=>'',
+                        'limite'=>100000000000,
+                        'indice'=>0
+                    );
+                    $data_items = $this->dataItemRepository->listItem($query,$id_entrada);
 
-                foreach($data_items as $item){
-                    $data_kardex = array(
-                                        'tipo_in_out'=>$item['tipo_in_out'],
-                                        'id_item'=>$item,
-                                        'id_producto'=>$item['id_producto'],
-                                        'id_regional'=>$data_entrada['data_entrada']['id_regional'],
-                                        'id_almacen'=>$data_entrada['data_entrada']['id_almacen'],
-                                        'id_almacen_origen'=>array('id'=>null),
-                                        'id_almacen_destino'=>array('id'=>null),
-                                        'id_proveedor'=>$data_entrada['data_entrada']['id_proveedor'],
-                                        'id_cliente'=>array('id'=>null),
-                                        'id_entrada'=>$data_entrada['data_entrada'],
-                                        'id_salida'=>array('id'=>null),
-                                        'lote'=>$item['lote'],
-                                        'cantidad_diferencia'=>$item['cantidad'],
-                                        'precio_compra'=>$item['precio_unidad_fob'],
-                                        'precio_actual'=>$item['costo_neto'],
-                                        'precio_venta'=>$item['precio_venta']
-                                    );
-                    $this->dataKardexRepository->createKardex($data_kardex,$token->sub);
+                    $data_items = $data_items['data_item']['resultados'];
+                    $data_entrada = $this->getEntrada($id_entrada,$token);
+                    $data_item_prov = array('id_proveedor'=>array('id'=>$data_entrada['id_proveedor']['id']));
+                    foreach($data_items as $item){
+                        //al cambiar almacen, debemos eliminar los registros de items asociados a la entrada
+                        $respuesta_cambio_prov=$this->dataItemRepository->modifyItem($item['id'],$data_item_prov,$token->sub);
+                        $data_kardex = array(
+                                            'tipo_in_out'=>$item['tipo_in_out'],
+                                            'id_item'=>$item,
+                                            'id_producto'=>$item['id_producto'],
+                                            'id_regional'=>$data_entrada['data_entrada']['id_regional'],
+                                            'id_almacen'=>$data_entrada['data_entrada']['id_almacen'],
+                                            'id_almacen_origen'=>array('id'=>null),
+                                            'id_almacen_destino'=>array('id'=>null),
+                                            'id_proveedor'=>$data_entrada['data_entrada']['id_proveedor'],
+                                            'id_cliente'=>array('id'=>null),
+                                            'id_entrada'=>$data_entrada['data_entrada'],
+                                            'id_salida'=>array('id'=>null),
+                                            'lote'=>$item['lote'],
+                                            'cantidad_diferencia'=>$item['cantidad'],
+                                            'precio_compra'=>$item['precio_unidad_fob'],
+                                            'precio_actual'=>$item['costo_neto'],
+                                            'precio_venta'=>$item['precio_venta']
+                                        );
+                        $this->dataKardexRepository->createKardex($data_kardex,$token->sub);
+                    }
                 }
             }
+            
         }
         if($codigo){
             $resp += ['codigo' => 'dato generado'];

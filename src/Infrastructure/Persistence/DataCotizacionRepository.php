@@ -350,45 +350,48 @@ class DataCotizacionRepository implements CotizacionRepository {
         }
 
         if(isset($data_cotizacion['estado'])){
-            $sql = "UPDATE cotizacion 
-                    SET estado=:estado,
-                    f_mod=now(), 
-                    u_mod=:u_mod
-                    WHERE id=:id_cotizacion;";
-            $res = ($this->db)->prepare($sql);
-            $res->bindParam(':id_cotizacion', $id_cotizacion, PDO::PARAM_STR);
-            $res->bindParam(':estado', $data_cotizacion['estado'], PDO::PARAM_STR);
-            $res->bindParam(':u_mod', $token->sub, PDO::PARAM_STR);
-            $res->execute();
-            $resp += ['estado' => 'dato actualizado'];
-            if($data_cotizacion['estado']=='VIGENTE'){
-                //tomamos en cuenta esta data para los productos comprometidos, ademas asignamos un codigo a la cotizacion.
-                $sql = "SELECT reg.codigo as cod_regional
-                        FROM cotizacion c, regional reg
-                        WHERE c.id=:id_cotizacion AND reg.id=c.id_regional";
-                $res = ($this->db)->prepare($sql);
-                $res->bindParam(':id_cotizacion', $id_cotizacion, PDO::PARAM_STR);
-                
-                $res->execute();
-                $res = $res->fetchAll(PDO::FETCH_ASSOC);
-                $res = $res[0];
-
-                $correlativo = $this->dataCorrelativoRepository->genCorrelativo($res['cod_regional'],'-COT', $token->sub);
-                $correlativo = $correlativo['correlativo'];
-                $correlativo = $res['cod_regional'] . '-COT-' . $correlativo;
-                $sql = "UPDATE entrada 
-                        SET codigo=:codigo,
+            if($dato_ant['estado']!=$data_cotizacion['estado']){
+                $sql = "UPDATE cotizacion 
+                        SET estado=:estado,
                         f_mod=now(), 
                         u_mod=:u_mod
                         WHERE id=:id_cotizacion;";
                 $res = ($this->db)->prepare($sql);
                 $res->bindParam(':id_cotizacion', $id_cotizacion, PDO::PARAM_STR);
-                $res->bindParam(':codigo', $correlativo, PDO::PARAM_STR);
+                $res->bindParam(':estado', $data_cotizacion['estado'], PDO::PARAM_STR);
                 $res->bindParam(':u_mod', $token->sub, PDO::PARAM_STR);
                 $res->execute();
-                //$resp += ['id_almacen' => 'dato actualizado'];
-                $codigo=true;
+                $resp += ['estado' => 'dato actualizado'];
+                if($data_cotizacion['estado']=='VIGENTE'){
+                    //tomamos en cuenta esta data para los productos comprometidos, ademas asignamos un codigo a la cotizacion.
+                    $sql = "SELECT reg.codigo as cod_regional
+                            FROM cotizacion c, regional reg
+                            WHERE c.id=:id_cotizacion AND reg.id=c.id_regional";
+                    $res = ($this->db)->prepare($sql);
+                    $res->bindParam(':id_cotizacion', $id_cotizacion, PDO::PARAM_STR);
+                    
+                    $res->execute();
+                    $res = $res->fetchAll(PDO::FETCH_ASSOC);
+                    $res = $res[0];
+
+                    $correlativo = $this->dataCorrelativoRepository->genCorrelativo($res['cod_regional'],'-COT', $token->sub);
+                    $correlativo = $correlativo['correlativo'];
+                    $correlativo = $res['cod_regional'] . '-COT-' . $correlativo;
+                    $sql = "UPDATE entrada 
+                            SET codigo=:codigo,
+                            f_mod=now(), 
+                            u_mod=:u_mod
+                            WHERE id=:id_cotizacion;";
+                    $res = ($this->db)->prepare($sql);
+                    $res->bindParam(':id_cotizacion', $id_cotizacion, PDO::PARAM_STR);
+                    $res->bindParam(':codigo', $correlativo, PDO::PARAM_STR);
+                    $res->bindParam(':u_mod', $token->sub, PDO::PARAM_STR);
+                    $res->execute();
+                    //$resp += ['id_almacen' => 'dato actualizado'];
+                    $codigo=true;
+                }
             }
+            
         }
 
         if($codigo){
