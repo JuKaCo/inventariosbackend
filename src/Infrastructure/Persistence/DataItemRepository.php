@@ -55,8 +55,12 @@ class DataItemRepository implements ItemRepository {
             
             $data_producto = $this->dataProductoRepository->getProducto($res['id_producto']);
             $data_producto = $data_producto['data_producto'];
-            $data_proveedor = $this->dataProveedorRepository->getProveedor($res['id_proveedor']);
-            $data_proveedor = $data_producto['data_proveedor'];
+            if($res['id_proveedor']!=null){
+                $data_proveedor = $this->dataProveedorRepository->getProveedor($item['id_proveedor']);
+                $data_proveedor = $data_producto['data_proveedor'];
+            }else{
+                $data_proveedor=null;
+            }
             $data_factor = $this->dataParametricaRepository->getCodParametrica("param_factor_precio",0,(float)$res['factor']);
             //$data_factor = $data_factor[0];
             $fecha = explode("-",$res['fecha_exp']);
@@ -124,8 +128,12 @@ class DataItemRepository implements ItemRepository {
             foreach ($res as $item){
                 $data_producto = $this->dataProductoRepository->getProducto($item['id_producto']);
                 $data_producto = $data_producto['data_producto'];
-                $data_proveedor = $this->dataProveedorRepository->getProveedor($item['id_proveedor']);
-                $data_proveedor = $data_producto['data_proveedor'];
+                if($item['id_proveedor']!=null){
+                    $data_proveedor = $this->dataProveedorRepository->getProveedor($item['id_proveedor']);
+                    $data_proveedor = $data_producto['data_proveedor'];
+                }else{
+                    $data_proveedor=null;
+                }
                 $data_factor = $this->dataParametricaRepository->getCodParametrica("param_factor_precio",0,(float)$item['factor']);
                 //$data_factor = $data_factor[0];
                 $fecha = explode("-",$item['fecha_exp']);
