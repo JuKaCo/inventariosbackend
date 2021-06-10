@@ -56,7 +56,7 @@ class DataItemRepository implements ItemRepository {
             $data_producto = $this->dataProductoRepository->getProducto($res['id_producto']);
             $data_producto = $data_producto['data_producto'];
             if($res['id_proveedor']!=null){
-                $data_proveedor = $this->dataProveedorRepository->getProveedor($item['id_proveedor']);
+                $data_proveedor = $this->dataProveedorRepository->getProveedor($res['id_proveedor']);
                 $data_proveedor = $data_producto['data_proveedor'];
             }else{
                 $data_proveedor=null;
