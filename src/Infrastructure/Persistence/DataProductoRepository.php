@@ -48,8 +48,17 @@ class DataProductoRepository implements ProductoRepository {
         if($res->rowCount()>0){
             $res = $res->fetchAll(PDO::FETCH_ASSOC);
             $res = $res[0];
-            $data_tipo_controlado = $this->dataParametricaRepository->getCodParametrica('param_controlado',0,$res['tipo_controlado']);
-            $data_categoria_prod = $this->dataParametricaRepository->getCodParametrica('param_cat_prod',0,$res['categoria_prod']);
+            if($res['tipo_controlado']!=null){
+                $data_tipo_controlado = $this->dataParametricaRepository->getCodParametrica('param_controlado',0,$res['tipo_controlado']);
+            }else{
+                $data_tipo_controlado = array();
+            }
+            if($res['categoria_prod']!=null){
+                $data_categoria_prod = $this->dataParametricaRepository->getCodParametrica('param_cat_prod',0,$res['categoria_prod']);
+            }else{
+                $data_categoria_prod = array();
+            }
+            
             $result = array('id'=>$res['id'],
                             'codigo'=>$res['codigo'],
                             'nombre_comercial'=>$res['nombre_comercial'],
@@ -136,8 +145,18 @@ class DataProductoRepository implements ProductoRepository {
             $restodo = $res->fetchAll(PDO::FETCH_ASSOC);
             $arrayres = array();
             foreach ($restodo as $res){
-                $data_tipo_controlado = $this->dataParametricaRepository->getCodParametrica('param_controlado',0,$res['tipo_controlado']);
-                $data_categoria_prod = $this->dataParametricaRepository->getCodParametrica('param_cat_prod',0,$res['categoria_prod']);
+                if($res['tipo_controlado']!=null){
+                    $data_tipo_controlado = $this->dataParametricaRepository->getCodParametrica('param_controlado',0,$res['tipo_controlado']);
+                }else{
+                    $data_tipo_controlado = array();
+                }
+                if($res['categoria_prod']!=null){
+                    $data_categoria_prod = $this->dataParametricaRepository->getCodParametrica('param_cat_prod',0,$res['categoria_prod']);
+                }else{
+                    $data_categoria_prod = array();
+                }
+                //$data_tipo_controlado = $this->dataParametricaRepository->getCodParametrica('param_controlado',0,$res['tipo_controlado']);
+                //$data_categoria_prod = $this->dataParametricaRepository->getCodParametrica('param_cat_prod',0,$res['categoria_prod']);
                 $result = array('id'=>$res['id'],
                                 'codigo'=>$res['codigo'],
                                 'nombre_comercial'=>$res['nombre_comercial'],
@@ -508,6 +527,34 @@ class DataProductoRepository implements ProductoRepository {
             $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
             $res->execute();
             $resp += ['medicamento' => 'dato actualizado'];
+        }
+
+        if(isset($data_producto['tipo_controlado'])){
+            $sql = "UPDATE producto 
+                    SET tipo_controlado=:tipo_controlado,
+                        f_mod=now(), 
+                        u_mod=:u_mod
+                    WHERE id=:id_producto;";
+            $res = ($this->db)->prepare($sql);
+            $res->bindParam(':id_producto', $id_producto, PDO::PARAM_STR);
+            $res->bindParam(':tipo_controlado', $data_producto['tipo_controlado']['id_param'], PDO::PARAM_STR);
+            $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
+            $res->execute();
+            $resp += ['tipo_controlado' => 'dato actualizado'];
+        }
+
+        if(isset($data_producto['categoria_prod'])){
+            $sql = "UPDATE producto 
+                    SET categoria_prod=:categoria_prod,
+                        f_mod=now(), 
+                        u_mod=:u_mod
+                    WHERE id=:id_producto;";
+            $res = ($this->db)->prepare($sql);
+            $res->bindParam(':id_producto', $id_producto, PDO::PARAM_STR);
+            $res->bindParam(':categoria_prod', $data_producto['categoria_prod']['id_param'], PDO::PARAM_STR);
+            $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
+            $res->execute();
+            $resp += ['categoria_prod' => 'dato actualizado'];
         }
 
         if(isset($data_producto['form_farm'])){
