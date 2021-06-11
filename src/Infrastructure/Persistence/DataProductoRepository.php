@@ -88,8 +88,8 @@ class DataProductoRepository implements ProductoRepository {
                             'activo'=>$res['activo']);
             if($result['codigo_liname']['id_liname']==null){ $result['codigo_liname']=json_decode ("{}");}
             if($result['codigo_linadime']['id_linadime']==null){$result['codigo_linadime']=json_decode ("{}");}  
-            //if($result['tipo_controlado']['id_param']==null){$result['tipo_controlado']=json_decode ("{}");}
-            //if($result['categoria_prod']['id_param']==null){$result['categoria_prod']=json_decode ("{}");}
+            if($res['tipo_controlado']==null){$result['tipo_controlado']=json_decode ("{}");}
+            if($res['categoria_prod']==null){$result['categoria_prod']=json_decode ("{}");}
             
             $resp = array('success'=>true,'message'=>'Exito','data_producto'=>$result);
         }else{
@@ -185,7 +185,9 @@ class DataProductoRepository implements ProductoRepository {
                                 'nivel_uso_iii'=>$res['nivel_uso_iii'],
                                 'activo'=>$res['activo']);
                 if($result['codigo_liname']['id_liname']==null){$result['codigo_liname']=json_decode ("{}");}
-                if($result['codigo_linadime']['id_linadime']==null){$result['codigo_linadime']=json_decode ("{}");}  
+                if($result['codigo_linadime']['id_linadime']==null){$result['codigo_linadime']=json_decode ("{}");}
+                if($res['tipo_controlado']==null){$result['tipo_controlado']=json_decode ("{}");}
+                if($res['categoria_prod']==null){$result['categoria_prod']=json_decode ("{}");}  
                 array_push($arrayres,$result);
             }
             $concat=array('resultados'=>$arrayres,'total'=>$total);
