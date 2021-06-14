@@ -51,12 +51,12 @@ class DataProductoRepository implements ProductoRepository {
             if($res['tipo_controlado']!=null){
                 $data_tipo_controlado = $this->dataParametricaRepository->getCodParametrica('param_controlado',0,$res['tipo_controlado']);
             }else{
-                $data_tipo_controlado = array();
+                $data_tipo_controlado = json_decode("{}");
             }
             if($res['categoria_prod']!=null){
                 $data_categoria_prod = $this->dataParametricaRepository->getCodParametrica('param_cat_prod',0,$res['categoria_prod']);
             }else{
-                $data_categoria_prod = array();
+                $data_categoria_prod = json_decode("{}");
             }
             
             $result = array('id'=>$res['id'],
@@ -148,12 +148,12 @@ class DataProductoRepository implements ProductoRepository {
                 if($res['tipo_controlado']!=null){
                     $data_tipo_controlado = $this->dataParametricaRepository->getCodParametrica('param_controlado',0,$res['tipo_controlado']);
                 }else{
-                    $data_tipo_controlado = array();
+                    $data_tipo_controlado = json_decode("{}");
                 }
                 if($res['categoria_prod']!=null){
                     $data_categoria_prod = $this->dataParametricaRepository->getCodParametrica('param_cat_prod',0,$res['categoria_prod']);
                 }else{
-                    $data_categoria_prod = array();
+                    $data_categoria_prod = json_decode("{}");
                 }
                 //$data_tipo_controlado = $this->dataParametricaRepository->getCodParametrica('param_controlado',0,$res['tipo_controlado']);
                 //$data_categoria_prod = $this->dataParametricaRepository->getCodParametrica('param_cat_prod',0,$res['categoria_prod']);

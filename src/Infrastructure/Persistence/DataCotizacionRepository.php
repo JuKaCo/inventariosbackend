@@ -377,7 +377,7 @@ class DataCotizacionRepository implements CotizacionRepository {
                     $correlativo = $this->dataCorrelativoRepository->genCorrelativo($res['cod_regional'],'-COT', $token->sub);
                     $correlativo = $correlativo['correlativo'];
                     $correlativo = $res['cod_regional'] . '-COT-' . $correlativo;
-                    $sql = "UPDATE entrada 
+                    $sql = "UPDATE cotizacion 
                             SET codigo=:codigo,
                             f_mod=now(), 
                             u_mod=:u_mod
