@@ -267,8 +267,8 @@ class DataProductoRepository implements ProductoRepository {
             //$res = $res->fetchAll(PDO::FETCH_ASSOC);
             if($data_producto['codigo_liname']['id_liname']==null){$data_producto['codigo_liname']=json_decode ("{}");}
             if($data_producto['codigo_linadime']['id_linadime']==null){$data_producto['codigo_linadime']=json_decode ("{}");} 
-            if($data_producto['tipo_controlado']['codigo']==null){$data_producto['tipo_controlado']=json_decode ("{}");} 
-            if($data_producto['categoria_prod']['codigo']==null){$data_producto['categoria_prod']=json_decode ("{}");} 
+            if($data_producto['tipo_controlado']['id_param']==null){$data_producto['tipo_controlado']=json_decode ("{}");} 
+            if($data_producto['categoria_prod']['id_param']==null){$data_producto['categoria_prod']=json_decode ("{}");} 
             $resp = array('success'=>true,'message'=>'producto actualizado','data_producto'=>$data_producto);
         }
         return $resp;
