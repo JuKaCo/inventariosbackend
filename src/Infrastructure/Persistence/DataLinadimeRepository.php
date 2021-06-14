@@ -219,7 +219,7 @@ class DataLinadimeRepository implements LinadimeRepository {
 
                         $sql = " INSERT INTO param_linadime(
                                     u_crea,
-                                    id_param_liname_archivo,
+                                    id_param_linadime_archivo,
 
                                     codigo,
                                     dispositivo,
@@ -234,7 +234,7 @@ class DataLinadimeRepository implements LinadimeRepository {
                                     )
                                     VALUES (
                                         :u_crea,
-                                        :id_param_liname_archivo,
+                                        :id_param_linadime_archivo,
 
                                         REPLACE(REPLACE(REPLACE(:B, '\n', ''),'\r',''),'\t',''),
                                         REPLACE(REPLACE(REPLACE(:C, '\n', ''),'\r',''),'\t',''),
@@ -249,7 +249,7 @@ class DataLinadimeRepository implements LinadimeRepository {
                                         ";
                         $query = $this->db->prepare($sql);
                         $query->bindParam(':u_crea', $id_usuario, PDO::PARAM_STR);
-                        $query->bindParam(':id_param_liname_archivo', $uuid, PDO::PARAM_STR);
+                        $query->bindParam(':id_param_linadime_archivo', $uuid, PDO::PARAM_STR);
 
                         $query->bindParam(':B', $B, PDO::PARAM_STR);
                         $query->bindParam(':C', $C, PDO::PARAM_STR);
@@ -419,7 +419,7 @@ class DataLinadimeRepository implements LinadimeRepository {
             return array('id' => $uuid, 'estado' => $estado);
         }
         if ($estadoSelec == 1 && $estado == 'activo') {
-            $sql = "UPDATE param_liname_archivo SET activo=0 WHERE id=:id";
+            $sql = "UPDATE param_linadime_archivo SET activo=0 WHERE id=:id";
             $query = $this->db->prepare($sql);
             $query->bindParam(':id', $uuid, PDO::PARAM_INT);
             $query->execute();
