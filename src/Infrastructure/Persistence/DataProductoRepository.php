@@ -208,11 +208,11 @@ class DataProductoRepository implements ProductoRepository {
         }
         $sql = "SELECT *
                 FROM producto
-                WHERE (LOWER(codigo) LIKE LOWER(:codigo) OR LOWER(nombre_comercial) LIKE LOWER(:nombre_comercial) ) AND id!=:id_producto";
+                WHERE (LOWER(codigo) LIKE LOWER(:codigo)/* OR LOWER(nombre_comercial) LIKE LOWER(:nombre_comercial)*/ ) AND id!=:id_producto";
             $res = ($this->db)->prepare($sql);
             $res->bindParam(':codigo', $data_producto['codigo'], PDO::PARAM_STR);
             $res->bindParam(':id_producto', $id_producto, PDO::PARAM_STR);
-            $res->bindParam(':nombre_comercial', $data_producto['nombre_comercial'], PDO::PARAM_STR);
+            //$res->bindParam(':nombre_comercial', $data_producto['nombre_comercial'], PDO::PARAM_STR);
             //$res->bindParam(':reg_san', $data_producto['reg_san'], PDO::PARAM_STR);
             $res->execute();
         if($res->rowCount()>0){
