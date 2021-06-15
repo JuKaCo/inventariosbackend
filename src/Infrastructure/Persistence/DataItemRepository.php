@@ -485,7 +485,7 @@ class DataItemRepository implements ItemRepository {
     public function calculatePriceItem($data_item):array{
 
         $price = $data_item['precio_unidad_fob'];
-        $factor = (float) $data_item['factor'];	
+        $factor = (float) ($data_item['factor']*1);	
         $qty = $data_item['cantidad'];
         
         $iva=14.94;	
