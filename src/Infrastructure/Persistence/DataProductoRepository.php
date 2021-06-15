@@ -199,7 +199,7 @@ class DataProductoRepository implements ProductoRepository {
     }
 
     public function editProducto($id_producto,$data_producto,$uuid): array {
-        if(!(isset($id_producto)&&isset($data_producto['codigo'])&&isset($data_producto['nombre_comercial'])&&isset($data_producto['codigo_liname'])
+        if(!(isset($id_producto)&&isset($data_producto['nombre_comercial'])&&isset($data_producto['codigo_liname'])
         &&isset($data_producto['codigo_linadime'])&&isset($data_producto['referencia'])
         &&isset($data_producto['medicamento'])&&isset($data_producto['form_farm'])&&isset($data_producto['concen'])
         &&isset($data_producto['atq'])&&isset($data_producto['precio_ref'])&&isset($data_producto['aclara_parti'])
@@ -219,8 +219,7 @@ class DataProductoRepository implements ProductoRepository {
             $resp = array('success'=>false,'message'=>'Error, el nombre comercial o codigo del producto ya existe en otro registro');
         }else{
             $sql = "UPDATE producto 
-                    SET codigo=:codigo,
-                    nombre_comercial=:nombre_comercial,
+                    SET nombre_comercial=:nombre_comercial,
                     codigo_liname=:codigo_liname,
                     codigo_linadime=:codigo_linadime,
                     tipo_controlado=:tipo_controlado,
@@ -243,7 +242,7 @@ class DataProductoRepository implements ProductoRepository {
                     WHERE id=:id_producto;";
             $res = ($this->db)->prepare($sql);
             $res->bindParam(':id_producto', $id_producto, PDO::PARAM_STR);
-            $res->bindParam(':codigo', $data_producto['codigo'], PDO::PARAM_STR);
+            //$res->bindParam(':codigo', $data_producto['codigo'], PDO::PARAM_STR);
             $res->bindParam(':nombre_comercial', $data_producto['nombre_comercial'], PDO::PARAM_STR);
             $res->bindParam(':codigo_liname', $data_producto['codigo_liname']['id_liname'], PDO::PARAM_INT);
             $res->bindParam(':codigo_linadime', $data_producto['codigo_linadime']['id_linadime'], PDO::PARAM_INT);
@@ -295,7 +294,7 @@ class DataProductoRepository implements ProductoRepository {
     }
 
     public function createProducto($data_producto,$uuid): array {
-        if(!(isset($data_producto['codigo'])&&isset($data_producto['nombre_comercial'])&&isset($data_producto['codigo_liname'])
+        if(!(isset($data_producto['nombre_comercial'])&&isset($data_producto['codigo_liname'])
         &&isset($data_producto['codigo_linadime'])&&isset($data_producto['referencia'])&&isset($data_producto['tipo_controlado'])
         &&isset($data_producto['medicamento'])&&isset($data_producto['form_farm'])&&isset($data_producto['concen'])&&isset($data_producto['categoria_prod'])
         &&isset($data_producto['atq'])&&isset($data_producto['precio_ref'])&&isset($data_producto['aclara_parti'])
@@ -369,9 +368,13 @@ class DataProductoRepository implements ProductoRepository {
                     now(),
                     :u_crea
                     );";
+                    
+            $correlativo = $this->dataCorrelativoRepository->genCorrelativo('PROD','', $uuid);
+            $correlativo = $correlativo['correlativo'];
+            $correlativo = 'PROD-' . $correlativo;
             $res = ($this->db)->prepare($sql);
             $res->bindParam(':uuid', $uuid_neo, PDO::PARAM_STR);
-            $res->bindParam(':codigo', $data_producto['codigo'], PDO::PARAM_STR);
+            $res->bindParam(':codigo', $correlativo, PDO::PARAM_STR);
             $res->bindParam(':nombre_comercial', $data_producto['nombre_comercial'], PDO::PARAM_STR);
             $res->bindParam(':codigo_liname', $data_producto['codigo_liname']['id_liname'], PDO::PARAM_INT);
             $res->bindParam(':codigo_linadime', $data_producto['codigo_linadime']['id_linadime'], PDO::PARAM_INT);
@@ -435,7 +438,7 @@ class DataProductoRepository implements ProductoRepository {
         $success=true;
         $resp=array();
 
-        if(isset($data_producto['codigo'])){
+        /*if(isset($data_producto['codigo'])){
             $sql = "SELECT *
                     FROM producto
                     WHERE codigo=:codigo AND id!=:id_producto";
@@ -459,7 +462,7 @@ class DataProductoRepository implements ProductoRepository {
                 $res->execute();
                 $resp += ['codigo' => 'dato actualizado'];
             }
-        }
+        }*/
 
         if(isset($data_producto['nombre_comercial'])){
             $sql = "UPDATE producto 
