@@ -411,7 +411,7 @@ class DataKardexRepository implements KardexRepository {
         $res->bindParam(':id_proveedor', $data_kardex['id_proveedor']['id'], PDO::PARAM_STR);
 
         $res->execute();
-
+        $estado='VIGENTE';
         if($res->rowCount()>0){
             
             $res = $res->fetchAll(PDO::FETCH_ASSOC);
@@ -419,7 +419,7 @@ class DataKardexRepository implements KardexRepository {
             $id_kardex_padre = $res['id'];
             $cantidad_anterior = (integer)$res['cantidad_actual'];
             $cantidad_actual = 0;
-            $estado='VIGENTE';
+            
             if($data_kardex['tipo_in_out']=="IN"){
                 $cantidad_actual = (integer)$res['cantidad_actual'] + (integer)$data_kardex['cantidad_diferencia'];//si es ingreso sumamos
             }else{
