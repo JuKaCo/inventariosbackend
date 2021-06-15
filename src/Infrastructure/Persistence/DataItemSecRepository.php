@@ -54,28 +54,24 @@ class DataItemSecRepository implements ItemSecRepository {
             $res = $res->fetchAll(PDO::FETCH_ASSOC);
             $res = $res[0];
             
-            $data_producto = $this->dataProductoRepository->getProducto($res['id_producto']);
+            $data_producto = $this->dataProductoRepository->getProducto($res['id_producto_inventario']);
             $data_producto = $data_producto['data_producto'];
-            $data_factor = $this->dataParametricaRepository->getCodParametrica("param_factor_precio",0,(float)$res['factor']);
+            $data_proveedor = $this->dataProveedorRepository->getProveedor($res['id_proveedor']);
+
             //$data_factor = $data_factor[0];
             $fecha = explode("-",$res['fecha_exp']);
             $result = array('id'=>$res['id'],
                         'id_producto'=>$data_producto,
-                        'id_entrada_salida'=>$res['id_entrada_salida'],
-                        'tipo_in_out'=>$res['tipo_in_out'],
+                        'id_coti_vent'=>$res['id_coti_vent'],
+                        'tipo'=>$res['tipo'],
                         'codigo_prod'=>$res['codigo_prod'],
                         'nombre_prod'=>$res['nombre_prod'],
-                        'registro_sanitario'=>$res['registro_sanitario'],
+                        'id_proveedor'=>$data_proveedor['data_proveedor'],
                         'lote'=>$res['lote'],
                         'fecha_exp'=>$fecha[2]."/".$fecha[1]."/".$fecha[0],
                         'cantidad'=>$res['cantidad'],
-                        'precio_factura'=>(float)$res['precio_factura'],
-                        'precio_unidad_fob'=>(float)$res['precio_unidad_fob'],
-                        'precio_total'=>(float)$res['precio_total'],
-                        'factor'=>$data_factor,
-                        'costo_almacen'=>(float)$res['costo_almacen'],
-                        'costo_neto'=>(float)$res['costo_neto'],
                         'precio_venta'=>(float)$res['precio_venta'],
+                        'precio_total'=>(float)$res['precio_total'],
                         'activo'=>$res['activo']);
             $resp = array('success'=>true,'message'=>'Exito','data_itemsec'=>$result);
         }else{

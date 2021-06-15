@@ -694,7 +694,7 @@ class DataEntradaRepository implements EntradaRepository {
 
                     $data_items = $data_items['data_item']['resultados'];
                     $data_entrada = $this->getEntrada($id_entrada,$token);
-                    $data_item_prov = array('id_proveedor'=>$data_entrada['id_proveedor']);
+                    $data_item_prov = array('id_proveedor'=>$data_entrada['data_entrada']['id_proveedor']);
                     foreach($data_items as $item){
                         //al cambiar almacen, debemos eliminar los registros de items asociados a la entrada
                         $respuesta_cambio_prov=$this->dataItemRepository->modifyItem($item['id'],$data_item_prov,$token->sub);
