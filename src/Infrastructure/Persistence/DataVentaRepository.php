@@ -63,6 +63,7 @@ class DataVentaRepository implements VentaRepository {
             $data_regional = $this->dataRegionalRepository->getRegional($res['id_regional']);
             $data_almacen = $this->dataAlmacenRepository->getAlmacen($res['id_almacen'],$token);
             $data_cliente = $this->dataClienteRepository->getCliente($res['id_cliente'],$token);
+            $tipo_venta = $this->dataParametricaRepository->getCodParametrica('param_tipo_venta',0,$res['tipo_venta']);
             if($res['id_cotizacion']!=''||$res['id_cotizacion']!=null){
                 $data_cotizacion = $this->dataCotizacionRepository->getCotizacion($res['id_cotizacion'],$token);
             }else{
@@ -80,7 +81,7 @@ class DataVentaRepository implements VentaRepository {
                             'id_cliente'=>$data_cliente['data_cliente'],
                             'id_cotizacion'=>$data_cotizacion['data_cotizacion'],
                             'id_factura'=>$data_factura['data_factura'],
-                            'tipo_venta'=>$res['tipo_venta'],
+                            'tipo_venta'=>$tipo_venta,
                             'referencia'=>$res['referencia'],
                             'nombre_factura'=>$res['nombre_factura'],
                             'nit'=>$res['nit'],
@@ -137,6 +138,7 @@ class DataVentaRepository implements VentaRepository {
                 $data_regional = $this->dataRegionalRepository->getRegional($res['id_regional']);
                 $data_almacen = $this->dataAlmacenRepository->getAlmacen($res['id_almacen'],$token);
                 $data_cliente = $this->dataClienteRepository->getCliente($res['id_cliente'],$token);
+                $tipo_venta = $this->dataParametricaRepository->getCodParametrica('param_tipo_venta',0,$res['tipo_venta']);
                 if($res['id_cotizacion']!=''||$res['id_cotizacion']!=null){
                     $data_cotizacion = $this->dataCotizacionRepository->getCotizacion($res['id_cotizacion'],$token);
                 }else{
@@ -155,7 +157,7 @@ class DataVentaRepository implements VentaRepository {
                                 'id_cliente'=>$data_cliente['data_cliente'],
                                 'id_cotizacion'=>$data_cotizacion['data_cotizacion'],
                                 'id_factura'=>$data_factura['data_factura'],
-                                'tipo_venta'=>$res['tipo_venta'],
+                                'tipo_venta'=>$tipo_venta,
                                 'referencia'=>$res['referencia'],
                                 'nombre_factura'=>$res['nombre_factura'],
                                 'nit'=>$res['nit'],
