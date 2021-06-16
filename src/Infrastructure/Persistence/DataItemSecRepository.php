@@ -149,17 +149,29 @@ class DataItemSecRepository implements ItemSecRepository {
 
     public function modifyItemSec($id_itemsec,$data_itemsec,$uuid): array {
         
+        $sql = "SELECT *
+                FROM item_secundario
+                WHERE id=:id_itemsec";
+        $res = ($this->db)->prepare($sql);
+        $res->bindParam(':id_itemsec', $id_itemsec, PDO::PARAM_STR);
+        $res->execute();
+        $res = $res->fetchAll(PDO::FETCH_ASSOC);
+        $dato_ant=$res[0];
+
         $success=true;
         $resp=array();
         if(isset($data_itemsec['cantidad'])){
+            $precio_total = ($dato_ant['precio_venta']*$data_itemsec['cantidad']);
             $sql = "UPDATE item_secundario 
                     SET cantidad=:cantidad,
+                    precio_total=:precio_total,
                     f_mod=now(), 
                     u_mod=:u_mod
                     WHERE id=:id_itemsec;";
             $res = ($this->db)->prepare($sql);
             $res->bindParam(':id_itemsec', $id_itemsec, PDO::PARAM_STR);
             $res->bindParam(':cantidad', $data_itemsec['cantidad'], PDO::PARAM_STR);
+            $res->bindParam(':precio_total', $precio_total, PDO::PARAM_STR);
             $res->bindParam(':u_mod', $uuid, PDO::PARAM_STR);
             $res->execute();
             $resp += ['cantidad' => 'dato actualizado'];
