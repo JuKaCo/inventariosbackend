@@ -220,7 +220,7 @@ class DataEntradaRepository implements EntradaRepository {
     }
 
     public function editEntrada($id_entrada,$data_entrada,$token): array {
-        if(!(isset($id_entrada)&&isset($data_entrada['codigo'])&&isset($data_entrada['nombre_comercial'])&&isset($data_entrada['codigo_liname'])
+        /*if(!(isset($id_entrada)&&isset($data_entrada['codigo'])&&isset($data_entrada['nombre_comercial'])&&isset($data_entrada['codigo_liname'])
         &&isset($data_entrada['codigo_linadime'])&&isset($data_entrada['referencia'])
         &&isset($data_entrada['medicamento'])&&isset($data_entrada['form_farm'])&&isset($data_entrada['concen'])
         &&isset($data_entrada['atq'])&&isset($data_entrada['precio_ref'])&&isset($data_entrada['aclara_parti'])
@@ -288,8 +288,8 @@ class DataEntradaRepository implements EntradaRepository {
             if($data_entrada['codigo_liname']['id_liname']==null){$data_entrada['codigo_liname']=json_decode ("{}");}
             if($data_entrada['codigo_linadime']['id_linadime']==null){$data_entrada['codigo_linadime']=json_decode ("{}");} 
             $resp = array('success'=>true,'message'=>'entrada actualizado','data_entrada'=>$data_entrada,'code'=>200);
-        }
-        return $resp;
+        }*/
+        return array();
     }
 
     public function changestatusEntrada($id_entrada,$token): array {

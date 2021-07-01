@@ -25,6 +25,7 @@ use App\Domain\ItemSecRepository;
 use App\Domain\CotizacionRepository;
 use App\Domain\DosificacionRepository;
 use App\Domain\VentaRepository;
+use App\Domain\SalidaRepository;
 use App\Infrastructure\Persistence\User\InMemoryUserRepository;
 use App\Infrastructure\Persistence\DataMenuRepository;
 use App\Infrastructure\Persistence\DataParametricaRepository;
@@ -48,6 +49,7 @@ use App\Infrastructure\Persistence\DataKardexRepository;
 use App\Infrastructure\Persistence\DataCotizacionRepository;
 use App\Infrastructure\Persistence\DataItemSecRepository;
 use App\Infrastructure\Persistence\DataVentaRepository;
+use App\Infrastructure\Persistence\DataSalidaRepository;
 
 use DI\ContainerBuilder;
 
@@ -81,6 +83,7 @@ return function (ContainerBuilder $containerBuilder) {
         ItemSecRepository::class=> \DI\autowire(DataItemSecRepository::class),
         CotizacionRepository::class=> \DI\autowire(DataCotizacionRepository::class),
         VentaRepository::class=> \DI\autowire(DataVentaRepository::class),
+        SalidaRepository::class=> \DI\autowire(DataSalidaRepository::class),
 
     ]);
 };
